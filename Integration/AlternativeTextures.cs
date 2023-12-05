@@ -1,14 +1,11 @@
 ﻿using HappyHomeDesigner.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using StardewValley;
 using StardewValley.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using static StardewValley.Menus.CharacterCustomization;
 
 namespace HappyHomeDesigner.Integration
 {
@@ -98,6 +95,7 @@ namespace HappyHomeDesigner.Integration
 			var mg = manager.FieldType.GetMethod("GetAvailableTextureModels");
 			if (!mg.ReturnType.TryGetGenericOf(0, out var modelType))
 				return false;
+
 			var seasonGetter = modelType.GetProperty("Season", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetMethod;
 
 			VariantsOf = (source, season, list) => {

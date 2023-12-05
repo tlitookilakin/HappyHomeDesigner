@@ -64,6 +64,7 @@ namespace HappyHomeDesigner.Menus
         {
             var item = Item.getOne() as Furniture;
             item.Price = 0;
+            item.updateRotation();
             return item;
         }
     }

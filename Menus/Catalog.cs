@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Patches;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
@@ -51,11 +53,15 @@ namespace HappyHomeDesigner.Menus
 
 			var vp = Game1.uiViewport;
 			CalculateZones(new(vp.X, vp.Y, vp.Width, vp.Height));
+			AltTex.forcePreviewDraw = true;
+			AltTex.forceMenuDraw = true;
 		}
 
 		protected override void cleanupBeforeExit()
 		{
 			base.cleanupBeforeExit();
+			AltTex.forcePreviewDraw = false;
+			AltTex.forceMenuDraw = false;
 			Game1.onScreenMenus.Remove(this);
 		}
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
@@ -74,7 +80,8 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
-			return x < 500;
+			// TODO add tabs
+			return Pages[tab].isWithinBounds(x, y);
 		}
 		private void CalculateZones(Rectangle bounds)
 		{
@@ -83,6 +90,12 @@ namespace HappyHomeDesigner.Menus
 			{
 				Pages[i].Resize(region);
 			}
+		}
+
+		public override void receiveScrollWheelAction(int direction)
+		{
+			if (Pages[tab].TryReceiveScroll(direction))
+				return;
 		}
 	}
 }

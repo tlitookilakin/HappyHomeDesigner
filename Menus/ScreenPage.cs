@@ -15,5 +15,10 @@ namespace HappyHomeDesigner.Menus
 			xPositionOnScreen = region.X;
 			yPositionOnScreen = region.Y;
 		}
+
+		public virtual bool TryReceiveScroll(int dir)
+		{
+			return false;
+		}
 	}
 }

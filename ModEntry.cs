@@ -36,6 +36,7 @@ namespace HappyHomeDesigner
 		{
 			TileAction.Apply(harmony);
 			ItemCloneFix.Apply(harmony);
+			AltTex.Apply(harmony);
 		}
 	}
 }
