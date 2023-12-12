@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
@@ -63,6 +64,7 @@ namespace HappyHomeDesigner.Menus
 			AltTex.forcePreviewDraw = false;
 			AltTex.forceMenuDraw = false;
 			Game1.onScreenMenus.Remove(this);
+			ActiveMenu.Value = null;
 		}
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
 		{
@@ -96,6 +98,20 @@ namespace HappyHomeDesigner.Menus
 		{
 			if (Pages[tab].TryReceiveScroll(direction))
 				return;
+		}
+
+		public bool HandleInput(ButtonReleasedEventArgs ev)
+		{
+			if (ev.IsSuppressed())
+				return true;
+
+			if (ev.Button == SButton.Escape)
+			{
+				cleanupBeforeExit();
+				// play sound
+				return true;
+			}
+			return false;
 		}
 	}
 }
