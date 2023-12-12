@@ -1,9 +1,9 @@
-﻿using HappyHomeDesigner.Patches;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
@@ -42,9 +42,11 @@ namespace HappyHomeDesigner.Menus
 			if (variantIndex is >= 0)
 			{
 				int cols = MainPanel.Columns;
-				DrawFrame(b, Game1.menuTexture, new(
-					xPositionOnScreen + variantIndex % cols * CELL_SIZE - 8 + 32,
-					yPositionOnScreen + variantIndex / cols * CELL_SIZE - 8,
+				int variantDrawIndex = variantIndex - MainPanel.Offset;
+				if (variantDrawIndex >= 0 && variantDrawIndex < MainPanel.VisibleCells)
+				b.DrawFrame(Game1.menuTexture, new(
+					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 32,
+					yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
 					CELL_SIZE + 16, CELL_SIZE + 16),
 					FrameSource, 13, 1, Color.White, 0);
 			}
@@ -87,6 +89,15 @@ namespace HappyHomeDesigner.Menus
 			showVariants = false;
 		}
 
+		public override void receiveScrollWheelAction(int direction)
+		{
+			var pos = Game1.getMousePosition(true);
+			if (MainPanel.isWithinBounds(pos.X, pos.Y))
+				MainPanel.receiveScrollWheelAction(direction);
+			else if (VariantPanel.isWithinBounds(pos.X, pos.Y))
+				VariantPanel.receiveScrollWheelAction(direction);
+		}
+
 		private void HandleGridClick(int mx, int my, bool playSound, GridPanel panel, bool allowVariants)
 		{
 			// TODO play sound
@@ -126,59 +137,6 @@ namespace HappyHomeDesigner.Menus
 		public override bool isWithinBounds(int x, int y)
 		{
 			return base.isWithinBounds(x, y) || (showVariants && VariantPanel.isWithinBounds(x, y));
-		}
-		private static void DrawFrame(SpriteBatch b, Texture2D texture, Rectangle dest, Rectangle source, int padding, int scale, Color color, int top = 0)
-		{
-			int destPad = padding * scale;
-			int dTop = top * scale + destPad;
-			int sTop = top + padding;
-
-			// top
-			int dy = dest.Y;
-			int sy = source.Y;
-			b.Draw(texture, 
-				new Rectangle(dest.X, dy, destPad, dTop), 
-				new Rectangle(source.X, sy, padding, sTop), 
-				color);
-			b.Draw(texture,
-				new Rectangle(dest.X + destPad, dy, dest.Width - destPad * 2, dTop),
-				new Rectangle(source.X + padding, sy, source.Width - padding * 2, sTop),
-				color);
-			b.Draw(texture,
-				new Rectangle(dest.X + dest.Width - destPad, dy, destPad, dTop),
-				new Rectangle(source.X + source.Width - padding, sy, padding, sTop),
-				color
-				);
-
-			// mid
-			dy += dTop;
-			sy += sTop;
-			b.Draw(texture,
-				new Rectangle(dest.X, dy, destPad, dest.Height - destPad * 2),
-				new Rectangle(source.X, sy, padding, source.Height - padding * 2),
-				color);
-			b.Draw(texture,
-				new Rectangle(dest.X + dest.Width - destPad, dy, destPad, dest.Height - destPad * 2),
-				new Rectangle(source.X + source.Width - padding, sy, padding, source.Height - padding * 2),
-				color
-				);
-
-			// bottom
-			dy = dest.Y + dest.Height - destPad;
-			sy = source.Y + source.Height - padding;
-			b.Draw(texture,
-				new Rectangle(dest.X, dy, destPad, destPad),
-				new Rectangle(source.X, sy, padding, padding),
-				color);
-			b.Draw(texture,
-				new Rectangle(dest.X + destPad, dy, dest.Width - destPad * 2, destPad),
-				new Rectangle(source.X + padding, sy, source.Width - padding * 2, padding),
-				color);
-			b.Draw(texture,
-				new Rectangle(dest.X + dest.Width - destPad, dy, destPad, destPad),
-				new Rectangle(source.X + source.Width - padding, sy, padding, padding),
-				color
-				);
 		}
 	}
 }

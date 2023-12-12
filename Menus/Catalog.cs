@@ -64,6 +64,7 @@ namespace HappyHomeDesigner.Menus
 			AltTex.forcePreviewDraw = false;
 			AltTex.forceMenuDraw = false;
 			Game1.onScreenMenus.Remove(this);
+			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null;
 		}
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)

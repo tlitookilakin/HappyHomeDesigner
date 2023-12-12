@@ -14,6 +14,7 @@ namespace HappyHomeDesigner.Menus
 
 		public int Offset => scrollBar.CellOffset;
 		public int Columns => scrollBar.Columns;
+		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
 
 		private int cells_h;
 		private int cells_v;
@@ -68,6 +69,7 @@ namespace HappyHomeDesigner.Menus
 
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
+			Items = items;
 			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
 		}
 
