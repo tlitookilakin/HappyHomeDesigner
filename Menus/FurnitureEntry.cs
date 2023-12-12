@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-	internal class FurnitureEntry
+	internal class FurnitureEntry : IGridItem
 	{
 		internal const int CELL_SIZE = 80;
 

@@ -8,7 +8,7 @@ namespace HappyHomeDesigner.Menus
 	public class ScrollBar
 	{
 		public int Rows = 0;
-		public int Columns = 0;
+		public int Columns = 1;
 		public int VisibleRows = 0;
 
 		public int Offset { get; private set; }

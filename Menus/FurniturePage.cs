@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-    internal class FurniturePage : ScreenPage
+	internal class FurniturePage : ScreenPage
 	{
 		internal const int CELL_SIZE = 80;
 
@@ -19,60 +19,55 @@ namespace HappyHomeDesigner.Menus
 		private bool showVariants = false;
 		private int variantIndex = -1;
 
-		private int scrollPos = 0;
-		private int variantScrollPos = 0;
-		private int hCells = 0;
-		private int varCells = 3;
+		private readonly GridPanel<FurnitureEntry> MainPanel = new(CELL_SIZE, CELL_SIZE);
+		private readonly GridPanel<FurnitureEntry> VariantPanel = new(CELL_SIZE, CELL_SIZE);
 
-		private Rectangle RegionMain;
-		private Rectangle RegionVariant;
+		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
+
 		public FurniturePage()
 		{
 			var season = Game1.player.currentLocation.GetSeasonForLocation();
 			foreach (var item in Utility.getAllFurnituresForFree().Keys)
 				if (item is Furniture furn)
 					entries.Add(new(furn, season));
+			MainPanel.Items = entries;
+			VariantPanel.Items = variants;
 		}
 		public override void draw(SpriteBatch b)
 		{
 			base.draw(b);
-			DrawItemPanel(b, entries, xPositionOnScreen, yPositionOnScreen, scrollPos, hCells, height);
+			
+			MainPanel.draw(b);
 
 			if (variantIndex is >= 0)
 			{
+				int cols = MainPanel.Columns;
 				DrawFrame(b, Game1.menuTexture, new(
-					xPositionOnScreen + variantIndex % hCells * CELL_SIZE - 8,
-					yPositionOnScreen + variantIndex / hCells * CELL_SIZE - 8,
+					xPositionOnScreen + variantIndex % cols * CELL_SIZE - 8 + 32,
+					yPositionOnScreen + variantIndex / cols * CELL_SIZE - 8,
 					CELL_SIZE + 16, CELL_SIZE + 16),
-					new(0, 256, 60, 60), 13, 1, Color.White, 0);
+					FrameSource, 13, 1, Color.White, 0);
 			}
 
 			//AltTex.forceMenuDraw = true;
 			if (showVariants)
-				DrawItemPanel(b, variants, 
-					Game1.uiViewport.Width - xPositionOnScreen - (varCells * CELL_SIZE + 24),
-					yPositionOnScreen + 256, variantScrollPos, varCells, height - 256);
+				VariantPanel.draw(b);
 			//AltTex.forceMenuDraw = false;
 		}
 		public override void Resize(Rectangle region)
 		{
 			base.Resize(region);
-			hCells = width / CELL_SIZE;
-			width = hCells * CELL_SIZE;
-			height = height / CELL_SIZE * CELL_SIZE;
 
-			RegionMain = new(xPositionOnScreen - 32, yPositionOnScreen, width + 64, height + 32);
-			RegionVariant = new(Game1.uiViewport.Width - xPositionOnScreen - width - 32, yPositionOnScreen, width + 32, height);
+			MainPanel.Resize(width - 32, height - 32, xPositionOnScreen + 32, yPositionOnScreen);
+			VariantPanel.Resize(CELL_SIZE * 3 + 32, yPositionOnScreen + 256, Game1.uiViewport.Width - xPositionOnScreen - CELL_SIZE * 3 - 32, height - 256);
 		}
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);
 
-			HandleGridClick(x, y, playSound, xPositionOnScreen, yPositionOnScreen, entries, scrollPos, true, hCells, height);
+			HandleGridClick(x, y, playSound, MainPanel, true);
 			if (showVariants)
-				HandleGridClick(x, y, playSound, 
-					Game1.uiViewport.Width - xPositionOnScreen - (varCells * CELL_SIZE + 24), 
-					yPositionOnScreen + 256, variants, variantScrollPos, false, varCells, height - 256);
+				HandleGridClick(x, y, playSound, VariantPanel, false);
 		}
 
 		private void showVariantsFor(FurnitureEntry entry, int index)
@@ -84,31 +79,18 @@ namespace HappyHomeDesigner.Menus
 				variants.Add(new(vars[i]));
 			showVariants = true;
 		}
+
 		private void hideVariants()
 		{
 			variantIndex = -1;
 			showVariants = false;
 		}
 
-		private void DrawItemPanel(SpriteBatch b, List<FurnitureEntry> items, int x, int y, int offset, int cellsW, int h)
+		private void HandleGridClick(int mx, int my, bool playSound, GridPanel<FurnitureEntry> panel, bool allowVariants)
 		{
-			drawTextureBox(b, Game1.mouseCursors, new(384, 373, 18, 18), x - 16, y - 20, cellsW * CELL_SIZE + 32, h + 36, Color.White, 4f);
-			int count = Math.Min(items.Count - offset, h / CELL_SIZE * cellsW);
-			for (int i = 0; i < count; i++)
-				items[i + offset].Draw(b, CELL_SIZE * (i % cellsW) + x, CELL_SIZE * (i / cellsW) + y);
-		}
-		private void HandleGridClick(int mx, int my, bool playSound, int x, int y, List<FurnitureEntry> items, int offset, bool allowVariants, int cellsW, int h)
-		{
-			int relX = mx - x;
-			int relY = my - y;
-
-			if (relX > 0 && relX < cellsW * CELL_SIZE && relY > 0 && relY < h)
+			if (panel.TrySelect(mx, my, out int index))
 			{
-				int index = relX / CELL_SIZE + cellsW * (relY / CELL_SIZE) + offset;
-				if (index > items.Count)
-					return;
-
-				var entry = items[index];
+				var entry = panel.Items[index];
 
 				if (allowVariants)
 				{
@@ -135,11 +117,7 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
-			if (RegionMain.Contains(x, y))
-				return true;
-			if (showVariants && RegionVariant.Contains(x, y))
-				return true;
-			return false;
+			return base.isWithinBounds(x, y) || (showVariants && VariantPanel.isWithinBounds(x, y));
 		}
 		private static void DrawFrame(SpriteBatch b, Texture2D texture, Rectangle dest, Rectangle source, int padding, int scale, Color color, int top = 0)
 		{

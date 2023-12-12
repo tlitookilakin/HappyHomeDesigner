@@ -12,7 +12,8 @@ namespace HappyHomeDesigner.Menus
 		public readonly int CellWidth;
 		public readonly int CellHeight;
 
-		public int Offset => 0;
+		public int Offset => scrollBar.CellOffset;
+		public int Columns => scrollBar.Columns;
 
 		private int cells_h;
 		private int cells_v;
@@ -40,16 +41,17 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
-			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
-				cells_h * CellWidth + 32, height + 36, Color.White, 4f);
-
 			int offset = scrollBar.CellOffset;
 			int cols = scrollBar.Columns;
+
+			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
+				cols * CellWidth + 32, height + 36, Color.White, 4f);
+
 			int count = Math.Min(items.Count - offset, height / CellHeight * scrollBar.Columns);
 			for (int i = 0; i < count; i++)
 				items[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
 
-			scrollBar.Draw(b, xPositionOnScreen + width + 8, yPositionOnScreen - 16, height + 36);
+			scrollBar.Draw(b, xPositionOnScreen + width + 8, yPositionOnScreen - 16, height + 32);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -83,7 +85,7 @@ namespace HappyHomeDesigner.Menus
 			int relX = x - xPositionOnScreen;
 			int relY = y - yPositionOnScreen;
 
-			if (relX is < 0 || relY is < 0)
+			if (relX is < 0 || relY is < 0 || relX > width || relY > height)
 				return false;
 
 			which = relX / CellWidth + scrollBar.Columns * (relY / CellHeight) + scrollBar.CellOffset;
