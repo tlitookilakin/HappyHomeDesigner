@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using xTile.Tiles;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -61,6 +63,53 @@ namespace HappyHomeDesigner.Menus
 			//IClickableMenu.drawTextureBox(batch, Game1.menuTexture, background, x, y, 56, CellHeight, Color.White, 1f, false);
 			batch.Draw(sheet, new Vector2(x + 4, y + 4), region, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
 			batch.DrawFrame(Game1.menuTexture, new(x, y, CellWidth, CellHeight), background, 4, 1, Color.White);
+		}
+
+		public bool TryApply(bool playSound)
+		{
+			// TODO add undo
+
+			if (Game1.currentLocation is not DecoratableLocation where)
+				return false;
+
+			var x = Game1.player.getTileX();
+			var y = Game1.player.getTileY();
+
+			if (item.isFloor.Value)
+			{
+				var id = where.GetFloorID(x, y);
+				if (id is null)
+					return false;
+
+				var modData = item.GetModData();
+				where.SetFloor(modData is null ?
+					item.ParentSheetIndex.ToString() :
+					$"{modData.ID}:{item.ParentSheetIndex}",
+					id);
+			} else
+			{
+				string id = where.GetWallpaperID(x, y);
+				while (id is null)
+				{
+					y--;
+					if (y is < 0)
+						return false;
+					id = where.GetWallpaperID(x, y);
+				}
+
+				var modData = item.GetModData();
+				where.SetWallpaper(modData is null ?
+					item.ParentSheetIndex.ToString() :
+					$"{modData.ID}:{item.ParentSheetIndex}",
+					id);
+			}
+			if (playSound)
+				Game1.playSound("dwop");
+			return true;
+		}
+		public Wallpaper GetOne()
+		{
+			return item.getOne() as Wallpaper;
 		}
 	}
 }

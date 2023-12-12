@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -33,7 +34,7 @@ namespace HappyHomeDesigner.Menus
 
 			WallPanel.Items = walls;
 			FloorsPanel.Items = floors;
-			ActivePanel = FloorsPanel;
+			ActivePanel = WallPanel;
 		}
 
 		public static void AddAltWallsOrFloors(IList<WallEntry> items, string type)
@@ -60,6 +61,23 @@ namespace HappyHomeDesigner.Menus
 		public override void receiveScrollWheelAction(int direction)
 		{
 			ActivePanel.receiveScrollWheelAction(direction);
+		}
+
+		public override void receiveLeftClick(int x, int y, bool playSound = true)
+		{
+			if (ActivePanel.TrySelect(x, y, out int index))
+			{
+				var item = ActivePanel.Items[index] as WallEntry;
+
+				if (ModEntry.helper.Input.IsDown(SButton.LeftShift) || !item.TryApply(playSound))
+					if (Game1.player.addItemToInventoryBool(item.GetOne()) && playSound)
+						Game1.playSound("dwop");
+			}
+		}
+
+		public override bool isWithinBounds(int x, int y)
+		{
+			return base.isWithinBounds(x, y) || ActivePanel.isWithinBounds(x, y);
 		}
 	}
 }
