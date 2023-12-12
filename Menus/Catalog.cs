@@ -48,9 +48,9 @@ namespace HappyHomeDesigner.Menus
 		{
 			Catalogs = catalogs;
 			if ((catalogs & AvailableCatalogs.Furniture) is not 0)
-				Pages.Add(new FurniturePage() { Parent = this });
+				Pages.Add(new FurniturePage());
 			if ((catalogs & AvailableCatalogs.Wallpaper) is not 0)
-				Pages.Add(new WallFloorPage() { Parent = this });
+				Pages.Add(new WallFloorPage());
 
 			var vp = Game1.uiViewport;
 			CalculateZones(new(vp.X, vp.Y, vp.Width, vp.Height));
@@ -87,7 +87,7 @@ namespace HappyHomeDesigner.Menus
 		}
 		private void CalculateZones(Rectangle bounds)
 		{
-			Rectangle region = new(64, 64, 400, bounds.Height - 128);
+			Rectangle region = new(64, 96, 400, bounds.Height - 112);
 			for(int i = 0; i < Pages.Count; i++)
 			{
 				Pages[i].Resize(region);
@@ -96,8 +96,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override void receiveScrollWheelAction(int direction)
 		{
-			if (Pages[tab].TryReceiveScroll(direction))
-				return;
+			Pages[tab].receiveScrollWheelAction(direction);
 		}
 
 		public bool HandleInput(ButtonReleasedEventArgs ev)

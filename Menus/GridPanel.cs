@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace HappyHomeDesigner.Menus
 {
-	public class GridPanel<T> : IClickableMenu where T : IGridItem
+	public class GridPanel : IClickableMenu
 	{
 		public readonly int CellWidth;
 		public readonly int CellHeight;
@@ -22,7 +22,7 @@ namespace HappyHomeDesigner.Menus
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
 
-		public IList<T> Items
+		public IReadOnlyList<IGridItem> Items
 		{
 			get => items;
 			set
@@ -31,7 +31,7 @@ namespace HappyHomeDesigner.Menus
 				scrollBar.Rows = items.Count / scrollBar.Columns + (items.Count % scrollBar.Columns is not 0 ? 1 : 0);
 			}
 		}
-		private IList<T> items;
+		private IReadOnlyList<IGridItem> items;
 
 		public GridPanel(int cellWidth, int cellHeight)
 		{
@@ -51,7 +51,7 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < count; i++)
 				items[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
 
-			scrollBar.Draw(b, xPositionOnScreen + width + 8, yPositionOnScreen - 16, height + 32);
+			scrollBar.Draw(b);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -68,6 +68,7 @@ namespace HappyHomeDesigner.Menus
 
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
+			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
 		}
 
 		public override bool isWithinBounds(int x, int y)

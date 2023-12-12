@@ -19,8 +19,8 @@ namespace HappyHomeDesigner.Menus
 		private bool showVariants = false;
 		private int variantIndex = -1;
 
-		private readonly GridPanel<FurnitureEntry> MainPanel = new(CELL_SIZE, CELL_SIZE);
-		private readonly GridPanel<FurnitureEntry> VariantPanel = new(CELL_SIZE, CELL_SIZE);
+		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
+		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 
@@ -70,41 +70,49 @@ namespace HappyHomeDesigner.Menus
 				HandleGridClick(x, y, playSound, VariantPanel, false);
 		}
 
-		private void showVariantsFor(FurnitureEntry entry, int index)
+		private void ShowVariantsFor(FurnitureEntry entry, int index)
 		{
 			variantIndex = index;
 			var vars = entry.GetVariants();
 			variants.Clear();
 			for(int i = 0; i < vars.Count; i++)
 				variants.Add(new(vars[i]));
+			VariantPanel.Items = variants;
 			showVariants = true;
 		}
 
-		private void hideVariants()
+		private void HideVariants()
 		{
 			variantIndex = -1;
 			showVariants = false;
 		}
 
-		private void HandleGridClick(int mx, int my, bool playSound, GridPanel<FurnitureEntry> panel, bool allowVariants)
+		private void HandleGridClick(int mx, int my, bool playSound, GridPanel panel, bool allowVariants)
 		{
+			// TODO play sound
+
 			if (panel.TrySelect(mx, my, out int index))
 			{
-				var entry = panel.Items[index];
+				var entry = panel.Items[index] as FurnitureEntry;
 
 				if (allowVariants)
 				{
 					if (entry.HasVariants)
 					{
-						showVariantsFor(entry, index);
+						ShowVariantsFor(entry, index);
 						return;
 					}
-					hideVariants();
+					HideVariants();
 				}
 
 				if (ModEntry.helper.Input.IsDown(SButton.LeftShift))
 				{
 					Game1.player.addItemToInventoryBool(entry.GetOne());
+					return;
+				}
+				if (allowVariants && ModEntry.helper.Input.IsDown(SButton.LeftAlt))
+				{
+					// TODO add favorite
 					return;
 				}
 
