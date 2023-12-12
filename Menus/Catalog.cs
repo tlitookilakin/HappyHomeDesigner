@@ -56,6 +56,8 @@ namespace HappyHomeDesigner.Menus
 			CalculateZones(new(vp.X, vp.Y, vp.Width, vp.Height));
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
+
+			tab = 1;
 		}
 
 		protected override void cleanupBeforeExit()

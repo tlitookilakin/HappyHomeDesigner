@@ -12,8 +12,6 @@ namespace HappyHomeDesigner.Menus
 {
 	internal class FurniturePage : ScreenPage
 	{
-		internal const int CELL_SIZE = 80;
-
 		private readonly List<FurnitureEntry> entries = new();
 		private readonly List<FurnitureEntry> variants = new();
 		private bool showVariants = false;
