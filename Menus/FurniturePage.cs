@@ -109,6 +109,8 @@ namespace HappyHomeDesigner.Menus
 					if (entry.HasVariants)
 					{
 						ShowVariantsFor(entry, index);
+						if (playSound)
+							Game1.playSound("shwip");
 						return;
 					}
 					HideVariants();
@@ -116,7 +118,8 @@ namespace HappyHomeDesigner.Menus
 
 				if (ModEntry.helper.Input.IsDown(SButton.LeftShift))
 				{
-					Game1.player.addItemToInventoryBool(entry.GetOne());
+					if (Game1.player.addItemToInventoryBool(entry.GetOne()) && playSound)
+						Game1.playSound("pickUpItem");
 					return;
 				}
 				if (allowVariants && ModEntry.helper.Input.IsDown(SButton.LeftAlt))
@@ -130,6 +133,8 @@ namespace HappyHomeDesigner.Menus
 						Game1.player.removeItemFromInventory(activeFurn);
 
 				Game1.player.TemporaryItem = entry.GetOne();
+				if (playSound)
+					Game1.playSound("stoneStep");
 			}
 		}
 		public override bool isWithinBounds(int x, int y)

@@ -71,7 +71,7 @@ namespace HappyHomeDesigner.Menus
 
 				if (ModEntry.helper.Input.IsDown(SButton.LeftShift) || !item.TryApply(playSound))
 					if (Game1.player.addItemToInventoryBool(item.GetOne()) && playSound)
-						Game1.playSound("dwop");
+						Game1.playSound("pickUpItem");
 			}
 		}
 

@@ -49,11 +49,15 @@ namespace HappyHomeDesigner.Menus
 
 		public void AdvanceRows(int count)
 		{
+			int oldOffset = Offset;
 			if (VisibleRows >= Rows)
 				Offset = 0;
 			else
 				Offset = Math.Clamp(Offset + count, 0, Rows - VisibleRows);
 			CellOffset = Offset * Columns;
+
+			if (oldOffset != Offset)
+				Game1.playSound("shiny4");
 		}
 
 		public void Resize(int height, int x, int y)

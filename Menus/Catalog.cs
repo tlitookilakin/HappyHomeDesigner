@@ -57,7 +57,7 @@ namespace HappyHomeDesigner.Menus
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
 
-			tab = 1;
+			tab = 0;
 
 			Game1.playSound("bigSelect");
 		}

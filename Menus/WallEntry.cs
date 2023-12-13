@@ -104,7 +104,7 @@ namespace HappyHomeDesigner.Menus
 					id);
 			}
 			if (playSound)
-				Game1.playSound("dwop");
+				Game1.playSound("stoneStep");
 			return true;
 		}
 		public Wallpaper GetOne()
