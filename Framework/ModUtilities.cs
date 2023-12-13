@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Integration;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using System;
 using System.Collections.Generic;
@@ -102,6 +105,48 @@ namespace HappyHomeDesigner.Framework
 				new Rectangle(dest.X + dest.Width - destPad, dy, destPad, destPad),
 				new Rectangle(source.X + source.Width - padding, sy, padding, padding),
 				color
+				);
+		}
+
+		public static T ToDelegate<T>(this MethodInfo method) where T : Delegate
+			=> (T)Delegate.CreateDelegate(typeof(T), method);
+
+		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
+			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
+
+		public static void AddQuickBool(this IGMCM gmcm, IManifest manifest, object config, string name)
+		{
+			var prop = config.GetType().GetProperty(name);
+			if (prop is null || prop.PropertyType != typeof(bool))
+				throw new ArgumentException($"Could not find property '{name}' of type 'bool' on config.");
+
+			var title = $"config.{prop.Name}.name";
+			var desc = $"config.{prop.Name}.desc";
+
+			gmcm.AddBoolOption(
+				manifest,
+				prop.GetMethod.ToDelegate<Func<bool>>(config),
+				prop.SetMethod.ToDelegate<Action<bool>>(config),
+				() => ModEntry.i18n.Get(title),
+				() => ModEntry.i18n.Get(desc)
+				);
+		}
+
+		public static void AddQuickKeybindList(this IGMCM gmcm, IManifest manifest, object config, string name)
+		{
+			var prop = config.GetType().GetProperty(name);
+			if (prop is null || prop.PropertyType != typeof(KeybindList))
+				throw new ArgumentException($"Could not find property '{name}' of type 'KeybindList' on config.");
+
+			var title = $"config.{prop.Name}.name";
+			var desc = $"config.{prop.Name}.desc";
+
+			gmcm.AddKeybindList(
+				manifest,
+				prop.GetMethod.ToDelegate<Func<KeybindList>>(config),
+				prop.SetMethod.ToDelegate<Action<KeybindList>>(config),
+				() => ModEntry.i18n.Get(title),
+				() => ModEntry.i18n.Get(desc)
 				);
 		}
 	}

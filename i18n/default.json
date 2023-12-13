@@ -2,5 +2,11 @@
 	"furniture.Catalog.name": "Happy Home Catalogue",
 	"furniture.Catalog.description": "A combined furniture & wallpaper catalogue",
 	"crafting.HappyHomeDesigner/Catalog.name": "Happy Home Catalogue",
-	"crafting.HappyHomeDesigner/Catalog.description": "Combine both catalogues"
+	"crafting.HappyHomeDesigner/Catalog.description": "Combine both catalogues",
+	"config.CloseWithKey.name": "Close With Key",
+	"config.CloseWithKey.desc": "Allow the menu to be closed with the menu close keys",
+	"config.GiveModifier.name": "Give Modifier",
+	"config.GiveModifier.desc": "Holding this key when clicking will put the item in your inventory",
+	"config.FavoriteModifier.name": "Favorite Modifier",
+	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item"
 }

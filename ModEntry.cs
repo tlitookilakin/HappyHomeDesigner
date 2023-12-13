@@ -16,11 +16,13 @@ namespace HappyHomeDesigner
 		internal static IMonitor monitor;
 		internal static IModHelper helper;
 		internal static Config config;
+		internal static ITranslationHelper i18n;
 
 		public override void Entry(IModHelper helper)
 		{
 			monitor = Monitor;
 			ModEntry.helper = helper;
+			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
 
 			helper.Events.GameLoop.GameLaunched += Launched;
@@ -74,6 +76,12 @@ namespace HappyHomeDesigner
 			{
 				IDynamicGameAssets.API = Helper.ModRegistry.GetApi<IDynamicGameAssets>("spacechase0.DynamicGameAssets");
 				IDynamicGameAssets.API.AddEmbeddedPack(ModManifest, Helper.DirectoryPath);
+			}
+			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
+			{
+				IGMCM.API = Helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");
+				IGMCM.Installed = true;
+				config.Register(IGMCM.API, ModManifest);
 			}
 
 			AlternativeTextures.Init(Helper);

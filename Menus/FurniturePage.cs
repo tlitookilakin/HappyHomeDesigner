@@ -98,8 +98,6 @@ namespace HappyHomeDesigner.Menus
 
 		private void HandleGridClick(int mx, int my, bool playSound, GridPanel panel, bool allowVariants)
 		{
-			// TODO play sound
-
 			if (panel.TrySelect(mx, my, out int index))
 			{
 				var entry = panel.Items[index] as FurnitureEntry;
@@ -116,15 +114,16 @@ namespace HappyHomeDesigner.Menus
 					HideVariants();
 				}
 
-				if (ModEntry.helper.Input.IsDown(SButton.LeftShift))
+
+				if (allowVariants && ModEntry.config.FavoriteModifier.IsDown())
+				{
+					// TODO add favorite
+					return;
+				}
+				if (ModEntry.config.GiveModifier.IsDown())
 				{
 					if (Game1.player.addItemToInventoryBool(entry.GetOne()) && playSound)
 						Game1.playSound("pickUpItem");
-					return;
-				}
-				if (allowVariants && ModEntry.helper.Input.IsDown(SButton.LeftAlt))
-				{
-					// TODO add favorite
 					return;
 				}
 

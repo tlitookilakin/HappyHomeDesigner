@@ -69,7 +69,13 @@ namespace HappyHomeDesigner.Menus
 			{
 				var item = ActivePanel.Items[index] as WallEntry;
 
-				if (ModEntry.helper.Input.IsDown(SButton.LeftShift) || !item.TryApply(playSound))
+				if (ModEntry.config.FavoriteModifier.IsDown())
+				{
+					// TODO add favorites
+					return;
+				}
+
+				if (ModEntry.config.GiveModifier.IsDown() || !item.TryApply(playSound))
 					if (Game1.player.addItemToInventoryBool(item.GetOne()) && playSound)
 						Game1.playSound("pickUpItem");
 			}
