@@ -6,7 +6,7 @@
 		"ShowInCatalogue": false,
 		"Configurations": [
 			{
-				"Texture": "catalog.png",
+				"Texture": "assets/catalog.png",
 				"DisplaySize": {"X": 2, "Y": 2},
 				"CollisionHeight": 2,
 				"TileProperties": {

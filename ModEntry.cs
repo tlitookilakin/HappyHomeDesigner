@@ -73,7 +73,7 @@ namespace HappyHomeDesigner
 			if (Helper.ModRegistry.IsLoaded("spacechase0.DynamicGameAssets"))
 			{
 				IDynamicGameAssets.API = Helper.ModRegistry.GetApi<IDynamicGameAssets>("spacechase0.DynamicGameAssets");
-				IDynamicGameAssets.API.AddEmbeddedPack(ModManifest, Path.Combine(Helper.DirectoryPath, "assets"));
+				IDynamicGameAssets.API.AddEmbeddedPack(ModManifest, Helper.DirectoryPath);
 			}
 
 			AlternativeTextures.Init(Helper);
