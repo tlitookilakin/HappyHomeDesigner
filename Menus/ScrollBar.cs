@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewValley;
 using StardewValley.Menus;
 using System;
@@ -8,15 +9,42 @@ namespace HappyHomeDesigner.Menus
 {
 	public class ScrollBar
 	{
-		public int Rows = 0;
-		public int Columns = 1;
-		public int VisibleRows = 0;
+		public int Rows
+		{
+			get => rows;
+			set
+			{
+				Offset = Math.Max(0, Math.Min(rows is 0 ? 0 : value * Offset / rows, value - visibleRows));
+				CellOffset = Offset * Columns;
+				rows = value;
+			}
+		}
+		private int rows = 0;
+		public int Columns
+		{
+			get => columns;
+			set
+			{
+				columns = value;
+				CellOffset = Offset * columns;
+			}
+		}
+		private int columns = 1;
+		public int VisibleRows
+		{
+			get => visibleRows;
+			set
+			{
+				visibleRows = value;
+				Offset = Math.Min(Offset, Math.Max(0, rows - visibleRows));
+				CellOffset = Offset * columns;
+			}
+		}
+		private int visibleRows = 0;
 		public int Offset { get; private set; }
 		public int CellOffset { get; private set; }
 
 		private int height = 1;
-		private int x;
-		private int y;
 		private Rectangle scroller;
 
 		private ClickableTextureComponent UpArrow = new(new(0, 0, 44, 48), Game1.mouseCursors, new(421, 459, 11, 12), 4f);
@@ -28,7 +56,7 @@ namespace HappyHomeDesigner.Menus
 		public void Draw(SpriteBatch batch)
 		{
 			// debug
-			// batch.Draw(Game1.staminaRect, scroller, Color.Blue);
+			//batch.Draw(Game1.staminaRect, scroller, Color.Blue);
 
 			if (VisibleRows < Rows)
 			{
@@ -64,18 +92,38 @@ namespace HappyHomeDesigner.Menus
 		{
 			height = Math.Max(1, height);
 			this.height = height;
-			this.x = x;
-			this.y = y;
 
 			UpArrow.setPosition(x, y);
 			DownArrow.setPosition(x, y + height - 48);
 			scroller = new(x + 4, y + 52, 40, height - 108);
 		}
 
-		public void Hover(int mx, int my, bool mouseDown)
+		public void Reset()
 		{
-			UpArrow.tryHover(mx, my);
-			DownArrow.tryHover(mx, my);
+			Offset = 0;
+			CellOffset = 0;
+		}
+
+		public void Click(int x, int y)
+		{
+			if (UpArrow.containsPoint(x, y))
+				AdvanceRows(-1);
+			else if (DownArrow.containsPoint(x, y))
+				AdvanceRows(1);
+		}
+
+		public void Hover(int x, int y)
+		{
+			UpArrow.tryHover(x, y);
+			DownArrow.tryHover(x, y);
+
+			if (scroller.Contains(x, y) && Game1.input.GetMouseState().LeftButton is ButtonState.Pressed)
+			{
+				int relY = y - scroller.Y;
+
+				Offset = Math.Max(0, Math.Min(Rows * relY / scroller.Height - visibleRows / 2, rows - visibleRows));
+				CellOffset = Offset * columns;
+			}
 		}
 
 		public static void DrawStrip(SpriteBatch batch, Texture2D texture, Rectangle source, Rectangle dest, int scale, Color color)

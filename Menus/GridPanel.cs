@@ -29,7 +29,8 @@ namespace HappyHomeDesigner.Menus
 			set
 			{
 				items = value;
-				scrollBar.Rows = items.Count / scrollBar.Columns + (items.Count % scrollBar.Columns is not 0 ? 1 : 0);
+				UpdateCount();
+				scrollBar.Reset();
 			}
 		}
 		private IReadOnlyList<IGridItem> items;
@@ -46,7 +47,7 @@ namespace HappyHomeDesigner.Menus
 			int cols = scrollBar.Columns;
 
 			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
-				cols * CellWidth + 32, height + 36, Color.White, 4f);
+				cols * CellWidth + 32, height + 36, Color.White, 4f, false);
 
 			int count = Math.Min(items.Count - offset, height / CellHeight * scrollBar.Columns);
 			for (int i = 0; i < count; i++)
@@ -60,6 +61,16 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.AdvanceRows(direction);
 		}
 
+		public override void performHoverAction(int x, int y)
+		{
+			scrollBar.Hover(x, y);
+		}
+
+		public override void receiveLeftClick(int x, int y, bool playSound = true)
+		{
+			scrollBar.Click(x, y);
+		}
+
 		public void Resize(int width, int height, int x, int y)
 		{
 			this.width = width / CellWidth * CellWidth;
@@ -69,7 +80,6 @@ namespace HappyHomeDesigner.Menus
 
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
-			Items = items;
 			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
 		}
 
@@ -78,7 +88,7 @@ namespace HappyHomeDesigner.Menus
 			int relX = x - xPositionOnScreen;
 			int relY = y - yPositionOnScreen;
 			// add padding for scrollbar
-			return relX is >= 0 && relY is >= 0 && relX < width + 32 && relY < height;
+			return relX is >= 0 && relY is >= 0 && relX < width + 50 && relY < height;
 		}
 
 		public bool TrySelect(int x, int y, out int which)
@@ -93,6 +103,11 @@ namespace HappyHomeDesigner.Menus
 
 			which = relX / CellWidth + scrollBar.Columns * (relY / CellHeight) + scrollBar.CellOffset;
 			return which < items.Count;
+		}
+
+		public void UpdateCount()
+		{
+			scrollBar.Rows = items.Count / scrollBar.Columns + (items.Count % scrollBar.Columns is not 0 ? 1 : 0);
 		}
 	}
 }

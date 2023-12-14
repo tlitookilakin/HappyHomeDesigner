@@ -15,6 +15,7 @@ namespace HappyHomeDesigner.Menus
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
+		internal static Texture2D MenuTexture;
 
 		public enum AvailableCatalogs
 		{
@@ -25,6 +26,8 @@ namespace HappyHomeDesigner.Menus
 
 		public static bool TryShowCatalog(AvailableCatalogs catalogs)
 		{
+			MenuTexture ??= ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
+
 			// catalog is open
 			if (ActiveMenu.Value is Catalog catalog)
 				// the same or more permissive
@@ -57,7 +60,7 @@ namespace HappyHomeDesigner.Menus
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
 
-			tab = 0;
+			tab = 1;
 
 			Game1.playSound("bigSelect");
 		}
@@ -70,6 +73,10 @@ namespace HappyHomeDesigner.Menus
 			Game1.onScreenMenus.Remove(this);
 			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null;
+		}
+		public override void performHoverAction(int x, int y)
+		{
+			Pages[tab].performHoverAction(x, y);
 		}
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
 		{
@@ -92,7 +99,7 @@ namespace HappyHomeDesigner.Menus
 		}
 		private void CalculateZones(Rectangle bounds)
 		{
-			Rectangle region = new(64, 96, 400, bounds.Height - 112);
+			Rectangle region = new(32, 96, 400, bounds.Height - 112);
 			for(int i = 0; i < Pages.Count; i++)
 			{
 				Pages[i].Resize(region);

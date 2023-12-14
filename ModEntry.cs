@@ -3,6 +3,7 @@ using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -17,6 +18,8 @@ namespace HappyHomeDesigner
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
+		internal static string uiPath = "";
+		private static string whichUI = "ui";
 
 		public override void Entry(IModHelper helper)
 		{
@@ -24,11 +27,20 @@ namespace HappyHomeDesigner
 			ModEntry.helper = helper;
 			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
+			uiPath = $"Mods/{ModManifest.UniqueID}/UI";
 
 			helper.Events.GameLoop.GameLaunched += Launched;
 			helper.Events.Input.ButtonPressed += OnButtonPressed;
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
+
+			helper.Events.Content.AssetRequested += OnAssetRequested;
+		}
+
+		private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
+		{
+			if (e.NameWithoutLocale.IsEquivalentTo(uiPath))
+				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Medium);
 		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
@@ -70,6 +82,7 @@ namespace HappyHomeDesigner
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
 		{
+			// TODO add automatic reskins
 			Patch(new(ModManifest.UniqueID));
 
 			if (Helper.ModRegistry.IsLoaded("spacechase0.DynamicGameAssets"))

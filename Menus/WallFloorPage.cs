@@ -21,6 +21,8 @@ namespace HappyHomeDesigner.Menus
 
 		public WallFloorPage()
 		{
+			filter_count = 4;
+
 			foreach (var item in Utility.getAllWallpapersAndFloorsForFree().Keys)
 				if (item is not Wallpaper wall)
 					continue;
@@ -47,6 +49,7 @@ namespace HappyHomeDesigner.Menus
 			// debug
 			//b.Draw(Game1.staminaRect, new Rectangle(xPositionOnScreen, yPositionOnScreen, width, height), Color.Blue);
 
+			DrawFilters(b, 12, 2, xPositionOnScreen, yPositionOnScreen);
 			ActivePanel.draw(b);
 		}
 
@@ -54,8 +57,8 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			WallPanel.Resize(width - 32, height - 32, xPositionOnScreen + 32, yPositionOnScreen + 32);
-			FloorsPanel.Resize(width - 32, height - 32, xPositionOnScreen + 32, yPositionOnScreen + 32);
+			WallPanel.Resize(width - 32, height - 32, xPositionOnScreen + 48, yPositionOnScreen);
+			FloorsPanel.Resize(width - 32, height - 32, xPositionOnScreen + 48, yPositionOnScreen);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -65,6 +68,20 @@ namespace HappyHomeDesigner.Menus
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
+			if (TrySelectFilter(x, y, playSound))
+			{
+				ActivePanel = (current_filter & 1) is not 0 ? FloorsPanel : WallPanel;
+
+				if (current_filter / 2 is not 0)
+				{
+					// TODO add favorites
+				} else
+				{
+					WallPanel.Items = walls;
+					FloorsPanel.Items = floors;
+				}
+			}
+
 			if (ActivePanel.TrySelect(x, y, out int index))
 			{
 				var item = ActivePanel.Items[index] as WallEntry;
