@@ -102,9 +102,9 @@ namespace HappyHomeDesigner
 
 		private static void Patch(Harmony harmony)
 		{
-			TileAction.Apply(harmony);
 			ItemCloneFix.Apply(harmony);
 			AltTex.Apply(harmony);
+			FurnitureAction.Apply(harmony);
 		}
 	}
 }

@@ -36,6 +36,8 @@ namespace HappyHomeDesigner.Menus
 				else
 					catalog.exitThisMenuNoSound();
 
+			// TODO keep place in closed catalog
+
 			var menu = new Catalog(catalogs);
 			Game1.onScreenMenus.Add(menu);
 			ActiveMenu.Value = menu;
@@ -59,8 +61,6 @@ namespace HappyHomeDesigner.Menus
 			CalculateZones(new(vp.X, vp.Y, vp.Width, vp.Height));
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
-
-			tab = 1;
 
 			Game1.playSound("bigSelect");
 		}

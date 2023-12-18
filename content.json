@@ -8,29 +8,7 @@
 			{
 				"Texture": "assets/catalog.png",
 				"DisplaySize": {"X": 2, "Y": 2},
-				"CollisionHeight": 2,
-				"TileProperties": {
-					"0, 0" : {
-						"Buildings": {
-							"Action": "HappyHomeDesigner"
-						}
-					},
-					"0, 1" : {
-						"Buildings": {
-							"Action": "HappyHomeDesigner"
-						}
-					},
-					"1, 0" : {
-						"Buildings": {
-							"Action": "HappyHomeDesigner"
-						}
-					},
-					"1, 1" : {
-						"Buildings": {
-							"Action": "HappyHomeDesigner"
-						}
-					}
-				}
+				"CollisionHeight": 2
 			}
 		]
 	},
