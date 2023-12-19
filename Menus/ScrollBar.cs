@@ -114,9 +114,6 @@ namespace HappyHomeDesigner.Menus
 
 		public void Hover(int x, int y)
 		{
-			UpArrow.tryHover(x, y);
-			DownArrow.tryHover(x, y);
-
 			if (scroller.Contains(x, y) && Game1.input.GetMouseState().LeftButton is ButtonState.Pressed)
 			{
 				int relY = y - scroller.Y;

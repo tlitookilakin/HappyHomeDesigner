@@ -49,7 +49,7 @@ namespace HappyHomeDesigner.Menus
 			// debug
 			//b.Draw(Game1.staminaRect, new Rectangle(xPositionOnScreen, yPositionOnScreen, width, height), Color.Blue);
 
-			DrawFilters(b, 12, 2, xPositionOnScreen, yPositionOnScreen);
+			DrawFilters(b, 16, 2, xPositionOnScreen, yPositionOnScreen);
 			ActivePanel.draw(b);
 		}
 
@@ -57,8 +57,8 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			WallPanel.Resize(width - 32, height - 32, xPositionOnScreen + 48, yPositionOnScreen);
-			FloorsPanel.Resize(width - 32, height - 32, xPositionOnScreen + 48, yPositionOnScreen);
+			WallPanel.Resize(width - 36, height - 32, xPositionOnScreen + 52, yPositionOnScreen);
+			FloorsPanel.Resize(width - 36, height - 32, xPositionOnScreen + 52, yPositionOnScreen);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -105,7 +105,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override ClickableTextureComponent GetTab()
 		{
-			return new(new(0, 0, 64, 64), Game1.staminaRect, new(1, 1, 1, 1), 4f);
+			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(80, 24, 16, 16), 4f);
 		}
 	}
 }

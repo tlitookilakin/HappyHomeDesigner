@@ -49,6 +49,7 @@ namespace HappyHomeDesigner.Menus
 		private List<ScreenPage> Pages = new();
 		private int tab = 0;
 		private List<ClickableTextureComponent> Tabs = new();
+		private ClickableTextureComponent CloseButton;
 
 		public Catalog(AvailableCatalogs catalogs)
 		{
@@ -62,8 +63,10 @@ namespace HappyHomeDesigner.Menus
 				for (int i = 0; i < Pages.Count; i++)
 					Tabs.Add(Pages[i].GetTab());
 
+			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f);
+
 			var vp = Game1.uiViewport;
-			CalculateZones(new(vp.X, vp.Y, vp.Width, vp.Height));
+			Resize(new(vp.X, vp.Y, vp.Width, vp.Height));
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
 
@@ -86,13 +89,15 @@ namespace HappyHomeDesigner.Menus
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
 		{
 			base.gameWindowSizeChanged(oldBounds, newBounds);
-			CalculateZones(newBounds);
+			Resize(newBounds);
 		}
 		public override void draw(SpriteBatch b)
 		{
 			Pages[tab].draw(b);
+			CloseButton.draw(b);
+
 			for (int i = 0; i < Tabs.Count; i++)
-				Tabs[i].draw(b, i == tab ? Color.White : Color.Wheat, 0f);
+				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
 		}
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
@@ -109,6 +114,9 @@ namespace HappyHomeDesigner.Menus
 					break;
 				}
 			}
+
+			if (CloseButton.containsPoint(x, y))
+				exitThisMenu();
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
@@ -116,16 +124,16 @@ namespace HappyHomeDesigner.Menus
 				if (Tabs[i].containsPoint(x, y))
 					return true;
 
-			return Pages[tab].isWithinBounds(x, y);
+			return Pages[tab].isWithinBounds(x, y) || CloseButton.containsPoint(x, y);
 		}
-		private void CalculateZones(Rectangle bounds)
+		private void Resize(Rectangle bounds)
 		{
 			Rectangle region = new(32, 96, 400, bounds.Height - 160);
 			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Resize(region);
 
 			int tabX = xPositionOnScreen + 96;
-			int tabY = yPositionOnScreen + 32;
+			int tabY = yPositionOnScreen + 16;
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				var tabComp = Tabs[i];
@@ -133,6 +141,8 @@ namespace HappyHomeDesigner.Menus
 				tabX += tabComp.bounds.Width;
 				tabComp.bounds.Y = tabY;
 			}
+
+			CloseButton.bounds.Location = new(40, 52);
 		}
 
 		public override void receiveScrollWheelAction(int direction)

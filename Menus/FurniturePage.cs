@@ -20,6 +20,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<FurnitureEntry> variants = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
+		private readonly int iconRow;
 
 		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
@@ -27,9 +28,9 @@ namespace HappyHomeDesigner.Menus
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
-		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 5, 4};
+		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 4, 4};
 		private const int DEFAULT_EXTENDED = 2;
-		private const int DEFAULT_DEFAULT = 5;
+		private const int DEFAULT_DEFAULT = 4;
 
 		public FurniturePage()
 		{
@@ -40,11 +41,13 @@ namespace HappyHomeDesigner.Menus
 			{
 				Map = ExtendedTabMap;
 				default_slot = DEFAULT_EXTENDED;
+				iconRow = 0;
 			}
 			else
 			{
 				Map = DefaultTabMap;
 				default_slot = DEFAULT_DEFAULT;
+				iconRow = 8;
 			}
 
 			filter_count = Map.Max() + 1;
@@ -74,7 +77,7 @@ namespace HappyHomeDesigner.Menus
 		public override void draw(SpriteBatch b)
 		{
 			base.draw(b);
-			DrawFilters(b, 0, 1, xPositionOnScreen, yPositionOnScreen);
+			DrawFilters(b, iconRow, 1, xPositionOnScreen, yPositionOnScreen);
 			MainPanel.draw(b);
 
 			if (variantIndex is >= 0)
@@ -83,7 +86,7 @@ namespace HappyHomeDesigner.Menus
 				int variantDrawIndex = variantIndex - MainPanel.Offset;
 				if (variantDrawIndex >= 0 && variantDrawIndex < MainPanel.VisibleCells)
 				b.DrawFrame(Game1.menuTexture, new(
-					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 48,
+					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 52,
 					yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
 					CELL_SIZE + 16, CELL_SIZE + 16),
 					FrameSource, 13, 1, Color.White, 0);
@@ -98,7 +101,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			MainPanel.Resize(width - 32, height - 64, xPositionOnScreen + 48, yPositionOnScreen);
+			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 52, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
 		}
 		public override void performHoverAction(int x, int y)
@@ -204,7 +207,7 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override ClickableTextureComponent GetTab()
 		{
-			return new(new(0, 0, 64, 64), Game1.staminaRect, new(1, 1, 1, 1), 4f);
+			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
 		}
 	}
 }
