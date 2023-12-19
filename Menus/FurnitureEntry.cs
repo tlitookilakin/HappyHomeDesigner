@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
@@ -69,6 +70,31 @@ namespace HappyHomeDesigner.Menus
 			item.currentRotation.Value = 0;
 			item.updateRotation();
 			return item;
+		}
+
+		public bool CanPlaceHere()
+		{
+			if (Item is BedFurniture bed)
+			{
+				var location = Game1.currentLocation;
+
+				if (!bed.CanModifyBed(location, Game1.player))
+				{
+					Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Bed_CantMoveOthersBeds"));
+					return false;
+				}
+
+				if (location is FarmHouse house)
+				{
+					if (house.upgradeLevel < (int)bed.bedType)
+					{
+						Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Bed_NeedsUpgrade"));
+						return false;
+					}
+				}
+			}
+
+			return true;
 		}
 	}
 }

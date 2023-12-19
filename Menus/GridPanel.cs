@@ -74,7 +74,7 @@ namespace HappyHomeDesigner.Menus
 		public void Resize(int width, int height, int x, int y)
 		{
 			this.width = width / CellWidth * CellWidth;
-			this.height = height / CellHeight * CellHeight;
+			this.height = Math.Max(height / CellHeight * CellHeight, CellHeight);
 			xPositionOnScreen = x;
 			yPositionOnScreen = y;
 
@@ -89,7 +89,7 @@ namespace HappyHomeDesigner.Menus
 			int relX = x - xPositionOnScreen;
 			int relY = y - yPositionOnScreen;
 			// add padding for scrollbar
-			return relX is >= 0 && relY is >= 0 && relX < width + 50 && relY < height;
+			return relX is >= -16 && relY is >= -16 && relX < width + 66 && relY < height + 16;
 		}
 
 		public bool TrySelect(int x, int y, out int which)

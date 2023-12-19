@@ -20,8 +20,9 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<FurnitureEntry> variants = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
-		private readonly int iconRow;
+		private Furniture hovered;
 
+		private readonly int iconRow;
 		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly List<FurnitureEntry>[] Filters;
@@ -92,6 +93,9 @@ namespace HappyHomeDesigner.Menus
 					FrameSource, 13, 1, Color.White, 0);
 			}
 
+			if (hovered is not null && ModEntry.config.FurnitureTooltips)
+				drawToolTip(b, hovered.getDescription(), hovered.DisplayName, hovered);
+
 			//AltTex.forceMenuDraw = true;
 			if (showVariants)
 				VariantPanel.draw(b);
@@ -108,12 +112,16 @@ namespace HappyHomeDesigner.Menus
 		{
 			MainPanel.performHoverAction(x, y);
 			VariantPanel.performHoverAction(x, y);
+
+			hovered = MainPanel.TrySelect(x, y, out int index) ?
+				(MainPanel.Items[index] as FurnitureEntry).Item : 
+				null;
 		}
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);
 
-			if (TrySelectFilter(x, y, playSound))
+			if (!MainPanel.isWithinBounds(x, y) && TrySelectFilter(x, y, playSound))
 			{
 				HideVariants();
 				MainPanel.Items = 
@@ -183,12 +191,16 @@ namespace HappyHomeDesigner.Menus
 					// TODO add favorite
 					return;
 				}
+
 				if (ModEntry.config.GiveModifier.IsDown())
 				{
 					if (Game1.player.addItemToInventoryBool(entry.GetOne()) && playSound)
 						Game1.playSound("pickUpItem");
 					return;
 				}
+
+				if (!entry.CanPlaceHere())
+					return;
 
 				if (Game1.player.ActiveObject is Furniture activeFurn && activeFurn.Price is 0)
 					if (activeFurn != Game1.player.TemporaryItem)

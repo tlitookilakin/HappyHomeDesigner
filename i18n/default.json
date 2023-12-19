@@ -10,5 +10,7 @@
 	"config.FavoriteModifier.name": "Favorite Modifier",
 	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item",
 	"config.ExtendedCategories.name": "Extended Categories",
-	"config.ExtendedCategories.desc": "While enabled, replaces the default furniture filter tabs with more granular filters"
+	"config.ExtendedCategories.desc": "While enabled, replaces the default furniture filter tabs with more granular filters",
+	"config.FurnitureTooltips.name": "Furniture Tooltips",
+	"config.FurnitureTOoltips.desc": "While enabled, displays tooltips for hovered items in the furniture catalog"
 }

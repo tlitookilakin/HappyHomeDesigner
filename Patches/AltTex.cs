@@ -131,6 +131,7 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Call, typeof(NetFieldBase<Vector2, NetVector2>).GetProperty(nameof(NetVector2.Value)).GetMethod),
 					new(OpCodes.Ldarg_3),
 					new(OpCodes.Ldarg_S, 4),
+					new(OpCodes.Ldarg_0),
 					new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(AdjustBedPosition))),
 					new(OpCodes.Stloc, bounds)
 				);
@@ -151,11 +152,11 @@ namespace HappyHomeDesigner.Patches
 
 			return il.InstructionEnumeration();
 		}
-		public static Vector2 AdjustBedPosition(bool placed, Vector2 DrawPosition, int x, int y)
+		public static Vector2 AdjustBedPosition(bool placed, Vector2 DrawPosition, int x, int y, BedFurniture __instance)
 		{
 			if (placed)
 				return DrawPosition;
-			return new(x * 64, y * 64);
+			return new(x * 64, y * 64 - (__instance.sourceRect.Height * 4 - __instance.boundingBox.Height));
 		}
 		private static bool preventRandomVariant(StardewValley.Object __0)
 		{

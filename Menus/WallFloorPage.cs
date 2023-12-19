@@ -68,7 +68,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
-			if (TrySelectFilter(x, y, playSound))
+			if (!WallPanel.isWithinBounds(x, y) && TrySelectFilter(x, y, playSound))
 			{
 				ActivePanel = (current_filter & 1) is not 0 ? FloorsPanel : WallPanel;
 
