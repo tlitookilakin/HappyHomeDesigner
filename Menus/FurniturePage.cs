@@ -41,13 +41,13 @@ namespace HappyHomeDesigner.Menus
 				Map = ExtendedTabMap;
 				default_slot = DEFAULT_EXTENDED;
 			}
-            else
-            {
-                Map = DefaultTabMap;
+			else
+			{
+				Map = DefaultTabMap;
 				default_slot = DEFAULT_DEFAULT;
-            }
+			}
 
-            filter_count = Map.Max() + 1;
+			filter_count = Map.Max() + 1;
 			Filters = new List<FurnitureEntry>[filter_count];
 			for (int i = 0; i < Filters.Length; i++)
 				Filters[i] = new();

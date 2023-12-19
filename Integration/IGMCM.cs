@@ -14,11 +14,11 @@ namespace HappyHomeDesigner.Integration
 		internal static bool Installed;
 
 		/*********
-        ** Methods
-        *********/
+		** Methods
+		*********/
 		/****
-        ** Must be called first
-        ****/
+		** Must be called first
+		****/
 		/// <summary>Register a mod whose config can be edited through the UI.</summary>
 		/// <param name="mod">The mod's manifest.</param>
 		/// <param name="reset">Reset the mod's config to its default values.</param>
@@ -29,8 +29,8 @@ namespace HappyHomeDesigner.Integration
 
 
 		/****
-        ** Basic options
-        ****/
+		** Basic options
+		****/
 		/// <summary>Add a section title at the current position in the form.</summary>
 		/// <param name="mod">The mod's manifest.</param>
 		/// <param name="text">The title text shown in the form.</param>
@@ -115,8 +115,8 @@ namespace HappyHomeDesigner.Integration
 
 
 		/****
-        ** Multi-page management
-        ****/
+		** Multi-page management
+		****/
 		/// <summary>Start a new page in the mod's config UI, or switch to that page if it already exists. All options registered after this will be part of that page.</summary>
 		/// <param name="mod">The mod's manifest.</param>
 		/// <param name="pageId">The unique page ID.</param>
@@ -133,8 +133,8 @@ namespace HappyHomeDesigner.Integration
 
 
 		/****
-        ** Advanced
-        ****/
+		** Advanced
+		****/
 		/// <summary>Add an option at the current position in the form using custom rendering logic.</summary>
 		/// <param name="mod">The mod's manifest.</param>
 		/// <param name="name">The label text to show in the form.</param>
