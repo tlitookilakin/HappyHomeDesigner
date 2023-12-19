@@ -102,5 +102,10 @@ namespace HappyHomeDesigner.Menus
 		{
 			return base.isWithinBounds(x, y) || ActivePanel.isWithinBounds(x, y);
 		}
+
+		public override ClickableTextureComponent GetTab()
+		{
+			return new(new(0, 0, 64, 64), Game1.staminaRect, new(1, 1, 1, 1), 4f);
+		}
 	}
 }

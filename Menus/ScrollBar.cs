@@ -121,8 +121,12 @@ namespace HappyHomeDesigner.Menus
 			{
 				int relY = y - scroller.Y;
 
+				int oldOffset = Offset;
+
 				Offset = Math.Max(0, Math.Min(Rows * relY / scroller.Height - visibleRows / 2, rows - visibleRows));
 				CellOffset = Offset * columns;
+				if (oldOffset != Offset)
+					Game1.playSound("shiny4");
 			}
 		}
 

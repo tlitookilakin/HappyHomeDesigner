@@ -8,5 +8,7 @@
 	"config.GiveModifier.name": "Give Modifier",
 	"config.GiveModifier.desc": "Holding this key when clicking will put the item in your inventory",
 	"config.FavoriteModifier.name": "Favorite Modifier",
-	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item"
+	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item",
+	"config.ExtendedCategories.name": "Extended Categories",
+	"config.ExtendedCategories.desc": "While enabled, replaces the default furniture filter tabs with more granular filters"
 }

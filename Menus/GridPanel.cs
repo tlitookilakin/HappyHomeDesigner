@@ -81,6 +81,7 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
 			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
+			UpdateCount();
 		}
 
 		public override bool isWithinBounds(int x, int y)

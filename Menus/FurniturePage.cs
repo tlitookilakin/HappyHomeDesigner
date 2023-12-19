@@ -4,9 +4,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -21,15 +23,35 @@ namespace HappyHomeDesigner.Menus
 
 		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
-		private readonly List<FurnitureEntry>[] Filters = new List<FurnitureEntry>[FURNITURE_MAX];
+		private readonly List<FurnitureEntry>[] Filters;
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
+		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
+		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 5, 4};
+		private const int DEFAULT_EXTENDED = 2;
+		private const int DEFAULT_DEFAULT = 5;
 
 		public FurniturePage()
 		{
-			filter_count = FURNITURE_MAX + 2;
-			for (int i = 0; i is < FURNITURE_MAX; i++)
+			int[] Map;
+			int default_slot;
+
+			if (ModEntry.config.ExtendedCategories)
+			{
+				Map = ExtendedTabMap;
+				default_slot = DEFAULT_EXTENDED;
+			}
+            else
+            {
+                Map = DefaultTabMap;
+				default_slot = DEFAULT_DEFAULT;
+            }
+
+            filter_count = Map.Max() + 1;
+			Filters = new List<FurnitureEntry>[filter_count];
+			for (int i = 0; i < Filters.Length; i++)
 				Filters[i] = new();
+			filter_count += 2;
 
 			var season = Game1.player.currentLocation.GetSeasonForLocation();
 			foreach (var item in Utility.getAllFurnituresForFree().Keys)
@@ -39,10 +61,10 @@ namespace HappyHomeDesigner.Menus
 					var entry = new FurnitureEntry(furn, season);
 					var type = furn.furniture_type.Value;
 					entries.Add(entry);
-					if (type is < FURNITURE_MAX)
-						Filters[type].Add(entry);
+					if (type is < FURNITURE_MAX and >= 0)
+						Filters[Map[type]].Add(entry);
 					else
-						Filters[9].Add(entry);
+						Filters[default_slot].Add(entry);
 				}
 			}
 
@@ -75,9 +97,8 @@ namespace HappyHomeDesigner.Menus
 		public override void Resize(Rectangle region)
 		{
 			base.Resize(region);
-			height = Math.Max(672, height);
 
-			MainPanel.Resize(width - 32, height - 32, xPositionOnScreen + 48, yPositionOnScreen);
+			MainPanel.Resize(width - 32, height - 64, xPositionOnScreen + 48, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
 		}
 		public override void performHoverAction(int x, int y)
@@ -92,19 +113,13 @@ namespace HappyHomeDesigner.Menus
 			if (TrySelectFilter(x, y, playSound))
 			{
 				HideVariants();
-				MainPanel.Items = current_filter switch
-				{
-					// category tabs
-					> 0 and <= FURNITURE_MAX
-						=> Filters[current_filter - 1],
-
-					// favorites
-					FURNITURE_MAX + 1
-						=> entries,
-
+				MainPanel.Items = 
 					// all items
-					_ => entries,
-				};
+					(current_filter is 0) ? entries :
+					// categories
+					(current_filter <= Filters.Length) ? Filters[current_filter - 1] :
+					// favorites
+					entries;
 				return;
 			}
 
@@ -186,6 +201,10 @@ namespace HappyHomeDesigner.Menus
 			return base.isWithinBounds(x, y) || 
 				MainPanel.isWithinBounds(x, y) || 
 				(showVariants && VariantPanel.isWithinBounds(x, y));
+		}
+		public override ClickableTextureComponent GetTab()
+		{
+			return new(new(0, 0, 64, 64), Game1.staminaRect, new(1, 1, 1, 1), 4f);
 		}
 	}
 }

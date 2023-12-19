@@ -6,7 +6,7 @@ using System;
 
 namespace HappyHomeDesigner.Menus
 {
-	public class ScreenPage : IClickableMenu
+	public abstract class ScreenPage : IClickableMenu
 	{
 		internal const int CELL_SIZE = 80;
 		internal const int FILTER_WIDTH = 48;
@@ -14,6 +14,8 @@ namespace HappyHomeDesigner.Menus
 
 		internal int filter_count;
 		internal int current_filter;
+
+		public abstract ClickableTextureComponent GetTab();
 
 		public virtual void Resize(Rectangle region)
 		{
