@@ -202,9 +202,9 @@ namespace HappyHomeDesigner.Menus
 				if (!entry.CanPlaceHere())
 					return;
 
-				if (Game1.player.ActiveObject is Furniture activeFurn && activeFurn.Price is 0)
-					if (activeFurn != Game1.player.TemporaryItem)
-						Game1.player.removeItemFromInventory(activeFurn);
+				if (Game1.player.ActiveObject.CanDelete())
+					if (Game1.player.ActiveObject != Game1.player.TemporaryItem)
+						Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
 
 				Game1.player.TemporaryItem = entry.GetOne();
 				if (playSound)

@@ -78,10 +78,7 @@ namespace HappyHomeDesigner.Menus
 		public void AdvanceRows(int count)
 		{
 			int oldOffset = Offset;
-			if (VisibleRows >= Rows)
-				Offset = 0;
-			else
-				Offset = Math.Clamp(Offset + count, 0, Rows - VisibleRows);
+			Offset = Math.Max(0, Math.Min(Offset + count, Rows - VisibleRows));
 			CellOffset = Offset * Columns;
 
 			if (oldOffset != Offset)

@@ -5,6 +5,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -15,9 +16,21 @@ namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
+		private static Func<int, bool> isFurnitureForbidden =
+			typeof(Utility).GetMethod("isFurnitureOffLimitsForSale", BindingFlags.Static | BindingFlags.NonPublic)
+			.ToDelegate<Func<int, bool>>();
+
 		private static readonly FieldInfo OldValueBackingField =
 			typeof(MouseWheelScrolledEventArgs).GetField("<OldValue>k__BackingField", 
 				BindingFlags.Instance | BindingFlags.NonPublic);
+
+		public static bool CanDelete(this Item item)
+		{
+			if (item is not Furniture furn)
+				return false;
+
+			return furn.Price is 0 && !isFurnitureForbidden(furn.ParentSheetIndex);
+		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
 		{
