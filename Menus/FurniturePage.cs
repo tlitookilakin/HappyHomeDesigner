@@ -105,7 +105,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 52, yPositionOnScreen);
+			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
 		}
 		public override void performHoverAction(int x, int y)
