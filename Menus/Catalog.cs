@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Patches;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -41,6 +42,7 @@ namespace HappyHomeDesigner.Menus
 			var menu = new Catalog(catalogs);
 			Game1.onScreenMenus.Add(menu);
 			ActiveMenu.Value = menu;
+			Game1.isTimePaused = ModEntry.config.PauseTime;
 			return true;
 		}
 
@@ -81,6 +83,7 @@ namespace HappyHomeDesigner.Menus
 			Game1.onScreenMenus.Remove(this);
 			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null;
+			Game1.isTimePaused = false;
 		}
 		public override void performHoverAction(int x, int y)
 		{
