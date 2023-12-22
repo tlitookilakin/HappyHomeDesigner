@@ -12,6 +12,7 @@ namespace HappyHomeDesigner.Framework
 		public KeybindList FavoriteModifier { get; set; }
 		public bool ExtendedCategories { get; set; }
 		public bool FurnitureTooltips { get; set; }
+		public bool PauseTime { get; set; }
 
 		public Config()
 		{
@@ -22,11 +23,12 @@ namespace HappyHomeDesigner.Framework
 		{
 			gmcm.Register(man, Reset, Save);
 
-			gmcm.AddQuickBool(man, this, nameof(CloseWithKey));
-			gmcm.AddQuickKeybindList(man, this, nameof(GiveModifier));
-			gmcm.AddQuickKeybindList(man, this, nameof(FavoriteModifier));
-			gmcm.AddQuickBool(man, this, nameof(ExtendedCategories));
-			gmcm.AddQuickBool(man, this, nameof(FurnitureTooltips));
+			gmcm.QuickBind(man, this, nameof(CloseWithKey));
+			gmcm.QuickBind(man, this, nameof(GiveModifier));
+			gmcm.QuickBind(man, this, nameof(FavoriteModifier));
+			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
+			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
+			gmcm.QuickBind(man, this, nameof(PauseTime));
 		}
 
 		private void Reset()
@@ -36,6 +38,7 @@ namespace HappyHomeDesigner.Framework
 			FavoriteModifier = new(SButton.LeftControl);
 			ExtendedCategories = true;
 			FurnitureTooltips = true;
+			PauseTime = false;
 		}
 		private void Save()
 		{

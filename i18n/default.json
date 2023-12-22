@@ -4,13 +4,15 @@
 	"crafting.HappyHomeDesigner/Catalog.name": "Happy Home Catalogue",
 	"crafting.HappyHomeDesigner/Catalog.description": "Combine both catalogues",
 	"config.CloseWithKey.name": "Close With Key",
-	"config.CloseWithKey.desc": "Allow the menu to be closed with the menu close keys",
+	"config.CloseWithKey.desc": "Allow the menu to be closed with the menu close keys.",
 	"config.GiveModifier.name": "Give Modifier",
-	"config.GiveModifier.desc": "Holding this key when clicking will put the item in your inventory",
+	"config.GiveModifier.desc": "Holding this key when clicking will put the item in your inventory.",
 	"config.FavoriteModifier.name": "Favorite Modifier",
-	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item",
+	"config.FavoriteModifier.desc": "Holding this key when clicking will favorite or unfavorite the item.",
 	"config.ExtendedCategories.name": "Extended Categories",
-	"config.ExtendedCategories.desc": "While enabled, replaces the default furniture filter tabs with more granular filters",
+	"config.ExtendedCategories.desc": "While enabled, replaces the default furniture filter tabs with more granular filters.",
 	"config.FurnitureTooltips.name": "Furniture Tooltips",
-	"config.FurnitureTOoltips.desc": "While enabled, displays tooltips for hovered items in the furniture catalog"
+	"config.FurnitureTooltips.desc": "While enabled, displays tooltips for hovered items in the furniture catalog.",
+	"config.PauseTime.name": "Pause Time",
+	"config.PauseTime.desc": "While enabled, pauses time when the catalog is open. No effect in multiplayer."
 }

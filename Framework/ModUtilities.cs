@@ -127,40 +127,31 @@ namespace HappyHomeDesigner.Framework
 		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
 			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
 
-		public static void AddQuickBool(this IGMCM gmcm, IManifest manifest, object config, string name)
+		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name)
 		{
-			var prop = config.GetType().GetProperty(name);
-			if (prop is null || prop.PropertyType != typeof(bool))
-				throw new ArgumentException($"Could not find property '{name}' of type 'bool' on config.");
+			var prop = config.GetType().GetProperty(name) ??
+				throw new ArgumentException($"Public property of name '{name}' not found on config.");
 
 			var title = $"config.{prop.Name}.name";
 			var desc = $"config.{prop.Name}.desc";
+			var type = prop.PropertyType;
 
-			gmcm.AddBoolOption(
-				manifest,
+			if (type == typeof(bool))
+				gmcm.AddBoolOption(manifest,
 				prop.GetMethod.ToDelegate<Func<bool>>(config),
 				prop.SetMethod.ToDelegate<Action<bool>>(config),
 				() => ModEntry.i18n.Get(title),
-				() => ModEntry.i18n.Get(desc)
-				);
-		}
+				() => ModEntry.i18n.Get(desc));
 
-		public static void AddQuickKeybindList(this IGMCM gmcm, IManifest manifest, object config, string name)
-		{
-			var prop = config.GetType().GetProperty(name);
-			if (prop is null || prop.PropertyType != typeof(KeybindList))
-				throw new ArgumentException($"Could not find property '{name}' of type 'KeybindList' on config.");
-
-			var title = $"config.{prop.Name}.name";
-			var desc = $"config.{prop.Name}.desc";
-
-			gmcm.AddKeybindList(
-				manifest,
+			else if (type == typeof(KeybindList))
+				gmcm.AddKeybindList(manifest,
 				prop.GetMethod.ToDelegate<Func<KeybindList>>(config),
 				prop.SetMethod.ToDelegate<Action<KeybindList>>(config),
 				() => ModEntry.i18n.Get(title),
-				() => ModEntry.i18n.Get(desc)
-				);
+				() => ModEntry.i18n.Get(desc));
+
+			else
+				throw new ArgumentException($"Config property '{name}' is of unsupported type '{type.FullName}'.");
 		}
 	}
 }
