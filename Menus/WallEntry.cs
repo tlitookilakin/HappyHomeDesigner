@@ -48,6 +48,10 @@ namespace HappyHomeDesigner.Menus
 				CellHeight = 72;
 				CellWidth = 72;
 				Scale = 2f;
+
+				if (modData is not null)
+					region.Y -= 336;
+
 			} else
 			{
 				region = new(item.ParentSheetIndex % 16 * 16, item.ParentSheetIndex / 16 * 48, 16, 44);
