@@ -17,6 +17,7 @@ namespace HappyHomeDesigner.Menus
 		internal int current_filter;
 
 		public abstract ClickableTextureComponent GetTab();
+		public virtual void Exit() { }
 
 		public virtual void Resize(Rectangle region)
 		{

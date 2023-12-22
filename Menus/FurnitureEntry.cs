@@ -16,6 +16,7 @@ namespace HappyHomeDesigner.Menus
 
 		public Furniture Item;
 		public bool HasVariants;
+		public bool Favorited;
 		private readonly string season = string.Empty;
 
 		// 384 396 15 15 cursors
@@ -23,16 +24,19 @@ namespace HappyHomeDesigner.Menus
 		// 128 128 64 64 menus
 
 		private static readonly Rectangle background = new(128, 128, 64, 64);
-		private static readonly Rectangle star = new(346, 400, 8, 8);
+		private static readonly Rectangle star = new(6, 38, 7, 7);
+		private static readonly Rectangle favRibbon = new(0, 38, 6, 6);
 
 		/// <summary>Standard constructor. Used for main catalog page.</summary>
 		/// <param name="Item">The contained furniture item.</param>
 		/// <param name="season">The local season. Required to accurately check for AT variants.</param>
-		public FurnitureEntry(Furniture Item, string season)
+		public FurnitureEntry(Furniture Item, string season, IList<string> favorites)
 		{
 			this.Item = Item;
 			this.season = season;
 			HasVariants = AlternativeTextures.Installed && AlternativeTextures.HasVariant("Furniture_" + Item.Name, season);
+			// 1.6: port to id
+			Favorited = favorites.Contains(Item.Name);
 		}
 
 		/// <summary>Used for AT variant entries.</summary>
@@ -59,8 +63,12 @@ namespace HappyHomeDesigner.Menus
 		{
 			IClickableMenu.drawTextureBox(b, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
 			Item?.drawInMenu(b, new(x + 8, y + 8), 1f);
+
 			if (HasVariants)
-				b.Draw(Game1.mouseCursors, new Rectangle(x + CELL_SIZE - 32, y + 8, 24, 24), star, Color.White);
+				b.Draw(Catalog.MenuTexture, new Rectangle(x + CELL_SIZE - 22, y + 1, 21, 21), star, Color.White);
+
+			if (Favorited)
+				b.Draw(Catalog.MenuTexture, new Rectangle(x + 5, y + 5, 18, 18), favRibbon, Color.White);
 		}
 
 		public Furniture GetOne()
@@ -95,6 +103,22 @@ namespace HappyHomeDesigner.Menus
 			}
 
 			return true;
+		}
+
+		public bool ToggleFavorite(bool playSound)
+		{
+			Favorited = !Favorited;
+
+			if (playSound)
+				Game1.playSound(Favorited ? "jingle1" : "cancel");
+
+			return Favorited;
+		}
+
+		public override string ToString()
+		{
+			// 1.6: replace with ID
+			return Item?.Name ?? string.Empty;
 		}
 	}
 }

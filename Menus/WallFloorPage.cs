@@ -12,8 +12,13 @@ namespace HappyHomeDesigner.Menus
 {
 	internal class WallFloorPage : ScreenPage
 	{
+		private const string KeyWallFav = "tlitookilakin.HappyHomeDesigner/WallpaperFavorites";
+		private const string KeyFloorFav = "tlitookilakin.HappyHomeDesigner/FlooringFavorites";
+
 		private readonly List<WallEntry> walls = new();
 		private readonly List<WallEntry> floors = new();
+		private readonly List<WallEntry> favoriteWalls = new();
+		private readonly List<WallEntry> favoriteFloors = new();
 
 		private readonly GridPanel WallPanel = new(56, 140);
 		private readonly GridPanel FloorsPanel = new(72, 72);
@@ -23,13 +28,29 @@ namespace HappyHomeDesigner.Menus
 		{
 			filter_count = 4;
 
+			var wallFavs = Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? s.Split('	') : Array.Empty<string>();
+			var floorFavs = Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? s.Split('	') : Array.Empty<string>();
+
 			foreach (var item in Utility.getAllWallpapersAndFloorsForFree().Keys)
+			{
 				if (item is not Wallpaper wall)
 					continue;
-				else if (wall.isFloor.Value)
-					floors.Add(new(wall));
+
+				if (wall.isFloor.Value)
+				{
+					var entry = new WallEntry(wall, floorFavs);
+					floors.Add(entry);
+					if (entry.Favorited)
+						favoriteFloors.Add(entry);
+				}
 				else
-					walls.Add(new(wall));
+				{
+					var entry = new WallEntry(wall, wallFavs);
+					walls.Add(entry);
+					if (entry.Favorited)
+						favoriteWalls.Add(entry);
+				}
+			}
 
 			AddAltWallsOrFloors(floors, "floor");
 			AddAltWallsOrFloors(walls, "wall");
@@ -72,14 +93,17 @@ namespace HappyHomeDesigner.Menus
 			{
 				ActivePanel = (current_filter & 1) is not 0 ? FloorsPanel : WallPanel;
 
-				if (current_filter / 2 is not 0)
+				if ((current_filter >> 1) is not 0)
 				{
-					// TODO add favorites
+					WallPanel.Items = favoriteWalls;
+					FloorsPanel.Items = favoriteFloors;
 				} else
 				{
 					WallPanel.Items = walls;
 					FloorsPanel.Items = floors;
 				}
+
+				return;
 			}
 
 			if (ActivePanel.TrySelect(x, y, out int index))
@@ -88,7 +112,16 @@ namespace HappyHomeDesigner.Menus
 
 				if (ModEntry.config.FavoriteModifier.IsDown())
 				{
-					// TODO add favorites
+					var Favorites = (current_filter & 1) is not 0 ? favoriteFloors : favoriteWalls;
+
+					if (item.ToggleFavorite(playSound))
+						Favorites.Add(item);
+					else
+						Favorites.Remove(item);
+
+					if ((current_filter >> 1) is not 0)
+						ActivePanel.UpdateCount();
+
 					return;
 				}
 
@@ -106,6 +139,11 @@ namespace HappyHomeDesigner.Menus
 		public override ClickableTextureComponent GetTab()
 		{
 			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(80, 24, 16, 16), 4f);
+		}
+		public override void Exit()
+		{
+			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors);
+			Game1.player.modData[KeyWallFav] = string.Join('	', favoriteWalls);
 		}
 	}
 }

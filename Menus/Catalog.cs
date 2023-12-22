@@ -84,6 +84,8 @@ namespace HappyHomeDesigner.Menus
 			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null;
 			Game1.isTimePaused = false;
+			for (int i = 0;i < Pages.Count; i++)
+				Pages[i].Exit();
 		}
 		public override void performHoverAction(int x, int y)
 		{

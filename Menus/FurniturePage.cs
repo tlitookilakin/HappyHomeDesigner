@@ -15,6 +15,7 @@ namespace HappyHomeDesigner.Menus
 	internal class FurniturePage : ScreenPage
 	{
 		private const int FURNITURE_MAX = 18;
+		private const string KeyFavs = "tlitookilakin.HappyHomeDesigner/FurnitureFavorites";
 
 		private readonly List<FurnitureEntry> entries = new();
 		private readonly List<FurnitureEntry> variants = new();
@@ -26,6 +27,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly List<FurnitureEntry>[] Filters;
+		private readonly List<FurnitureEntry> Favorites = new();
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
@@ -57,18 +59,24 @@ namespace HappyHomeDesigner.Menus
 				Filters[i] = new();
 			filter_count += 2;
 
+			var favorites = Game1.player.modData.TryGetValue(KeyFavs, out var s) ? s.Split('	') : Array.Empty<string>();
+
 			var season = Game1.player.currentLocation.GetSeasonForLocation();
 			foreach (var item in Utility.getAllFurnituresForFree().Keys)
 			{
 				if (item is Furniture furn)
 				{
-					var entry = new FurnitureEntry(furn, season);
+					var entry = new FurnitureEntry(furn, season, favorites);
 					var type = furn.furniture_type.Value;
+
 					entries.Add(entry);
 					if (type is < FURNITURE_MAX and >= 0)
 						Filters[Map[type]].Add(entry);
 					else
 						Filters[default_slot].Add(entry);
+
+					if (entry.Favorited)
+						Favorites.Add(entry);
 				}
 			}
 
@@ -87,7 +95,7 @@ namespace HappyHomeDesigner.Menus
 				int variantDrawIndex = variantIndex - MainPanel.Offset;
 				if (variantDrawIndex >= 0 && variantDrawIndex < MainPanel.VisibleCells)
 				b.DrawFrame(Game1.menuTexture, new(
-					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 52,
+					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 55,
 					yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
 					CELL_SIZE + 16, CELL_SIZE + 16),
 					FrameSource, 13, 1, Color.White, 0);
@@ -130,7 +138,7 @@ namespace HappyHomeDesigner.Menus
 					// categories
 					(current_filter <= Filters.Length) ? Filters[current_filter - 1] :
 					// favorites
-					entries;
+					Favorites;
 				return;
 			}
 
@@ -175,21 +183,28 @@ namespace HappyHomeDesigner.Menus
 
 				if (allowVariants)
 				{
+					if (ModEntry.config.FavoriteModifier.IsDown())
+					{
+						if (entry.ToggleFavorite(playSound))
+							Favorites.Add(entry);
+						else
+							Favorites.Remove(entry);
+
+						if (MainPanel.Items == Favorites)
+							MainPanel.UpdateCount();
+
+						return;
+					}
+
 					if (entry.HasVariants)
 					{
 						ShowVariantsFor(entry, index);
 						if (playSound)
 							Game1.playSound("shwip");
+
 						return;
 					}
 					HideVariants();
-				}
-
-
-				if (allowVariants && ModEntry.config.FavoriteModifier.IsDown())
-				{
-					// TODO add favorite
-					return;
 				}
 
 				if (ModEntry.config.GiveModifier.IsDown())
@@ -220,6 +235,11 @@ namespace HappyHomeDesigner.Menus
 		public override ClickableTextureComponent GetTab()
 		{
 			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
+		}
+
+		public override void Exit()
+		{
+			Game1.player.modData[KeyFavs] = string.Join('	', Favorites);
 		}
 	}
 }
