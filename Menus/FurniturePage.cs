@@ -28,6 +28,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
 		private readonly List<FurnitureEntry>[] Filters;
 		private readonly List<FurnitureEntry> Favorites = new();
+		private readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
@@ -88,6 +89,7 @@ namespace HappyHomeDesigner.Menus
 			base.draw(b);
 			DrawFilters(b, iconRow, 1, xPositionOnScreen, yPositionOnScreen);
 			MainPanel.draw(b);
+			TrashSlot.draw(b);
 
 			if (variantIndex is >= 0)
 			{
@@ -115,6 +117,7 @@ namespace HappyHomeDesigner.Menus
 
 			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
+			TrashSlot.setPosition(MainPanel.xPositionOnScreen + MainPanel.width - 48 + 16, MainPanel.yPositionOnScreen + MainPanel.height + 20);
 		}
 		public override void performHoverAction(int x, int y)
 		{
@@ -145,6 +148,17 @@ namespace HappyHomeDesigner.Menus
 			HandleGridClick(x, y, playSound, MainPanel, true);
 			if (showVariants)
 				HandleGridClick(x, y, playSound, VariantPanel, false);
+
+			if (TrashSlot.containsPoint(x, y) && Game1.player.ActiveObject.CanDelete())
+			{
+				if (Game1.player.ActiveObject == Game1.player.TemporaryItem)
+					Game1.player.TemporaryItem = null;
+				else
+					Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
+
+				if (playSound)
+					Game1.playSound("trashcan");
+			}
 		}
 
 		private void ShowVariantsFor(FurnitureEntry entry, int index)

@@ -27,7 +27,7 @@ namespace HappyHomeDesigner.Menus
 
 		public static bool TryShowCatalog(AvailableCatalogs catalogs)
 		{
-			MenuTexture ??= ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
+			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
 
 			// catalog is open
 			if (ActiveMenu.Value is Catalog catalog)

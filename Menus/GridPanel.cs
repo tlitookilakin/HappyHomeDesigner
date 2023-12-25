@@ -16,9 +16,6 @@ namespace HappyHomeDesigner.Menus
 		public int Columns => scrollBar.Columns;
 		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
 
-		private int cells_h;
-		private int cells_v;
-
 		public ScrollBar scrollBar = new();
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
