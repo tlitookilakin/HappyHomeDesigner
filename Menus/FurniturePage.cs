@@ -242,9 +242,11 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
-			return base.isWithinBounds(x, y) || 
+			return 
+				base.isWithinBounds(x, y) || 
 				MainPanel.isWithinBounds(x, y) || 
-				(showVariants && VariantPanel.isWithinBounds(x, y));
+				(showVariants && VariantPanel.isWithinBounds(x, y)) ||
+				TrashSlot.containsPoint(x, y);
 		}
 		public override ClickableTextureComponent GetTab()
 		{

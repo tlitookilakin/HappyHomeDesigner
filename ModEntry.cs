@@ -15,6 +15,7 @@ namespace HappyHomeDesigner
 	public class ModEntry : Mod
 	{
 		internal static IMonitor monitor;
+		internal static IManifest manifest;
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
@@ -28,6 +29,7 @@ namespace HappyHomeDesigner
 			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
 			uiPath = $"Mods/{ModManifest.UniqueID}/UI";
+			manifest = ModManifest;
 
 			helper.Events.GameLoop.GameLaunched += Launched;
 			helper.Events.Input.ButtonPressed += OnButtonPressed;

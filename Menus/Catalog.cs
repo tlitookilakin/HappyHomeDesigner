@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -52,6 +53,7 @@ namespace HappyHomeDesigner.Menus
 		private int tab = 0;
 		private List<ClickableTextureComponent> Tabs = new();
 		private ClickableTextureComponent CloseButton;
+		private readonly ClickableTextureComponent SettingsButton;
 
 		public Catalog(AvailableCatalogs catalogs)
 		{
@@ -66,6 +68,9 @@ namespace HappyHomeDesigner.Menus
 					Tabs.Add(Pages[i].GetTab());
 
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f);
+
+			if (IGMCM.Installed)
+				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
 
 			var vp = Game1.uiViewport;
 			Resize(new(vp.X, vp.Y, vp.Width, vp.Height));
@@ -100,6 +105,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			Pages[tab].draw(b);
 			CloseButton.draw(b);
+			SettingsButton?.draw(b);
 
 			for (int i = 0; i < Tabs.Count; i++)
 				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
@@ -122,6 +128,9 @@ namespace HappyHomeDesigner.Menus
 
 			if (CloseButton.containsPoint(x, y))
 				exitThisMenu();
+
+			if (SettingsButton is not null && SettingsButton.containsPoint(x, y))
+				IGMCM.API.OpenModMenu(ModEntry.manifest);
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
@@ -129,7 +138,10 @@ namespace HappyHomeDesigner.Menus
 				if (Tabs[i].containsPoint(x, y))
 					return true;
 
-			return Pages[tab].isWithinBounds(x, y) || CloseButton.containsPoint(x, y);
+			return 
+				Pages[tab].isWithinBounds(x, y) || 
+				CloseButton.containsPoint(x, y) || 
+				(SettingsButton is not null && SettingsButton.containsPoint(x, y));
 		}
 		private void Resize(Rectangle bounds)
 		{
@@ -142,10 +154,10 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				var tabComp = Tabs[i];
-				tabComp.bounds.X = tabX;
+				tabComp.setPosition(tabX, tabY);
 				tabX += tabComp.bounds.Width;
-				tabComp.bounds.Y = tabY;
 			}
+			SettingsButton?.setPosition(tabX + 8, tabY + 8);
 
 			CloseButton.bounds.Location = new(40, 52);
 		}
