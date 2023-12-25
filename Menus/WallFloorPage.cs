@@ -52,17 +52,9 @@ namespace HappyHomeDesigner.Menus
 				}
 			}
 
-			AddAltWallsOrFloors(floors, "floor");
-			AddAltWallsOrFloors(walls, "wall");
-
 			WallPanel.Items = walls;
 			FloorsPanel.Items = floors;
 			ActivePanel = WallPanel;
-		}
-
-		public static void AddAltWallsOrFloors(IList<WallEntry> items, string type)
-		{
-			// TODO add AT walls and floors
 		}
 
 		public override void draw(SpriteBatch b)
