@@ -66,6 +66,12 @@ namespace HappyHomeDesigner.Menus
 			ActivePanel.draw(b);
 		}
 
+		public override void performHoverAction(int x, int y)
+		{
+			base.performHoverAction(x, y);
+			ActivePanel.performHoverAction(x, y);
+		}
+
 		public override void Resize(Rectangle region)
 		{
 			base.Resize(region);
