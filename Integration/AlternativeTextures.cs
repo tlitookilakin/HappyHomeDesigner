@@ -104,9 +104,25 @@ namespace HappyHomeDesigner.Integration
 				for (int i = 0; i < models.Count; i++)
 				{
 					var m = models[i] as dynamic;
-					IList manVariants = m.ManualVariations;
+					IList manualVariants = m.ManualVariations;
+					List<int> manualIndices = new(manualVariants.Count);
 
-					if (manVariants.Count is 0)
+					for (int j = 0; j < manualVariants.Count; j++)
+					{
+						int index = (manualVariants[j] as dynamic).Id;
+						if (index is not -1)
+							manualIndices.Add(index);
+					}
+
+					if (manualIndices.Count is not 0)
+					{
+						for (int j = 0; j <= manualIndices.Count; j++)
+						{
+							var furn = source.getOne() as Furniture;
+							GetVariant(manualIndices[j], m, furn, seasonGetter);
+							list.Add(furn);
+						}
+					} else
 					{
 						int count = m.Variations;
 						for (int j = 0; j < count; j++)
@@ -115,27 +131,6 @@ namespace HappyHomeDesigner.Integration
 							GetVariant(j, m, furn, seasonGetter);
 							list.Add(furn);
 						}
-						return;
-					}
-					for (int j = 0; j < manVariants.Count; j++)
-					{
-						if ((manVariants[j] as dynamic).Id is -1)
-						{
-							int count = m.Variations;
-							for (j = 0; j < count; j++)
-							{
-								var furn = source.getOne() as Furniture;
-								GetVariant(j, m, furn, seasonGetter);
-								list.Add(furn);
-							}
-							return;
-						}
-					}
-					for (int j = 0; j < manVariants.Count; j++)
-					{
-						var furn = source.getOne() as Furniture;
-						GetVariant((manVariants[j] as dynamic).Id, m, furn, seasonGetter);
-						list.Add(furn);
 					}
 				}
 			};
