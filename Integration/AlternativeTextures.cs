@@ -116,7 +116,7 @@ namespace HappyHomeDesigner.Integration
 
 					if (manualIndices.Count is not 0)
 					{
-						for (int j = 0; j <= manualIndices.Count; j++)
+						for (int j = 0; j < manualIndices.Count; j++)
 						{
 							var furn = source.getOne() as Furniture;
 							GetVariant(manualIndices[j], m, furn, seasonGetter);
