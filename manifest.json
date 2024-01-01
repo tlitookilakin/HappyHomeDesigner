@@ -5,7 +5,7 @@
     "Description": "A mod that enhances the decorating experience by overhauling the furniture & wallpaper catalogues.",
     "UniqueID": "tlitookilakin.HappyHomeDesigner",
     "EntryDll": "HappyHomeDesigner.dll",
-    "UpdateKeys": [],
+    "UpdateKeys": ["Nexus:19675", "GitHub:tlitookilakin/HappyHomeDesigner"],
     "DGA.FormatVersion": 2,
     "DGA.ConditionsFormatVersion": "1.23.0"
 }
