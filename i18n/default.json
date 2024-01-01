@@ -14,5 +14,9 @@
 	"config.FurnitureTooltips.name": "Furniture Tooltips",
 	"config.FurnitureTooltips.desc": "While enabled, displays tooltips for hovered items in the furniture catalog.",
 	"config.PauseTime.name": "Pause Time",
-	"config.PauseTime.desc": "While enabled, pauses time when the catalog is open. No effect in multiplayer."
+	"config.PauseTime.desc": "While enabled, pauses time when the catalog is open. No effect in multiplayer.",
+	"config.ReplaceFurnitureCatalog.name": "Replace Furniture Catalog",
+	"config.ReplaceFurnitureCatalog.desc": "While enabled, replaces the default furniture catalog UI with the new one.",
+	"config.ReplaceWallpaperCatalog.name": "Replace Walls & Floors Catalog",
+	"config.ReplaceWallpaperCatalog.desc": "While enabled, replaces the default wallpaper catalog UI with the new one."
 }

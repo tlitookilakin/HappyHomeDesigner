@@ -13,6 +13,8 @@ namespace HappyHomeDesigner.Framework
 		public bool ExtendedCategories { get; set; }
 		public bool FurnitureTooltips { get; set; }
 		public bool PauseTime { get; set; }
+		public bool ReplaceFurnitureCatalog { get; set; }
+		public bool ReplaceWallpaperCatalog { get; set; }
 
 		public Config()
 		{
@@ -29,6 +31,8 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
 			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
 			gmcm.QuickBind(man, this, nameof(PauseTime));
+			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
+			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 		}
 
 		private void Reset()
@@ -38,7 +42,9 @@ namespace HappyHomeDesigner.Framework
 			FavoriteModifier = new(SButton.LeftControl);
 			ExtendedCategories = true;
 			FurnitureTooltips = true;
-			PauseTime = false;
+			PauseTime = true;
+			ReplaceFurnitureCatalog = true;
+			ReplaceWallpaperCatalog = true;
 		}
 		private void Save()
 		{

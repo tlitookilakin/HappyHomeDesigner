@@ -3,10 +3,6 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley.Objects;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -29,15 +25,24 @@ namespace HappyHomeDesigner.Patches
 
 			switch (__instance.ParentSheetIndex)
 			{
+				// Wallpaper catalog
 				case 1308:
-					ShowCatalog(Catalog.AvailableCatalogs.Wallpaper); 
+					if (ModEntry.config.ReplaceWallpaperCatalog)
+						ShowCatalog(Catalog.AvailableCatalogs.Wallpaper);
+					else
+						return true;
 					break;
+
+				// Furniture catalog
 				case 1226:
 					if (__instance.heldObject.Value is StardewValley.Object sobj && sobj.ParentSheetIndex is 1308)
 						ShowCatalog(Catalog.AvailableCatalogs.All);
-					else
+					else if (ModEntry.config.ReplaceFurnitureCatalog)
 						ShowCatalog(Catalog.AvailableCatalogs.Furniture);
+					else
+						return true;
 					break;
+
 				default:
 					return true;
 			}
@@ -51,7 +56,7 @@ namespace HappyHomeDesigner.Patches
 			if (Catalog.TryShowCatalog(available))
 				ModEntry.monitor.Log("Table activated!", LogLevel.Debug);
 			else
-				ModEntry.monitor.Log("Failed to display display UI", LogLevel.Debug);
+				ModEntry.monitor.Log("Failed to display UI", LogLevel.Debug);
 		}
 	}
 }
