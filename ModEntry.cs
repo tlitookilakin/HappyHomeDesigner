@@ -42,7 +42,7 @@ namespace HappyHomeDesigner
 		private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
 		{
 			if (e.NameWithoutLocale.IsEquivalentTo(uiPath))
-				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Medium);
+				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
 		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
@@ -92,12 +92,21 @@ namespace HappyHomeDesigner
 				IDynamicGameAssets.API = Helper.ModRegistry.GetApi<IDynamicGameAssets>("spacechase0.DynamicGameAssets");
 				IDynamicGameAssets.API.AddEmbeddedPack(ModManifest, Helper.DirectoryPath);
 			}
+
 			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
 			{
 				IGMCM.API = Helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");
 				IGMCM.Installed = true;
 				config.Register(IGMCM.API, ModManifest);
 			}
+
+			whichUI =
+				helper.ModRegistry.IsLoaded("Maraluna.OvergrownFloweryInterface") ?
+				"ui_overgrown" :
+				helper.ModRegistry.IsLoaded("ManaKirel.VintageInterface2") ?
+				"ui_vintage" :
+				// vanilla
+				"ui";
 
 			AlternativeTextures.Init(Helper);
 		}
