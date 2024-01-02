@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using System;
@@ -7,6 +8,9 @@ namespace HappyHomeDesigner.Framework
 {
 	public class Config
 	{
+
+		private static Texture2D logo;
+
 		public bool CloseWithKey { get; set; }
 		public KeybindList GiveModifier { get; set; }
 		public KeybindList FavoriteModifier { get; set; }
@@ -18,12 +22,15 @@ namespace HappyHomeDesigner.Framework
 
 		public Config()
 		{
+			logo = ModEntry.helper.ModContent.Load<Texture2D>("assets/logo.png");
 			Reset();
 		}
 
 		public void Register(IGMCM gmcm, IManifest man)
 		{
 			gmcm.Register(man, Reset, Save);
+
+			gmcm.AddImage(man, () => logo, logo.Bounds, 2);
 
 			gmcm.QuickBind(man, this, nameof(CloseWithKey));
 			gmcm.QuickBind(man, this, nameof(GiveModifier));
