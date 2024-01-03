@@ -3,6 +3,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Netcode;
 using StardewModdingAPI;
+using StardewValley;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,37 @@ namespace HappyHomeDesigner.Patches
 		public static bool forceMenuDraw = false;
 		public static bool forcePreviewDraw = false;
 
+		internal static bool IsApplied = false;
+
 		internal static void Apply(Harmony harmony)
 		{
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out var asm))
 				return;
+
+			var min_version = new Version(ModEntry.manifest.ExtraFields["AlternativeTexturesVersion"].ToString());
+			var android_version = new Version(ModEntry.manifest.ExtraFields["AlternativeTexturesAndroid"].ToString());
+			var current_version = asm.GetName().Version;
+
+			bool use_android = false;
+
+			if (OperatingSystem.IsAndroid())
+			{
+				if (current_version < min_version)
+				{
+					use_android = true;
+					min_version = android_version;
+				}
+			}
+
+			if (current_version < min_version)
+			{
+				ModEntry.monitor.Log(
+					ModEntry.i18n.Get("logging.alternativeTextures.versionWarning",
+					new { min = min_version, current = current_version }),
+					LogLevel.Warn
+				);
+				return;
+			}
 
 			var furniturePatcher = asm.GetType("AlternativeTextures.Framework.Patches.StandardObjects.FurniturePatch");
 			var objectPatcher = asm.GetType("AlternativeTextures.Framework.Patches.StandardObjects.ObjectPatch");
@@ -33,11 +61,16 @@ namespace HappyHomeDesigner.Patches
 			}
 
 			var flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-			harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(menuDraw)));
 			harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(skipNameCaching)));
 			harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(fixFurniturePreview)));
 			harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(preventRandomVariant)));
 			harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(fixBedPreview)));
+
+			if (use_android)
+				harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(Android), nameof(Android.menuDraw)));
+			else
+				harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(menuDraw)));
+			IsApplied = true;
 		}
 
 		private static IEnumerable<CodeInstruction> menuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
@@ -161,6 +194,57 @@ namespace HappyHomeDesigner.Patches
 		private static bool preventRandomVariant(StardewValley.Object __0)
 		{
 			return __0 is not Furniture || !forcePreviewDraw;
+		}
+
+		private static class Android
+		{
+			public static IEnumerable<CodeInstruction> menuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
+			{
+				var skipRotation = gen.DefineLabel();
+				var skipOffset = gen.DefineLabel();
+
+				var il = new CodeMatcher(source, gen)
+					.MatchEndForward(
+						new(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).GetMethod),
+						new(OpCodes.Isinst),
+						new(OpCodes.Brfalse_S)
+					)
+					.Advance(1)
+					.CreateLabel(out var skipCheck)
+					.Advance(-3)
+					.InsertAndAdvance(
+						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
+						new(OpCodes.Brtrue, skipCheck)
+					).MatchStartForward(
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.rotations)))
+					).InsertAndAdvance(
+						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
+						new(OpCodes.Brtrue, skipRotation)
+					).MatchStartForward(
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
+					);
+				il.Instruction.labels.Add(skipRotation);
+
+				il.MatchStartForward(
+						new(OpCodes.Ldc_I4_0),
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.sourceRect)))
+					)
+					.InsertAndAdvance(
+						new(OpCodes.Ldc_I4_0),
+						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
+						new(OpCodes.Brtrue, skipOffset),
+						new(OpCodes.Pop)
+					)
+					.MatchStartForward(
+						new CodeMatch(OpCodes.Stfld, typeof(Rectangle).GetField(nameof(Rectangle.X)))
+					);
+				il.Instruction.labels.Add(skipOffset);
+
+				return il.InstructionEnumeration();
+			}
 		}
 	}
 }

@@ -84,7 +84,6 @@ namespace HappyHomeDesigner
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
 		{
-			// TODO add automatic reskins
 			Patch(new(ModManifest.UniqueID));
 
 			if (Helper.ModRegistry.IsLoaded("spacechase0.DynamicGameAssets"))

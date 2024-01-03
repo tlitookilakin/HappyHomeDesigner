@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Patches;
 using StardewModdingAPI;
 using StardewValley.Objects;
 using System;
@@ -25,7 +26,7 @@ namespace HappyHomeDesigner.Integration
 		internal static void Init(IModHelper helper)
 		{
 			Installed = false;
-			if (!helper.ModRegistry.IsLoaded("PeacefulEnd.AlternativeTextures"))
+			if (!helper.ModRegistry.IsLoaded("PeacefulEnd.AlternativeTextures") || !AltTex.IsApplied)
 				return;
 
 			ModEntry.monitor.Log("Alternative Textures detected! Integrating...", LogLevel.Debug);
