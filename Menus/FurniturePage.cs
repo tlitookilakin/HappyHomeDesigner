@@ -1,8 +1,7 @@
 ﻿using HappyHomeDesigner.Framework;
-using HappyHomeDesigner.Patches;
+using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -61,9 +60,13 @@ namespace HappyHomeDesigner.Menus
 			filter_count += 2;
 
 			var favorites = Game1.player.modData.TryGetValue(KeyFavs, out var s) ? s.Split('	') : Array.Empty<string>();
-
 			var season = Game1.player.currentLocation.GetSeasonForLocation();
-			foreach (var item in Utility.getAllFurnituresForFree().Keys)
+			IEnumerable<ISalable> AllFurnitures = Utility.getAllFurnituresForFree().Keys;
+
+			if (CustomFurniture.Installed)
+				AllFurnitures = AllFurnitures.Concat(CustomFurniture.customFurniture);
+
+			foreach (var item in AllFurnitures)
 			{
 				if (item is Furniture furn)
 				{

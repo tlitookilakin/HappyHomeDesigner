@@ -33,7 +33,7 @@ namespace HappyHomeDesigner.Integration
 
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out var asm))
 			{
-				ModEntry.monitor.Log("Failed to find AT assembly, could not integrate.");
+				ModEntry.monitor.Log("Failed to find AT assembly, could not integrate.", LogLevel.Warn);
 				return;
 			}
 			var entry = asm.GetType("AlternativeTextures.AlternativeTextures");
