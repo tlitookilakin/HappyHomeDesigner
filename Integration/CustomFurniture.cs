@@ -4,6 +4,7 @@ using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace HappyHomeDesigner.Integration
 {
@@ -28,13 +29,14 @@ namespace HappyHomeDesigner.Integration
 				return;
 			}
 
-			var type = asm.GetType("CustomFurnitureMod");
-			var field = type?.GetField("furniture");
-			var modInst = type?.GetField("instance")?.GetValue(null);
+			var bindings = BindingFlags.Public | BindingFlags.NonPublic;
+			var type = asm.GetType("CustomFurniture.CustomFurnitureMod");
+			var field = type?.GetField("furniture", BindingFlags.Static | bindings);
+			var modInst = type?.GetField("instance", BindingFlags.Static | bindings)?.GetValue(null);
 			var checker = 
 				modInst is null ?
 				(s) => true :
-				type.GetMethod("meetsConditions").ToDelegate<Func<string, bool>>(modInst);
+				type.GetMethod("meetsConditions", BindingFlags.Instance | bindings)?.ToDelegate<Func<string, bool>>(modInst);
 
 			if (field is null)
 			{
@@ -46,9 +48,10 @@ namespace HappyHomeDesigner.Integration
 				ModEntry.monitor.Log("Failed to capture Mod instance. Conditions for Custom Furniture will not be checked!", LogLevel.Warn);
 			}
 
+			var furnitures = ((dynamic)field.GetValue(null)).Values as IEnumerable<dynamic>;
+
 			customFurniture = 
-				from furn
-				in field.GetValue(null) as IEnumerable<dynamic>
+				from furn in furnitures
 				where furn.data.sellAtShop && (furn.data.conditions is "none" || checker(furn.data.conditions))
 				select furn as ISalable;
 
