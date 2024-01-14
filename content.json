@@ -11,30 +11,5 @@
 				"CollisionHeight": 2
 			}
 		]
-	},
-	{
-		"$ItemType": "CraftingRecipe",
-		"ID": "HappyHomeDesigner/Catalog",
-		"IsCooking": false,
-		"KnownByDefault": true,
-		"Result": [
-			{
-				"Weight": 1,
-				"Value": {
-					"Type": "DGAItem",
-					"Value": "tlitookilakin.HappyHomeDesigner/Catalog"
-				}
-			}
-		],
-		"Ingredients": [
-			{
-				"Type": "VanillaFurniture",
-				"Value": "Furniture Catalogue"
-			},
-			{
-				"Type": "VanillaFurniture",
-				"Value": "Catalogue"
-			}
-		]
 	}
 ]

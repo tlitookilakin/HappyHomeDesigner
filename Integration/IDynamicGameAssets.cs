@@ -14,5 +14,13 @@ namespace HappyHomeDesigner.Integration
 		/// <param name="manifest">The mod manifest.</param>
 		/// <param name="dir">The absolute path to the directory of the pack.</param>
 		void AddEmbeddedPack(IManifest manifest, string dir);
+
+		/// <summary>
+		/// Spawn a DGA item, referenced with its full ID ("mod.id/ItemId").
+		/// Some items, such as crafting recipes or crops, don't have an item representation.
+		/// </summary>
+		/// <param name="fullId">The full ID of the item to spawn.</param>
+		/// <returns></returns>
+		object SpawnDGAItem(string fullId);
 	}
 }

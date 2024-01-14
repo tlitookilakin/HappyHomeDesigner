@@ -1,8 +1,6 @@
 ﻿{
 	"furniture.Catalog.name": "Happy Home Catalogue",
-	"furniture.Catalog.description": "A combined furniture & wallpaper catalogue",
-	"crafting.HappyHomeDesigner/Catalog.name": "Happy Home Catalogue",
-	"crafting.HappyHomeDesigner/Catalog.description": "Combine both catalogues",
+	"furniture.Catalog.description": "Provides unlimited access to\nall wallpapers & floors, and\nalmost every furniture item...\nfrom the convenience of your\nhome!",
 	"config.CloseWithKey.name": "Close With Key",
 	"config.CloseWithKey.desc": "Allow the menu to be closed with the menu close keys.",
 	"config.GiveModifier.name": "Give Modifier",

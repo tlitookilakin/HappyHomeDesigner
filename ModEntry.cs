@@ -8,7 +8,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using System;
-using System.IO;
 
 namespace HappyHomeDesigner
 {
@@ -84,8 +83,6 @@ namespace HappyHomeDesigner
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
 		{
-			Patch(new(ModManifest.UniqueID));
-
 			if (Helper.ModRegistry.IsLoaded("spacechase0.DynamicGameAssets"))
 			{
 				IDynamicGameAssets.API = Helper.ModRegistry.GetApi<IDynamicGameAssets>("spacechase0.DynamicGameAssets");
@@ -109,6 +106,8 @@ namespace HappyHomeDesigner
 
 			AlternativeTextures.Init(Helper);
 			CustomFurniture.Init(Helper);
+
+			Patch(new(ModManifest.UniqueID));
 		}
 
 		private static void Patch(Harmony harmony)
@@ -116,6 +115,7 @@ namespace HappyHomeDesigner
 			ItemCloneFix.Apply(harmony);
 			AltTex.Apply(harmony);
 			FurnitureAction.Apply(harmony);
+			InventoryCombine.Apply(harmony);
 		}
 	}
 }

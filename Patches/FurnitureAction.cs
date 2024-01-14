@@ -16,7 +16,7 @@ namespace HappyHomeDesigner.Patches
 
 		private static bool CheckAction(Furniture __instance, ref bool __result)
 		{
-			if (__instance.Name.Contains("HappyHomeDesigner"))
+			if (__instance.Name == ModEntry.manifest.UniqueID + "/Catalog")
 			{
 				ShowCatalog(Catalog.AvailableCatalogs.All);
 				__result = true;

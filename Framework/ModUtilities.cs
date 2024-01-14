@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -152,6 +153,13 @@ namespace HappyHomeDesigner.Framework
 
 			else
 				throw new ArgumentException($"Config property '{name}' is of unsupported type '{type.FullName}'.");
+		}
+
+		public static bool AssertValid(this CodeMatcher matcher, string message, LogLevel level = LogLevel.Debug)
+		{
+			if (message is not null && matcher.IsInvalid)
+				ModEntry.monitor.Log(message, level);
+			return matcher.IsValid;
 		}
 	}
 }
