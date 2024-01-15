@@ -92,6 +92,7 @@ namespace HappyHomeDesigner.Menus
 		public void UpdateDisplay()
 		{
 			variantIndex = -1;
+			showVariants = false;
 		}
 		public override void draw(SpriteBatch b)
 		{
