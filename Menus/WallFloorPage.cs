@@ -1,12 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -20,8 +18,8 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<WallEntry> favoriteWalls = new();
 		private readonly List<WallEntry> favoriteFloors = new();
 
-		private readonly GridPanel WallPanel = new(56, 140);
-		private readonly GridPanel FloorsPanel = new(72, 72);
+		private readonly GridPanel WallPanel = new(56, 140, true);
+		private readonly GridPanel FloorsPanel = new(72, 72, true);
 		private GridPanel ActivePanel;
 
 		public WallFloorPage()

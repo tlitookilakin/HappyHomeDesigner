@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Locations;
-using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
@@ -132,6 +131,11 @@ namespace HappyHomeDesigner.Menus
 			return Favorited;
 		}
 		public override string ToString()
+		{
+			return id;
+		}
+
+		public string GetName()
 		{
 			return id;
 		}

@@ -120,5 +120,10 @@ namespace HappyHomeDesigner.Menus
 			// 1.6: replace with ID
 			return Item?.Name ?? string.Empty;
 		}
+
+		public string GetName()
+		{
+			return Item?.DisplayName;
+		}
 	}
 }

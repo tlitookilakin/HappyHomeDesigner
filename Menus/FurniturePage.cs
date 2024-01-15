@@ -23,8 +23,8 @@ namespace HappyHomeDesigner.Menus
 		private Furniture hovered;
 
 		private readonly int iconRow;
-		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE);
-		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE);
+		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
+		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
 		private readonly List<FurnitureEntry>[] Filters;
 		private readonly List<FurnitureEntry> Favorites = new();
 		private readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
@@ -84,8 +84,14 @@ namespace HappyHomeDesigner.Menus
 				}
 			}
 
+			MainPanel.DisplayChanged += UpdateDisplay;
+
 			MainPanel.Items = entries;
 			VariantPanel.Items = variants;
+		}
+		public void UpdateDisplay()
+		{
+			variantIndex = -1;
 		}
 		public override void draw(SpriteBatch b)
 		{

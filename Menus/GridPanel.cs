@@ -15,10 +15,14 @@ namespace HappyHomeDesigner.Menus
 		public int Offset => scrollBar.CellOffset;
 		public int Columns => scrollBar.Columns;
 		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
+		public IReadOnlyList<IGridItem> FilteredItems => search.Filtered;
 
+		public event Action DisplayChanged;
 		public ScrollBar scrollBar = new();
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
+		private SearchBox search = new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor);
+		private bool search_visible;
 
 		public IReadOnlyList<IGridItem> Items
 		{
@@ -26,16 +30,21 @@ namespace HappyHomeDesigner.Menus
 			set
 			{
 				items = value;
+				search.Source = items;
 				UpdateCount();
 				scrollBar.Reset();
 			}
 		}
 		private IReadOnlyList<IGridItem> items;
 
-		public GridPanel(int cellWidth, int cellHeight)
+		public GridPanel(int cellWidth, int cellHeight, bool showSearch)
 		{
 			CellWidth = cellWidth;
 			CellHeight = cellHeight;
+
+			search.OnTextChanged += UpdateCount;
+
+			search_visible = showSearch;
 		}
 
 		public override void draw(SpriteBatch b)
@@ -43,14 +52,18 @@ namespace HappyHomeDesigner.Menus
 			int offset = scrollBar.CellOffset;
 			int cols = scrollBar.Columns;
 
+			var displayed = search.Filtered;
+
 			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
 				cols * CellWidth + 32, height + 36, Color.White, 4f, false);
 
-			int count = Math.Min(items.Count - offset, height / CellHeight * scrollBar.Columns);
+			int count = Math.Min(displayed.Count - offset, height / CellHeight * scrollBar.Columns);
 			for (int i = 0; i < count; i++)
-				items[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
+				displayed[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
 
 			scrollBar.Draw(b);
+			if (search_visible)
+				search.Draw(b);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -61,6 +74,8 @@ namespace HappyHomeDesigner.Menus
 		public override void performHoverAction(int x, int y)
 		{
 			scrollBar.Hover(x, y);
+			if (search_visible)
+				search.Update();
 		}
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -79,6 +94,9 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.VisibleRows = height / CellHeight;
 			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
 			UpdateCount();
+
+			search.X = xPositionOnScreen;
+			search.Y = yPositionOnScreen + this.height + 16;
 		}
 
 		public override bool isWithinBounds(int x, int y)
@@ -86,7 +104,9 @@ namespace HappyHomeDesigner.Menus
 			int relX = x - xPositionOnScreen;
 			int relY = y - yPositionOnScreen;
 			// add padding for scrollbar
-			return relX is >= -16 && relY is >= -16 && relX < width + 66 && relY < height + 16;
+			return 
+				relX is >= -16 && relY is >= -16 && relX < width + 66 && relY < height + 16
+				|| search.ContainsPoint(x, y);
 		}
 
 		public bool TrySelect(int x, int y, out int which)
@@ -100,12 +120,13 @@ namespace HappyHomeDesigner.Menus
 				return false;
 
 			which = relX / CellWidth + scrollBar.Columns * (relY / CellHeight) + scrollBar.CellOffset;
-			return which < items.Count;
+			return which < search.Filtered.Count;
 		}
 
 		public void UpdateCount()
 		{
-			scrollBar.Rows = items.Count / scrollBar.Columns + (items.Count % scrollBar.Columns is not 0 ? 1 : 0);
+			scrollBar.Rows = search.Filtered.Count / scrollBar.Columns + (search.Filtered.Count % scrollBar.Columns is not 0 ? 1 : 0);
+			DisplayChanged?.Invoke();
 		}
 	}
 }

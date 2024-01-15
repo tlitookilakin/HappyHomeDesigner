@@ -104,18 +104,20 @@ namespace HappyHomeDesigner
 				// vanilla
 				"ui";
 
+			Patch(new(ModManifest.UniqueID));
+
 			AlternativeTextures.Init(Helper);
 			CustomFurniture.Init(Helper);
-
-			Patch(new(ModManifest.UniqueID));
 		}
 
 		private static void Patch(Harmony harmony)
 		{
 			ItemCloneFix.Apply(harmony);
-			AltTex.Apply(harmony);
 			FurnitureAction.Apply(harmony);
 			InventoryCombine.Apply(harmony);
+			SearchFocusFix.Apply(harmony);
+
+			AltTex.Apply(harmony);
 		}
 	}
 }

@@ -1,13 +1,9 @@
-﻿using HappyHomeDesigner.Framework;
-using HappyHomeDesigner.Integration;
+﻿using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
@@ -91,6 +87,9 @@ namespace HappyHomeDesigner.Menus
 			Game1.isTimePaused = false;
 			for (int i = 0;i < Pages.Count; i++)
 				Pages[i].Exit();
+
+			if (Game1.keyboardDispatcher.Subscriber is SearchBox)
+				Game1.keyboardDispatcher.Subscriber = null;
 		}
 		public override void performHoverAction(int x, int y)
 		{
