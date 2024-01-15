@@ -17,5 +17,6 @@
 	"config.ReplaceFurnitureCatalog.desc": "While enabled, replaces the default furniture catalog UI with the new one.",
 	"config.ReplaceWallpaperCatalog.name": "Replace Walls & Floors Catalog",
 	"config.ReplaceWallpaperCatalog.desc": "While enabled, replaces the default wallpaper catalog UI with the new one.",
-	"logging.alternativeTextures.versionWarning": "The current version of Happy Home Designer only supports Alternative Textures {{min}} or newer. You currently have version {{current}}, and Alternative Textures integration will not be applied. Please update Alternative Textures to re-enable integration."
+	"logging.alternativeTextures.versionWarning": "The current version of Happy Home Designer only supports Alternative Textures {{min}} or newer. You currently have version {{current}}, and Alternative Textures integration will not be applied. Please update Alternative Textures to re-enable integration.",
+	"logging.removedWallsAndFloors": "Found and removed {{walls}} duplicate wallpapers and {{floors}} duplicate floors."
 }

@@ -161,5 +161,19 @@ namespace HappyHomeDesigner.Framework
 				ModEntry.monitor.Log(message, level);
 			return matcher.IsValid;
 		}
+
+		public static void Log(this ITranslationHelper helper, string key, object args = null, LogLevel level = LogLevel.Debug)
+		{
+			ModEntry.monitor.Log(helper.Get(key, args), level);
+		}
+
+		public static int Find<T>(this IReadOnlyList<T> items, T which) where T : class
+		{
+			int count = items.Count;
+			for (int i = 0; i < count; i++)
+				if (items[i] == which)
+					return i;
+			return -1;
+		}
 	}
 }

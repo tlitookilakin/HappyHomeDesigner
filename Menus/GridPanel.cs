@@ -16,13 +16,14 @@ namespace HappyHomeDesigner.Menus
 		public int Columns => scrollBar.Columns;
 		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
 		public IReadOnlyList<IGridItem> FilteredItems => search.Filtered;
+		public IReadOnlyList<IGridItem> LastFiltered => search.LastFiltered;
 
 		public event Action DisplayChanged;
 		public ScrollBar scrollBar = new();
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
-		private SearchBox search = new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor);
-		private bool search_visible;
+		private readonly SearchBox search = new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor);
+		private readonly bool search_visible;
 
 		public IReadOnlyList<IGridItem> Items
 		{
@@ -95,8 +96,8 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
 			UpdateCount();
 
-			search.X = xPositionOnScreen;
-			search.Y = yPositionOnScreen + this.height + 16;
+			search.X = xPositionOnScreen - 15;
+			search.Y = yPositionOnScreen + this.height + 25;
 		}
 
 		public override bool isWithinBounds(int x, int y)

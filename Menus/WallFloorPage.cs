@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -29,6 +31,12 @@ namespace HappyHomeDesigner.Menus
 			var wallFavs = Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? s.Split('	') : Array.Empty<string>();
 			var floorFavs = Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? s.Split('	') : Array.Empty<string>();
 
+			var knownWalls = new HashSet<string>();
+			var knownFloors = new HashSet<string>();
+
+			int removedWalls = 0;
+			int removedFloors = 0;
+
 			foreach (var item in Utility.getAllWallpapersAndFloorsForFree().Keys)
 			{
 				if (item is not Wallpaper wall)
@@ -37,18 +45,34 @@ namespace HappyHomeDesigner.Menus
 				if (wall.isFloor.Value)
 				{
 					var entry = new WallEntry(wall, floorFavs);
-					floors.Add(entry);
-					if (entry.Favorited)
-						favoriteFloors.Add(entry);
+					if (knownFloors.Add(entry.GetName()))
+					{
+						floors.Add(entry);
+						if (entry.Favorited)
+							favoriteFloors.Add(entry);
+					} else
+					{
+						removedFloors++;
+					}
 				}
 				else
 				{
 					var entry = new WallEntry(wall, wallFavs);
-					walls.Add(entry);
-					if (entry.Favorited)
-						favoriteWalls.Add(entry);
+					if (knownWalls.Add(entry.GetName()))
+					{
+						walls.Add(entry);
+						if (entry.Favorited)
+							favoriteWalls.Add(entry);
+					} else
+					{
+						removedWalls++;
+					}
 				}
 			}
+
+			if (removedFloors is not 0 || removedWalls is not 0)
+				ModEntry.i18n.Log("logging.removedWallsAndFloors", new { walls = removedWalls, floors = removedFloors }, LogLevel.Info);
+			ModEntry.monitor.Log($"removed {removedWalls} duplicate walls and {removedFloors} duplicate floors.", LogLevel.Trace);
 
 			WallPanel.Items = walls;
 			FloorsPanel.Items = floors;

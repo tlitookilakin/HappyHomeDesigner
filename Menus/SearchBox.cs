@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
@@ -10,9 +11,12 @@ namespace HappyHomeDesigner.Menus
 {
 	public class SearchBox : TextBox
 	{
-		private static ConditionalWeakTable<IReadOnlyList<IGridItem>, string[]> mapCache = new();
+		private static readonly ConditionalWeakTable<IReadOnlyList<IGridItem>, string[]> mapCache = new();
+		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
+		private static readonly Rectangle Spyglass = new(0, 48, 16, 16);
 
 		public IReadOnlyList<IGridItem> Filtered => filtered ?? source;
+		public IReadOnlyList<IGridItem> LastFiltered => lastFilter ?? Filtered;
 		public event Action OnTextChanged;
 
 		public IReadOnlyList<IGridItem> Source
@@ -30,6 +34,7 @@ namespace HappyHomeDesigner.Menus
 		private IReadOnlyList<string> filtered_map;
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
+		private IReadOnlyList<IGridItem> lastFilter;
 
 		public SearchBox(Texture2D textBoxTexture, Texture2D caretTexture, SpriteFont font, Color textColor) 
 			: base(textBoxTexture, caretTexture, font, textColor)
@@ -78,6 +83,13 @@ namespace HappyHomeDesigner.Menus
 			OnTextChanged?.Invoke();
 		}
 
+		public override void Draw(SpriteBatch b, bool drawShadow = true)
+		{
+			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 9, Width + 9, Height + 13, Color.White, 1f, drawShadow);
+			base.Draw(b, false);
+			b.Draw(Catalog.MenuTexture, new Vector2(X - 21, Y), Spyglass, Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0f);
+		}
+
 		private void Filter(bool refresh, string search = null)
 		{
 			if (source.Count is 0)
@@ -87,14 +99,18 @@ namespace HappyHomeDesigner.Menus
 
 			if (search.Length is 0)
 			{
+				lastFilter = filtered;
 				filtered_map = null;
 				filtered = null;
 				return;
 			}
 
+			lastFilter = refresh || filtered_map is null ? source : filtered;
+
 			IReadOnlyList<IGridItem> source_items = filtered;
 			IReadOnlyList<string> source_names = filtered_map;
 
+			
 			if (refresh || filtered_map is null || !search.StartsWith(LastValue, StringComparison.OrdinalIgnoreCase))
 			{
 				if (!mapCache.TryGetValue(source, out source_map))

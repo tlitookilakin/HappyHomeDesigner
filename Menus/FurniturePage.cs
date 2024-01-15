@@ -91,8 +91,9 @@ namespace HappyHomeDesigner.Menus
 		}
 		public void UpdateDisplay()
 		{
-			variantIndex = -1;
-			showVariants = false;
+			if (variantIndex is not -1)
+				variantIndex = MainPanel.FilteredItems.Find(MainPanel.LastFiltered[variantIndex]);
+			showVariants = variantIndex is not -1;
 		}
 		public override void draw(SpriteBatch b)
 		{
@@ -135,7 +136,7 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.performHoverAction(x, y);
 
 			hovered = MainPanel.TrySelect(x, y, out int index) ?
-				(MainPanel.Items[index] as FurnitureEntry).Item : 
+				(MainPanel.FilteredItems[index] as FurnitureEntry).Item : 
 				null;
 		}
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -203,7 +204,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (panel.TrySelect(mx, my, out int index))
 			{
-				var entry = panel.Items[index] as FurnitureEntry;
+				var entry = panel.FilteredItems[index] as FurnitureEntry;
 
 				if (allowVariants)
 				{
