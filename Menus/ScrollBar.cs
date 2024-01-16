@@ -60,11 +60,11 @@ namespace HappyHomeDesigner.Menus
 
 			if (VisibleRows < Rows)
 			{
-				UpArrow.draw(batch);
-				DownArrow.draw(batch);
-
 				if (height is >= 256)
 				{
+					// shadow
+					DrawStrip(batch, Game1.mouseCursors, BackgroundSource, new(scroller.X - 4, scroller.Y + 4, scroller.Width, scroller.Height), 4, Color.Black * .4f);
+
 					// bar
 					DrawStrip(batch, Game1.mouseCursors, BackgroundSource, scroller, 4, Color.White);
 					DrawStrip(batch, Game1.mouseCursors, ThumbSource,
@@ -72,6 +72,9 @@ namespace HappyHomeDesigner.Menus
 							scroller.Width, Math.Max(scroller.Height * VisibleRows / Rows, ThumbSource.Height * 4)),
 						4, Color.White);
 				}
+
+				UpArrow.draw(batch);
+				DownArrow.draw(batch);
 			}
 		}
 
@@ -128,9 +131,11 @@ namespace HappyHomeDesigner.Menus
 		{
 			// buffer is how much from each end to use as end
 			// 1px gap for odd sizes and 2px gap for even sizes
+
 			int buffer = source.Height / 2 - (1 - (source.Height & 1));
-			int x = (dest.Width / 2) - (source.Width * scale / 2) + dest.X;
+			int x = (dest.Width / 2) - (source.Width * scale / 2);
 			x = x / scale * scale;
+			x += dest.X;
 
 			batch.Draw(texture, 
 				new Rectangle(x, dest.Y, source.Width * scale, buffer * scale),

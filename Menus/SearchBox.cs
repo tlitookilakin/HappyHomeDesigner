@@ -35,6 +35,7 @@ namespace HappyHomeDesigner.Menus
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
 		private IReadOnlyList<IGridItem> lastFilter;
+		private float iconOpacity = 1f;
 
 		public SearchBox(Texture2D textBoxTexture, Texture2D caretTexture, SpriteFont font, Color textColor) 
 			: base(textBoxTexture, caretTexture, font, textColor)
@@ -54,7 +55,7 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		public bool ContainsPoint(int x, int y)
-			=> x >= X && y >= Y && x <= X + Width && y <= Y + Height;
+			=> x >= X - 16 && y >= Y - 16 && x <= X + Width + 16 && y <= Y + Height + 16;
 
 		public override void RecieveTextInput(char input)
 		{
@@ -85,9 +86,27 @@ namespace HappyHomeDesigner.Menus
 
 		public override void Draw(SpriteBatch b, bool drawShadow = true)
 		{
-			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 9, Width + 9, Height + 13, Color.White, 1f, drawShadow);
+			if (Selected)
+			{
+				if (iconOpacity is not 0f)
+					iconOpacity = MathF.Max(0f, iconOpacity - .07f);
+			} else
+			{
+				if (iconOpacity is not 1f)
+					iconOpacity = MathF.Min(1f, iconOpacity += .07f);
+			}
+
+			// shadow
+			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X - 4, Y - 4, Width + 9, Height + 12, Color.Black * .4f, 1f, false);
+
+			//outline
+			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 8, Width + 9, Height + 12, Color.White, 1f, false);
+
+			// box
 			base.Draw(b, false);
-			b.Draw(Catalog.MenuTexture, new Vector2(X - 21, Y), Spyglass, Color.White, 0f, Vector2.Zero, 3f, SpriteEffects.None, 0f);
+
+			// icon
+			b.Draw(Catalog.MenuTexture, new Vector2(X + Width - 40, Y + 8), Spyglass, Color.White * iconOpacity, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0f);
 		}
 
 		private void Filter(bool refresh, string search = null)

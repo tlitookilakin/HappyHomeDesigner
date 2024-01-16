@@ -56,15 +56,21 @@ namespace HappyHomeDesigner.Menus
 			var displayed = search.Filtered;
 
 			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
-				cols * CellWidth + 32, height + 36, Color.White, 4f, false);
+				width + 32, height + 36, Color.White, 4f, false);
 
-			int count = Math.Min(displayed.Count - offset, height / CellHeight * scrollBar.Columns);
+			int count = Math.Min(displayed.Count - offset, height / CellHeight * cols);
 			for (int i = 0; i < count; i++)
 				displayed[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
 
 			scrollBar.Draw(b);
 			if (search_visible)
 				search.Draw(b);
+		}
+
+		public void DrawShadow(SpriteBatch b)
+		{
+			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16 - 4, yPositionOnScreen - 20 + 4,
+				width + 32, height + 36, Color.Black * .4f, 4f, false);
 		}
 
 		public override void receiveScrollWheelAction(int direction)

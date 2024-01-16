@@ -63,7 +63,7 @@ namespace HappyHomeDesigner.Menus
 				for (int i = 0; i < Pages.Count; i++)
 					Tabs.Add(Pages[i].GetTab());
 
-			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f);
+			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, true);
 
 			if (IGMCM.Installed)
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
@@ -102,6 +102,12 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void draw(SpriteBatch b)
 		{
+			// tab shadow
+			b.Draw(MenuTexture, 
+				new Rectangle(xPositionOnScreen + 92, yPositionOnScreen + 20, 64, 64), 
+				new Rectangle(64, 24, 16, 16), 
+				Color.Black * .4f);
+
 			Pages[tab].draw(b);
 			CloseButton.draw(b);
 			SettingsButton?.draw(b);

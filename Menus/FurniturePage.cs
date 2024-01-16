@@ -97,6 +97,10 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void draw(SpriteBatch b)
 		{
+			MainPanel.DrawShadow(b);
+			if (showVariants)
+				VariantPanel.DrawShadow(b);
+
 			base.draw(b);
 			DrawFilters(b, iconRow, 1, xPositionOnScreen, yPositionOnScreen);
 			MainPanel.draw(b);

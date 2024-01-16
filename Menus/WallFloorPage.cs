@@ -98,8 +98,8 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			WallPanel.Resize(width - 36, height - 32, xPositionOnScreen + 55, yPositionOnScreen);
-			FloorsPanel.Resize(width - 36, height - 32, xPositionOnScreen + 55, yPositionOnScreen);
+			WallPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
+			FloorsPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 		}
 
 		public override void receiveScrollWheelAction(int direction)

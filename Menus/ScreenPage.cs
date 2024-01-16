@@ -52,9 +52,16 @@ namespace HappyHomeDesigner.Menus
 			int sx = 0;
 
 			int i = 0;
+			var shadow = Color.Black * .4f;
 			while(i < filter_count - ribbonCount)
 			{
 				int nx = i == current_filter ? x - 16 : x;
+
+				// shadow
+				batch.Draw(Catalog.MenuTexture,
+					new Rectangle(nx - 8, y + 8, FILTER_WIDTH, FILTER_HEIGHT),
+					new Rectangle(0, 24, FILTER_WIDTH / FILTER_SCALE, FILTER_HEIGHT / FILTER_SCALE),
+					shadow);
 
 				// standard bg
 				batch.Draw(Catalog.MenuTexture,
@@ -76,6 +83,12 @@ namespace HappyHomeDesigner.Menus
 			while(i < filter_count)
 			{
 				int nx = i == current_filter ? x - 16 : x;
+
+				// shadow
+				batch.Draw(Catalog.MenuTexture,
+					new Rectangle(nx - 4, y + 4, FILTER_WIDTH, FILTER_HEIGHT),
+					new Rectangle(24, 24, FILTER_WIDTH / FILTER_SCALE, FILTER_HEIGHT / FILTER_SCALE),
+					shadow);
 
 				// ribbon bg
 				batch.Draw(Catalog.MenuTexture,
