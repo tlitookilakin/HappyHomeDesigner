@@ -6,6 +6,7 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -74,9 +75,9 @@ namespace HappyHomeDesigner.Menus
 				batch.Draw(Catalog.MenuTexture, new Rectangle(x + 4, y + 4, 18, 18), favRibbon, Color.White);
 		}
 
-		public bool TryApply(bool playSound)
+		public bool TryApply(bool playSound, out WallFloorState state)
 		{
-			// TODO add undo
+			state = default;
 
 			if (Game1.currentLocation is not DecoratableLocation where)
 				return false;
@@ -90,11 +91,16 @@ namespace HappyHomeDesigner.Menus
 				if (id is null)
 					return false;
 
+				var existing = where.appliedFloor[id];
+
 				var modData = item.GetModData();
-				where.SetFloor(modData is null ?
+				var name = modData is null ?
 					item.ParentSheetIndex.ToString() :
-					$"{modData.ID}:{item.ParentSheetIndex}",
-					id);
+					$"{modData.ID}:{item.ParentSheetIndex}";
+
+				where.SetFloor(name, id);
+
+				state = new() { area = id, isFloor = true, old = existing, which = name};
 			} else
 			{
 				string id = where.GetWallpaperID(x, y);
@@ -106,14 +112,21 @@ namespace HappyHomeDesigner.Menus
 					id = where.GetWallpaperID(x, y);
 				}
 
+				var existing = where.appliedWallpaper[id];
+
 				var modData = item.GetModData();
-				where.SetWallpaper(modData is null ?
+				var name = modData is null ?
 					item.ParentSheetIndex.ToString() :
-					$"{modData.ID}:{item.ParentSheetIndex}",
-					id);
+					$"{modData.ID}:{item.ParentSheetIndex}";
+
+				where.SetWallpaper(name, id);
+
+				state = new() { area = id, isFloor = false, old = existing, which = name };
 			}
+
 			if (playSound)
 				Game1.playSound("stoneStep");
+
 			return true;
 		}
 		public Wallpaper GetOne()

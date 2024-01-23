@@ -22,6 +22,7 @@ namespace HappyHomeDesigner.Menus
 
 		private readonly GridPanel WallPanel = new(56, 140, true);
 		private readonly GridPanel FloorsPanel = new(72, 72, true);
+		private readonly UndoRedoButton undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 		private GridPanel ActivePanel;
 
 		public WallFloorPage()
@@ -81,11 +82,9 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
-			// debug
-			//b.Draw(Game1.staminaRect, new Rectangle(xPositionOnScreen, yPositionOnScreen, width, height), Color.Blue);
-
 			DrawFilters(b, 16, 2, xPositionOnScreen, yPositionOnScreen);
 			ActivePanel.draw(b);
+			undoRedo.Draw(b);
 		}
 
 		public override void performHoverAction(int x, int y)
@@ -100,6 +99,15 @@ namespace HappyHomeDesigner.Menus
 
 			WallPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			FloorsPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
+			MoveButtons();
+		}
+
+		private void MoveButtons()
+		{
+			undoRedo.bounds = new(
+				ActivePanel.width - 144 + 12 + ActivePanel.xPositionOnScreen, 
+				ActivePanel.height + ActivePanel.yPositionOnScreen + 8, 
+				152, 80);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -123,6 +131,8 @@ namespace HappyHomeDesigner.Menus
 					FloorsPanel.Items = floors;
 				}
 
+				MoveButtons();
+
 				return;
 			}
 
@@ -145,15 +155,21 @@ namespace HappyHomeDesigner.Menus
 					return;
 				}
 
-				if (ModEntry.config.GiveModifier.IsDown() || !item.TryApply(playSound))
-					if (Game1.player.addItemToInventoryBool(item.GetOne()) && playSound)
-						Game1.playSound("pickUpItem");
+				if (!ModEntry.config.GiveModifier.IsDown() && item.TryApply(playSound, out var undoState))
+					undoRedo.Push(undoState);
+
+				else if (Game1.player.addItemToInventoryBool(item.GetOne()) && playSound)
+					Game1.playSound("pickUpItem");
+
+				return;
 			}
+
+			undoRedo.recieveLeftClick(x, y, playSound);
 		}
 
 		public override bool isWithinBounds(int x, int y)
 		{
-			return base.isWithinBounds(x, y) || ActivePanel.isWithinBounds(x, y);
+			return base.isWithinBounds(x, y) || ActivePanel.isWithinBounds(x, y) || undoRedo.containsPoint(x, y);
 		}
 
 		public override ClickableTextureComponent GetTab()
