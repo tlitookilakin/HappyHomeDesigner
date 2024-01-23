@@ -20,6 +20,8 @@ namespace HappyHomeDesigner.Patches
 
 		internal static bool IsApplied = false;
 
+		// TODO show front in menu
+
 		internal static void Apply(Harmony harmony)
 		{
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out var asm))
@@ -77,30 +79,43 @@ namespace HappyHomeDesigner.Patches
 		{
 			var skipRotation = gen.DefineLabel();
 			var skipOffset = gen.DefineLabel();
+			var skipCheck = gen.DefineLabel();
 
 			var il = new CodeMatcher(source)
 				.MatchStartForward(
-					new CodeMatch(OpCodes.Brtrue_S)
-				);
-			var target = (Label)il.Instruction.operand;
-
-			il.Advance(1)
+					new(OpCodes.Isinst),
+					new(OpCodes.Brtrue_S)
+				)
+				.Advance(-1)
 				.InsertAndAdvance(
-					new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
-					new(OpCodes.Brtrue, target)
-				).MatchStartForward(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(shouldForceDrawObject))),
+					new(OpCodes.Brtrue, skipCheck)
+				)
+				.MatchEndForward(
+					new(OpCodes.Ldc_I4_0),
+					new(OpCodes.Ceq),
+					new(OpCodes.Br_S)
+				)
+				.MatchEndForward(
+					new(OpCodes.Brfalse),
+					new(OpCodes.Nop)
+				)
+				.AddLabels(new[] { skipCheck })
+				.MatchStartForward(
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.rotations)))
-				).InsertAndAdvance(
+				)
+				.InsertAndAdvance(
 					new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
 					new(OpCodes.Brtrue, skipRotation)
-				).MatchStartForward(
+				)
+				.MatchStartForward(
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
-				);
-			il.Instruction.labels.Add(skipRotation);
-
-			il.MatchStartForward(
+				)
+				.AddLabels(new[] { skipRotation })
+				.MatchStartForward(
 					new(OpCodes.Ldc_I4_0),
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.sourceRect)))
@@ -113,11 +128,14 @@ namespace HappyHomeDesigner.Patches
 				)
 				.MatchStartForward(
 					new CodeMatch(OpCodes.Stfld, typeof(Rectangle).GetField(nameof(Rectangle.X)))
-				);
-			il.Instruction.labels.Add(skipOffset);
+				)
+				.AddLabels(new[] { skipOffset });
 
 			return il.InstructionEnumeration();
 		}
+
+		public static bool shouldForceDrawObject(Furniture f)
+			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName");
 
 		private static bool skipNameCaching(ref bool __result, StardewValley.Object __0)
 		{
