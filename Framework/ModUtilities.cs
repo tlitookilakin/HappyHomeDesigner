@@ -10,14 +10,13 @@ using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 
 namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
-		private static Func<int, bool> isFurnitureForbidden =
+		private static readonly Func<int, bool> isFurnitureForbidden =
 			typeof(Utility).GetMethod("isFurnitureOffLimitsForSale", BindingFlags.Static | BindingFlags.NonPublic)
 			.ToDelegate<Func<int, bool>>();
 
@@ -27,10 +26,15 @@ namespace HappyHomeDesigner.Framework
 
 		public static bool CanDelete(this Item item)
 		{
-			if (item is not Furniture furn)
+			if (item is not Furniture furn || furn.DisplayName.Contains("HappyHome"))
 				return false;
 
-			return furn.Price is 0 && !isFurnitureForbidden(furn.ParentSheetIndex);
+			if (isFurnitureForbidden(furn.ParentSheetIndex))
+				return false;
+			else
+				ModEntry.monitor.Log($"Deleted furniture with ID {furn.ParentSheetIndex} [{item.DisplayName}]");
+
+			return true;
 		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
