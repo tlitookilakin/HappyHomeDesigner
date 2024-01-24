@@ -68,6 +68,14 @@ namespace HappyHomeDesigner
 			if (!e.IsSuppressed() && config.CloseWithKey && Game1.activeClickableMenu is null)
 			{
 				if (Catalog.ActiveMenu.Value is Catalog cat) {
+
+					if (config.ToggleShortcut.JustPressed())
+					{
+						cat.Toggle(true);
+						helper.Input.Suppress(e.Button);
+						return;
+					}
+
 					var binds = Game1.options.menuButton;
 					for (int i = 0; i < binds.Length; i++)
 					{

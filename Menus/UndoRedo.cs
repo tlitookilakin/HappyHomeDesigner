@@ -32,7 +32,7 @@ namespace HappyHomeDesigner.Menus
 			if (WallFloorState.Apply(state, Game1.currentLocation, forward))
 			{
 				if (playSound)
-					Game1.playSound("dwop");
+					Game1.playSound("Cowboy_gunshot");
 
 				to.Push(state);
 				return true;

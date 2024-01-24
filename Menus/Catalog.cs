@@ -34,10 +34,8 @@ namespace HappyHomeDesigner.Menus
 				else
 					catalog.exitThisMenuNoSound();
 
-			// TODO keep place in closed catalog
-
 			var menu = new Catalog(catalogs);
-			Game1.onScreenMenus.Add(menu);
+			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
 			return true;
@@ -50,6 +48,8 @@ namespace HappyHomeDesigner.Menus
 		private List<ClickableTextureComponent> Tabs = new();
 		private ClickableTextureComponent CloseButton;
 		private readonly ClickableTextureComponent SettingsButton;
+		private readonly ClickableTextureComponent ToggleButton;
+		private bool Toggled = true;
 
 		public Catalog(AvailableCatalogs catalogs)
 		{
@@ -63,7 +63,8 @@ namespace HappyHomeDesigner.Menus
 				for (int i = 0; i < Pages.Count; i++)
 					Tabs.Add(Pages[i].GetTab());
 
-			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, true);
+			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
+			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
 
 			if (IGMCM.Installed)
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
@@ -93,6 +94,11 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void performHoverAction(int x, int y)
 		{
+			ToggleButton.tryHover(x, y);
+
+			if (!Toggled)
+				return;
+
 			Pages[tab].performHoverAction(x, y);
 		}
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
@@ -102,6 +108,11 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void draw(SpriteBatch b)
 		{
+			ToggleButton.draw(b);
+
+			if (!Toggled)
+				return;
+
 			// tab shadow
 			b.Draw(MenuTexture, 
 				new Rectangle(xPositionOnScreen + 92, yPositionOnScreen + 20, 64, 64), 
@@ -118,8 +129,14 @@ namespace HappyHomeDesigner.Menus
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);
-			Pages[tab].receiveLeftClick(x, y, playSound);
 
+			if (ToggleButton.containsPoint(x, y))
+				Toggle(playSound);
+
+			if (!Toggled)
+				return;
+
+			Pages[tab].receiveLeftClick(x, y, playSound);
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				if (Tabs[i].containsPoint(x, y))
@@ -135,10 +152,20 @@ namespace HappyHomeDesigner.Menus
 				exitThisMenu();
 
 			if (SettingsButton is not null && SettingsButton.containsPoint(x, y))
+			{
 				IGMCM.API.OpenModMenu(ModEntry.manifest);
+				if (playSound)
+					Game1.playSound("bigSelect");
+			}
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
+			if (ToggleButton.containsPoint(x, y))
+				return true;
+
+			if (!Toggled)
+				return false;
+
 			for (int i = 0; i < Tabs.Count; i++)
 				if (Tabs[i].containsPoint(x, y))
 					return true;
@@ -165,11 +192,24 @@ namespace HappyHomeDesigner.Menus
 			SettingsButton?.setPosition(tabX + 8, tabY + 8);
 
 			CloseButton.bounds.Location = new(40, 52);
+			ToggleButton.bounds.Location = new(16, bounds.Height - 64);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
 		{
+			if (!Toggled)
+				return;
+
 			Pages[tab].receiveScrollWheelAction(direction);
+		}
+
+		public void Toggle(bool playSound)
+		{
+			ToggleButton.sourceRect.X = Toggled ? 365 : 352;
+			Toggled = !Toggled;
+
+			if (playSound)
+				Game1.playSound("shwip");
 		}
 	}
 }

@@ -104,7 +104,7 @@ namespace HappyHomeDesigner.Patches
 						slot = IDynamicGameAssets.API.SpawnDGAItem(ModEntry.manifest.UniqueID + "/Catalog") as Item;
 
 						if (playSound)
-							Game1.playSound("dwop");
+							Game1.playSound("axe");
 
 						return true;
 					}
@@ -116,7 +116,7 @@ namespace HappyHomeDesigner.Patches
 					slot = new Furniture(1226, Vector2.Zero);
 
 					if (playSound)
-						Game1.playSound("dwop");
+						Game1.playSound("pickUpItem");
 
 					return true;
 				}
