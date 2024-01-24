@@ -118,6 +118,7 @@ namespace HappyHomeDesigner
 			SearchFocusFix.Apply(harmony);
 
 			AltTex.Apply(harmony);
+			DGA.Apply(harmony);
 		}
 	}
 }

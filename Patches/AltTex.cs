@@ -1,6 +1,7 @@
 ﻿using HappyHomeDesigner.Framework;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewModdingAPI;
 using StardewValley;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
@@ -19,12 +21,11 @@ namespace HappyHomeDesigner.Patches
 		public static bool forcePreviewDraw = false;
 
 		internal static bool IsApplied = false;
-
-		// TODO show front in menu
+		internal static Assembly asm;
 
 		internal static void Apply(Harmony harmony)
 		{
-			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out var asm))
+			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out asm))
 				return;
 
 			var min_version = new Version(ModEntry.manifest.ExtraFields["AlternativeTexturesVersion"].ToString());
@@ -81,6 +82,10 @@ namespace HappyHomeDesigner.Patches
 			var skipOffset = gen.DefineLabel();
 			var skipCheck = gen.DefineLabel();
 
+			var batchdraw = typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new[] {
+				typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color),
+				typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) });
+
 			var il = new CodeMatcher(source)
 				.MatchStartForward(
 					new(OpCodes.Isinst),
@@ -129,7 +134,15 @@ namespace HappyHomeDesigner.Patches
 				.MatchStartForward(
 					new CodeMatch(OpCodes.Stfld, typeof(Rectangle).GetField(nameof(Rectangle.X)))
 				)
-				.AddLabels(new[] { skipOffset });
+				.AddLabels(new[] { skipOffset })
+				.MatchEndForward(
+					new CodeMatch(OpCodes.Callvirt, batchdraw)
+				)
+				.RemoveInstruction()
+				.InsertAndAdvance(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(DrawReplace)))
+				);
 
 			return il.InstructionEnumeration();
 		}
@@ -137,13 +150,71 @@ namespace HappyHomeDesigner.Patches
 		public static bool shouldForceDrawObject(Furniture f)
 			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName");
 
+		public static void DrawReplace(SpriteBatch b, Texture2D tex, Vector2 pos, Rectangle? src, Color tint, 
+			float ang, Vector2 origin, float scale, SpriteEffects fx, float depth, Furniture f)
+		{
+			b.Draw(tex, pos, src, tint, ang, origin, scale, fx, depth);
+
+			if (f is not BedFurniture || !src.HasValue)
+				return;
+
+			var source = src.Value;
+			source.X += source.Width;
+
+			b.Draw(tex, pos, source, tint, ang, origin, scale, fx, depth);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public static void drawFront(Furniture f, Texture2D texture, Rectangle source, Vector2 location, SpriteBatch batch,
+			float scale, float alpha, float depth)
+		{
+			//if (f is not BedFurniture)
+			//	return;
+
+			source.X += source.Width;
+
+			batch.Draw(
+				texture,
+				new Vector2(location.X + 32f, location.Y + 32f),
+				source,
+				Color.White * alpha,
+				0f, 
+				new Vector2(source.Width / 2, source.Height / 2),
+				scale * GetScaledSize(source),
+				f.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+				depth
+			);
+		}
+
+		private static float GetScaledSize(Rectangle source)
+		{
+			// based on Furniture.getScaleSize from vanilla
+			// and GetScaledSize from AT
+
+			int tilesWide = source.Width / 16;
+			int tilesHigh = source.Height / 16;
+
+			return
+				tilesWide >= 7 ? .05f :
+				tilesWide is 6 ? .66f :
+				tilesWide is 5 ? .75f :
+				tilesHigh >= 5 ? .80f :
+				tilesHigh >= 3 ? 1.0f :
+				tilesWide <= 2 ? 2.0f :
+				tilesWide <= 4 ? 1.0f :
+				.1f;
+		}
+
 		private static bool skipNameCaching(ref bool __result, StardewValley.Object __0)
 		{
+			if (!forcePreviewDraw)
+				return true;
+
 			// don't ditch at name, so we can see it in previews
 			__result = true;
 			if (__0.modData.TryGetValue("AlternativeTextureName", out var name))
 				__0.modData["AlternativeTextureNameCached"] = name;
-			return !forcePreviewDraw;
+			return false;
 		}
 
 		private static IEnumerable<CodeInstruction> fixFurniturePreview(IEnumerable<CodeInstruction> source)
