@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
+using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,20 +17,17 @@ namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
-		private static readonly Func<int, bool> isFurnitureForbidden =
-			typeof(Utility).GetMethod("isFurnitureOffLimitsForSale", BindingFlags.Static | BindingFlags.NonPublic)
-			.ToDelegate<Func<int, bool>>();
-
 		private static readonly FieldInfo OldValueBackingField =
 			typeof(MouseWheelScrolledEventArgs).GetField("<OldValue>k__BackingField", 
 				BindingFlags.Instance | BindingFlags.NonPublic);
 
 		public static bool CanDelete(this Item item)
 		{
-			if (item is not Furniture furn || furn.DisplayName.Contains("HappyHome"))
+			if (item is not Furniture furn)
 				return false;
 
-			if (isFurnitureForbidden(furn.ParentSheetIndex))
+			// TODO switch to IDs
+			if (FurniturePage.knownFurnitureIDs is null || !FurniturePage.knownFurnitureIDs.Contains(furn.Name))
 				return false;
 			else
 				ModEntry.monitor.Log($"Deleted furniture with ID {furn.ParentSheetIndex} [{item.DisplayName}]");

@@ -15,6 +15,8 @@ namespace HappyHomeDesigner.Menus
 	{
 		private const int FURNITURE_MAX = 18;
 		private const string KeyFavs = "tlitookilakin.HappyHomeDesigner/FurnitureFavorites";
+		private const int DEFAULT_EXTENDED = 2;
+		private const int DEFAULT_DEFAULT = 4;
 
 		private readonly List<FurnitureEntry> entries = new();
 		private readonly List<FurnitureEntry> variants = new();
@@ -32,8 +34,7 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
 		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 4, 4};
-		private const int DEFAULT_EXTENDED = 2;
-		private const int DEFAULT_DEFAULT = 4;
+		internal static HashSet<string> knownFurnitureIDs;
 
 		public FurniturePage()
 		{
@@ -66,6 +67,10 @@ namespace HappyHomeDesigner.Menus
 			if (CustomFurniture.Installed)
 				AllFurnitures = AllFurnitures.Concat(CustomFurniture.customFurniture);
 
+			bool populateIds = knownFurnitureIDs is null;
+			if (populateIds)
+				knownFurnitureIDs = new();
+
 			foreach (var item in AllFurnitures)
 			{
 				if (item is Furniture furn)
@@ -81,6 +86,9 @@ namespace HappyHomeDesigner.Menus
 
 					if (entry.Favorited)
 						Favorites.Add(entry);
+
+					if (populateIds)
+						knownFurnitureIDs.Add(furn.Name); // TODO use ids
 				}
 			}
 
