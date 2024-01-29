@@ -82,6 +82,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
+			ActivePanel.DrawShadow(b);
 			DrawFilters(b, 16, 2, xPositionOnScreen, yPositionOnScreen);
 			ActivePanel.draw(b);
 			undoRedo.Draw(b);
@@ -105,9 +106,9 @@ namespace HappyHomeDesigner.Menus
 		private void MoveButtons()
 		{
 			undoRedo.bounds = new(
-				ActivePanel.width - 144 + 12 + ActivePanel.xPositionOnScreen, 
-				ActivePanel.height + ActivePanel.yPositionOnScreen + 8, 
-				152, 80);
+				ActivePanel.width - 128 + ActivePanel.xPositionOnScreen, 
+				ActivePanel.height + ActivePanel.yPositionOnScreen + GridPanel.MARGIN_BOTTOM,
+				128 + (GridPanel.BORDER_WIDTH * 2), 64 + (GridPanel.BORDER_WIDTH * 2));
 		}
 
 		public override void receiveScrollWheelAction(int direction)

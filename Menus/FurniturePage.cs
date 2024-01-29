@@ -132,7 +132,10 @@ namespace HappyHomeDesigner.Menus
 
 			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
-			TrashSlot.setPosition(MainPanel.xPositionOnScreen + MainPanel.width - 48 + 16, MainPanel.yPositionOnScreen + MainPanel.height + 20);
+			TrashSlot.setPosition(
+				MainPanel.xPositionOnScreen + MainPanel.width - 48 + GridPanel.BORDER_WIDTH, 
+				MainPanel.yPositionOnScreen + MainPanel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
+			);
 		}
 		public override void performHoverAction(int x, int y)
 		{

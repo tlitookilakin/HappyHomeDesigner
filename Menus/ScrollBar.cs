@@ -9,6 +9,8 @@ namespace HappyHomeDesigner.Menus
 {
 	public class ScrollBar
 	{
+		public const int WIDTH = 40;
+
 		public int Rows
 		{
 			get => rows;
@@ -95,7 +97,7 @@ namespace HappyHomeDesigner.Menus
 
 			UpArrow.setPosition(x, y);
 			DownArrow.setPosition(x, y + height - 48);
-			scroller = new(x + 4, y + 52, 40, height - 108);
+			scroller = new(x + 4, y + 52, WIDTH, height - 108);
 		}
 
 		public void Reset()

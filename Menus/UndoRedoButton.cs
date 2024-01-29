@@ -2,13 +2,14 @@
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
-using System;
-using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
 	public partial class UndoRedoButton : ClickableComponent
 	{
+		public const int WIDTH = 128;
+		public const int HEIGHT = 64;
+
 		public UndoRedoButton(Rectangle bounds, string name) : base(bounds, name)
 		{
 		}
@@ -23,17 +24,17 @@ namespace HappyHomeDesigner.Menus
 
 		public void recieveLeftClick(int x, int y, bool playSound)
 		{
-			int relX = x - (bounds.Left + (bounds.Width - 128) / 2);
-			int relY = y - (bounds.Top + (bounds.Height - 64) / 2);
+			int relX = x - (bounds.Left + (bounds.Width - WIDTH) / 2);
+			int relY = y - (bounds.Top + (bounds.Height - HEIGHT) / 2);
 
-			if (relY is >= 0 and <= 64)
+			if (relY is >= 0 and <= HEIGHT)
 			{
 				switch (relX)
 				{
-					case > 128:
+					case > WIDTH:
 					case < 0:
 						break;
-					case <= 64:
+					case <= WIDTH / 2:
 						Undo(playSound);
 						break;
 					default:
@@ -45,34 +46,34 @@ namespace HappyHomeDesigner.Menus
 
 		public void Draw(SpriteBatch batch)
 		{
-			int bx = bounds.Left + (bounds.Width - 128) / 2;
-			int by = bounds.Top + (bounds.Height - 64) / 2;
+			int bx = bounds.Left + (bounds.Width - WIDTH) / 2;
+			int by = bounds.Top + (bounds.Height - HEIGHT) / 2;
 
 			// shadow
 			batch.Draw(Catalog.MenuTexture,
-				new Rectangle(bx - 8, by + 8, 128, 64),
-				new Rectangle(96, 24, 32, 16),
+				new Rectangle(bx - 4, by + 4, WIDTH, HEIGHT),
+				new Rectangle(96, 24, WIDTH / 4, HEIGHT / 4),
 				Color.Black * .4f
 			);
 
 			// bg
 			batch.Draw(Catalog.MenuTexture,
-				new Rectangle(bx, by, 128, 64),
+				new Rectangle(bx, by, WIDTH, HEIGHT),
 				new Rectangle(96, 24, 32, 16),
 				Color.White
 			);
 
 			// undo
 			batch.Draw(Catalog.MenuTexture,
-				new Rectangle(bx, by, 64, 64),
-				new Rectangle(96, 40, 16, 16),
+				new Rectangle(bx, by, WIDTH / 2, HEIGHT),
+				new Rectangle(96, 40, (WIDTH / 2) / 4, HEIGHT / 4),
 				backwards.Count is not 0 ? Color.White : Color.White * .4f
 			);
 
 			// redo
 			batch.Draw(Catalog.MenuTexture,
-				new Rectangle(bx + 64, by, 64, 64),
-				new Rectangle(112, 40, 16, 16),
+				new Rectangle(bx + (WIDTH / 2), by, WIDTH / 2, HEIGHT),
+				new Rectangle(112, 40, (WIDTH / 2) / 4, HEIGHT / 4),
 				forwards.Count is not 0 ? Color.White : Color.White * .4f
 			);
 		}

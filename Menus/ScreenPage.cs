@@ -59,7 +59,7 @@ namespace HappyHomeDesigner.Menus
 
 				// shadow
 				batch.Draw(Catalog.MenuTexture,
-					new Rectangle(nx - 8, y + 8, FILTER_WIDTH, FILTER_HEIGHT),
+					new Rectangle(nx - 4, y + 4, FILTER_WIDTH, FILTER_HEIGHT),
 					new Rectangle(0, 24, FILTER_WIDTH / FILTER_SCALE, FILTER_HEIGHT / FILTER_SCALE),
 					shadow);
 

@@ -9,6 +9,9 @@ namespace HappyHomeDesigner.Menus
 {
 	public class GridPanel : IClickableMenu
 	{
+		public const int BORDER_WIDTH = 16;
+		public const int MARGIN_BOTTOM = 8;
+
 		public readonly int CellWidth;
 		public readonly int CellHeight;
 
@@ -22,7 +25,9 @@ namespace HappyHomeDesigner.Menus
 		public ScrollBar scrollBar = new();
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
-		private readonly SearchBox search = new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor);
+		private readonly SearchBox search = 
+			new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor) 
+			{ TitleText = ModEntry.i18n.Get("ui.search.name")};
 		private readonly bool search_visible;
 
 		public IReadOnlyList<IGridItem> Items
@@ -55,8 +60,9 @@ namespace HappyHomeDesigner.Menus
 
 			var displayed = search.Filtered;
 
-			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16, yPositionOnScreen - 20, 
-				width + 32, height + 36, Color.White, 4f, false);
+			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - BORDER_WIDTH, 
+				yPositionOnScreen - (BORDER_WIDTH + 4), width + (BORDER_WIDTH * 2), 
+				height + (BORDER_WIDTH * 2 + 4), Color.White, 4f, false);
 
 			int count = Math.Min(displayed.Count - offset, height / CellHeight * cols);
 			for (int i = 0; i < count; i++)
@@ -69,8 +75,8 @@ namespace HappyHomeDesigner.Menus
 
 		public void DrawShadow(SpriteBatch b)
 		{
-			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - 16 - 4, yPositionOnScreen - 20 + 4,
-				width + 32, height + 36, Color.Black * .4f, 4f, false);
+			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - BORDER_WIDTH - 4, 
+				yPositionOnScreen - (BORDER_WIDTH + 4) + 4, width + 32, height + 36, Color.Black * .4f, 4f, false);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -99,11 +105,11 @@ namespace HappyHomeDesigner.Menus
 
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
-			scrollBar.Resize(this.height + 32, xPositionOnScreen + this.width + 16, yPositionOnScreen - 16);
+			scrollBar.Resize(this.height + (BORDER_WIDTH * 2) + 4, xPositionOnScreen + this.width + BORDER_WIDTH, yPositionOnScreen - (BORDER_WIDTH + 4));
 			UpdateCount();
 
-			search.X = xPositionOnScreen - 15;
-			search.Y = yPositionOnScreen + this.height + 25;
+			search.X = xPositionOnScreen - BORDER_WIDTH;
+			search.Y = yPositionOnScreen + this.height + BORDER_WIDTH + MARGIN_BOTTOM + 8;
 		}
 
 		public override bool isWithinBounds(int x, int y)
@@ -112,7 +118,8 @@ namespace HappyHomeDesigner.Menus
 			int relY = y - yPositionOnScreen;
 			// add padding for scrollbar
 			return 
-				relX is >= -16 && relY is >= -16 && relX < width + 66 && relY < height + 16
+				relX is >= -BORDER_WIDTH && relY is >= -BORDER_WIDTH && 
+				relX < width + BORDER_WIDTH + ScrollBar.WIDTH && relY < height + BORDER_WIDTH
 				|| search.ContainsPoint(x, y);
 		}
 

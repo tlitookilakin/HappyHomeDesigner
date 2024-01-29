@@ -20,5 +20,6 @@
 	"logging.alternativeTextures.versionWarning": "The current version of Happy Home Designer only supports Alternative Textures {{min}} or newer. You currently have version {{current}}, and Alternative Textures integration will not be applied. Please update Alternative Textures to re-enable integration.",
 	"logging.removedWallsAndFloors": "Found and removed {{walls}} duplicate wallpapers and {{floors}} duplicate floors.",
 	"config.ToggleShortcut.name": "Catalog toggle shortcut",
-	"config.ToggleShortcut.desc": "Keyboard shortcut to show/hide the catalog while it is open."
+	"config.ToggleShortcut.desc": "Keyboard shortcut to show/hide the catalog while it is open.",
+	"ui.search.name": "Search"
 }
