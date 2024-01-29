@@ -148,7 +148,8 @@ namespace HappyHomeDesigner.Patches
 		}
 
 		public static bool shouldForceDrawObject(Furniture f)
-			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName");
+			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName") && 
+			f.modData.TryGetValue("AlternativeTextureOwner", out var owner) && owner is not "Stardew.Default";
 
 		public static void DrawReplace(SpriteBatch b, Texture2D tex, Vector2 pos, Rectangle? src, Color tint, 
 			float ang, Vector2 origin, float scale, SpriteEffects fx, float depth, Furniture f)
