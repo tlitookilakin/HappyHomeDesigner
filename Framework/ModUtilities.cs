@@ -27,12 +27,7 @@ namespace HappyHomeDesigner.Framework
 				return false;
 
 			// TODO switch to IDs
-			if (FurniturePage.knownFurnitureIDs is null || !FurniturePage.knownFurnitureIDs.Contains(furn.Name))
-				return false;
-			else
-				ModEntry.monitor.Log($"Deleted furniture with ID {furn.ParentSheetIndex} [{item.DisplayName}]");
-
-			return true;
+			return FurniturePage.knownFurnitureIDs is not null && FurniturePage.knownFurnitureIDs.Contains(furn.Name);
 		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
