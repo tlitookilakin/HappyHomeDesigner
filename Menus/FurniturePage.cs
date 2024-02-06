@@ -2,11 +2,13 @@
 using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace HappyHomeDesigner.Menus
@@ -71,6 +73,8 @@ namespace HappyHomeDesigner.Menus
 			if (populateIds)
 				knownFurnitureIDs = new();
 
+			var timer = Stopwatch.StartNew();
+
 			foreach (var item in AllFurnitures)
 			{
 				if (item is Furniture furn)
@@ -91,6 +95,9 @@ namespace HappyHomeDesigner.Menus
 						knownFurnitureIDs.Add(furn.Name); // TODO use ids
 				}
 			}
+
+			timer.Stop();
+			ModEntry.monitor.Log($"Populated {entries.Count} furniture items in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
 
 			MainPanel.DisplayChanged += UpdateDisplay;
 

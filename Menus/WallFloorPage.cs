@@ -7,6 +7,7 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -37,6 +38,8 @@ namespace HappyHomeDesigner.Menus
 
 			int removedWalls = 0;
 			int removedFloors = 0;
+
+			var timer = Stopwatch.StartNew();
 
 			foreach (var item in Utility.getAllWallpapersAndFloorsForFree().Keys)
 			{
@@ -70,6 +73,9 @@ namespace HappyHomeDesigner.Menus
 					}
 				}
 			}
+
+			timer.Stop();
+			ModEntry.monitor.Log($"Populated {floors.Count} floors and {walls.Count} walls in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
 
 			if (removedFloors is not 0 || removedWalls is not 0)
 				ModEntry.i18n.Log("logging.removedWallsAndFloors", new { walls = removedWalls, floors = removedFloors }, LogLevel.Info);
