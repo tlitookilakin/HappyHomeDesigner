@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Integration;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -50,6 +51,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly ClickableTextureComponent SettingsButton;
 		private readonly ClickableTextureComponent ToggleButton;
 		private bool Toggled = true;
+		private Point screenSize;
 
 		public Catalog(AvailableCatalogs catalogs)
 		{
@@ -69,8 +71,7 @@ namespace HappyHomeDesigner.Menus
 			if (IGMCM.Installed)
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
 
-			var vp = Game1.uiViewport;
-			Resize(new(vp.X, vp.Y, vp.Width, vp.Height));
+			Resize(Game1.uiViewport.ToRect());
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
 
@@ -108,6 +109,9 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void draw(SpriteBatch b)
 		{
+			if (screenSize.X != Game1.uiViewport.Width || screenSize.Y != Game1.uiViewport.Height)
+				Resize(Game1.uiViewport.ToRect());
+
 			ToggleButton.draw(b);
 
 			if (!Toggled)
@@ -177,6 +181,8 @@ namespace HappyHomeDesigner.Menus
 		}
 		private void Resize(Rectangle bounds)
 		{
+			screenSize = bounds.Size;
+
 			Rectangle region = new(32, 96, 400, bounds.Height - 160);
 			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Resize(region);

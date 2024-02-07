@@ -172,5 +172,8 @@ namespace HappyHomeDesigner.Framework
 					return i;
 			return -1;
 		}
+
+		public static Rectangle ToRect(this xTile.Dimensions.Rectangle rect)
+			=> new(rect.X, rect.Y, rect.Width, rect.Height);
 	}
 }
