@@ -85,7 +85,7 @@ namespace HappyHomeDesigner.Menus
 				if (id is null)
 					return false;
 
-				var existing = where.appliedFloor[id];
+				var existing = where.appliedFloor.TryGetValue(id, out var xid) ? xid : "0";
 
 				var modData = item.GetModData();
 				var name = modData is null ?
@@ -106,7 +106,7 @@ namespace HappyHomeDesigner.Menus
 					id = where.GetWallpaperID(x, y);
 				}
 
-				var existing = where.appliedWallpaper[id];
+				var existing = where.appliedWallpaper.TryGetValue(id, out var xid) ? xid : "0";
 
 				var modData = item.GetModData();
 				var name = modData is null ?
