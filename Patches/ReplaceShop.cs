@@ -27,7 +27,7 @@ namespace HappyHomeDesigner.Patches
 			var il = new CodeMatcher(src, gen);
 
 			il.MatchStartForward(
-				new CodeMatch(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).GetMethod)
+				new CodeMatch(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).SetMethod)
 			);
 
 			if (il.IsInvalid)
@@ -47,10 +47,25 @@ namespace HappyHomeDesigner.Patches
 		{
 			return menu.ShopId switch
 			{
-				"Catalogue" => Catalog.TryShowCatalog(Catalog.AvailableCatalogs.Wallpaper, menu) ? null : menu,
-				"Furniture Catalogue" => Catalog.TryShowCatalog(Catalog.AvailableCatalogs.Furniture, menu) ? null : menu,
+				"Catalogue" => 
+					ModEntry.config.ReplaceWallpaperCatalog && 
+					ShowCatalog(Catalog.AvailableCatalogs.Wallpaper, menu) 
+					? null : menu,
+				"Furniture Catalogue" => 
+					ModEntry.config.ReplaceFurnitureCatalog && 
+					ShowCatalog(Catalog.AvailableCatalogs.Furniture, menu) 
+					? null : menu,
 				_ => menu
 			};
+		}
+
+		private static bool ShowCatalog(Catalog.AvailableCatalogs catalogs, ShopMenu menu)
+		{
+			if (Catalog.TryShowCatalog(catalogs, menu))
+				ModEntry.monitor.Log("Table activated!", LogLevel.Debug);
+			else
+				ModEntry.monitor.Log("Failed to display UI", LogLevel.Debug);
+			return true;
 		}
 	}
 }

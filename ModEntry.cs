@@ -45,11 +45,11 @@ namespace HappyHomeDesigner
 
 		private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
 		{
-			if (e.NameWithoutLocale == uiPath)
+			if (e.NameWithoutLocale.Equals(uiPath))
 				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
-			else if (e.NameWithoutLocale == furnitureData)
+			else if (e.NameWithoutLocale.Equals(furnitureData))
 				e.Edit(AddCatalogue, AssetEditPriority.Default);
-			else if (e.NameWithoutLocale == sprite)
+			else if (e.NameWithoutLocale.Equals(sprite))
 				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);
 		}
 
@@ -58,7 +58,7 @@ namespace HappyHomeDesigner
 			if (asset.Data is Dictionary<string, string> data)
 				data.TryAdd(
 					manifest.UniqueID + "_Catalogue",
-					$"Happy Home Catalogue/11/2 2/-1/1/230000/{i18n.Get("furniture.Catalog.name")}/-1/0/Mods\\{manifest.UniqueID}\\Catalogue"
+					$"Happy Home Catalogue/table/2 2/-1/1/230000/-1/{i18n.Get("furniture.Catalog.name")}/0/Mods\\{manifest.UniqueID}\\Catalogue/true"
 				);
 		}
 
@@ -109,12 +109,6 @@ namespace HappyHomeDesigner
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
 		{
-			if (Helper.ModRegistry.IsLoaded("spacechase0.DynamicGameAssets"))
-			{
-				IDynamicGameAssets.API = Helper.ModRegistry.GetApi<IDynamicGameAssets>("spacechase0.DynamicGameAssets");
-				IDynamicGameAssets.API.AddEmbeddedPack(ModManifest, Helper.DirectoryPath);
-			}
-
 			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
 			{
 				IGMCM.API = Helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");

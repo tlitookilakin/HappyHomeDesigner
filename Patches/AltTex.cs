@@ -216,8 +216,9 @@ namespace HappyHomeDesigner.Patches
 			il.MatchStartForward(
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.sourceRect))),
-					new(OpCodes.Call, typeof(NetFieldBase<Rectangle, NetRectangle>).GetMethod("op_Implicit"))
-				).RemoveInstructions(3)
+					new(OpCodes.Callvirt, typeof(NetFieldBase<Rectangle, NetRectangle>).GetProperty(nameof(NetRectangle.Value)).GetMethod)
+				)
+				.RemoveInstructions(3)
 				.InsertAndAdvance(
 					new CodeInstruction(OpCodes.Ldloc_S, sourceRect)
 				);

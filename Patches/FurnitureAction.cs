@@ -1,6 +1,7 @@
 ﻿using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewValley;
 using StardewValley.Objects;
 using System.Reflection;
 
@@ -23,7 +24,7 @@ namespace HappyHomeDesigner.Patches
 
 		private static bool CheckAction(Furniture __instance, ref bool __result)
 		{
-			if (__instance.Name == ModEntry.manifest.UniqueID + "_Catalogue")
+			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue")
 			{
 				ShowCatalog(Catalog.AvailableCatalogs.All);
 				__result = true;
@@ -58,7 +59,8 @@ namespace HappyHomeDesigner.Patches
 
 		private static string EditDescription(string original, Furniture __instance)
 		{
-			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue")
+			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue" && 
+				!ItemRegistry.GetDataOrErrorItem(__instance.ItemId).IsErrorItem)
 				return ModEntry.i18n.Get("furniture.Catalog.description");
 			return original;
 		}
