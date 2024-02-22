@@ -29,10 +29,10 @@ namespace HappyHomeDesigner.Menus
 		{
 			item = wallPaper;
 
-			var modData = item.GetModData();
+			var modData = item.GetSetData();
 
 			id = modData is not null ?
-				modData.ID + ':' + item.ParentSheetIndex.ToString() :
+				modData.Id + ':' + item.ParentSheetIndex.ToString() :
 				item.ParentSheetIndex.ToString();
 
 			Favorited = favorites.Contains(id);
@@ -76,8 +76,7 @@ namespace HappyHomeDesigner.Menus
 			if (Game1.currentLocation is not DecoratableLocation where)
 				return false;
 
-			var x = Game1.player.getTileX();
-			var y = Game1.player.getTileY();
+			(var x, var y) = Game1.player.TilePoint;
 
 			if (item.isFloor.Value)
 			{
@@ -87,10 +86,10 @@ namespace HappyHomeDesigner.Menus
 
 				var existing = where.appliedFloor.TryGetValue(id, out var xid) ? xid : "0";
 
-				var modData = item.GetModData();
+				var modData = item.GetSetData();
 				var name = modData is null ?
 					item.ParentSheetIndex.ToString() :
-					$"{modData.ID}:{item.ParentSheetIndex}";
+					$"{modData.Id}:{item.ParentSheetIndex}";
 
 				where.SetFloor(name, id);
 
@@ -108,10 +107,10 @@ namespace HappyHomeDesigner.Menus
 
 				var existing = where.appliedWallpaper.TryGetValue(id, out var xid) ? xid : "0";
 
-				var modData = item.GetModData();
+				var modData = item.GetSetData();
 				var name = modData is null ?
 					item.ParentSheetIndex.ToString() :
-					$"{modData.ID}:{item.ParentSheetIndex}";
+					$"{modData.Id}:{item.ParentSheetIndex}";
 
 				where.SetWallpaper(name, id);
 
@@ -149,7 +148,7 @@ namespace HappyHomeDesigner.Menus
 
 		private Texture2D GetTexture()
 		{
-			var modData = item.GetModData();
+			var modData = item.GetSetData();
 			if (modData is not null)
 			{
 				try

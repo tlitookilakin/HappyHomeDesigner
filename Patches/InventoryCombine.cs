@@ -95,13 +95,13 @@ namespace HappyHomeDesigner.Patches
 			if(slot is Furniture furn && IDynamicGameAssets.API is not null)
 			{
 				// furniture catalog
-				if (furn.ParentSheetIndex is 1226)
+				if (furn.ItemId is "1226")
 				{
 					// wall catalog
-					if (held is Furniture heldFurn && heldFurn.ParentSheetIndex is 1308)
+					if (held is Furniture heldFurn && heldFurn.ItemId is "1308")
 					{
 						held = null;
-						slot = IDynamicGameAssets.API.SpawnDGAItem(ModEntry.manifest.UniqueID + "/Catalog") as Item;
+						slot = ItemRegistry.Create<Furniture>(ModEntry.manifest.UniqueID + "_Catalogue");
 
 						if (playSound)
 							Game1.playSound("axe");
@@ -112,8 +112,8 @@ namespace HappyHomeDesigner.Patches
 				// combined catalog
 				else if (furn.Name == ModEntry.manifest.UniqueID + "/Catalog" && held is null)
 				{
-					held = new Furniture(1308, Vector2.Zero);
-					slot = new Furniture(1226, Vector2.Zero);
+					held = new Furniture("1308", Vector2.Zero);
+					slot = new Furniture("1226", Vector2.Zero);
 
 					if (playSound)
 						Game1.playSound("pickUpItem");

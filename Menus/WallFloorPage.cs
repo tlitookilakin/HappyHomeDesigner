@@ -26,7 +26,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly UndoRedoButton undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 		private GridPanel ActivePanel;
 
-		public WallFloorPage()
+		public WallFloorPage(ShopMenu existing = null)
 		{
 			filter_count = 4;
 
@@ -41,7 +41,7 @@ namespace HappyHomeDesigner.Menus
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in Utility.getAllWallpapersAndFloorsForFree().Keys)
+			foreach (var item in ModUtilities.GetCatalogItems(false, existing))
 			{
 				if (item is not Wallpaper wall)
 					continue;

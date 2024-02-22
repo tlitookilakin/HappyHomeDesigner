@@ -8,6 +8,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using System;
+using System.Collections.Generic;
 
 namespace HappyHomeDesigner
 {
@@ -18,7 +19,9 @@ namespace HappyHomeDesigner
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
-		internal static string uiPath = "";
+		internal static IAssetName uiPath;
+		internal static IAssetName furnitureData;
+		internal static IAssetName sprite;
 		private static string whichUI = "ui";
 
 		public override void Entry(IModHelper helper)
@@ -27,7 +30,9 @@ namespace HappyHomeDesigner
 			ModEntry.helper = helper;
 			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
-			uiPath = $"Mods/{ModManifest.UniqueID}/UI";
+			uiPath = helper.GameContent.ParseAssetName($"Mods/{ModManifest.UniqueID}/UI");
+			furnitureData = helper.GameContent.ParseAssetName("Data/Furniture");
+			sprite = helper.GameContent.ParseAssetName($"Mods/{ModManifest.UniqueID}/Catalogue");
 			manifest = ModManifest;
 
 			helper.Events.GameLoop.GameLaunched += Launched;
@@ -40,8 +45,21 @@ namespace HappyHomeDesigner
 
 		private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
 		{
-			if (e.NameWithoutLocale.IsEquivalentTo(uiPath))
+			if (e.NameWithoutLocale == uiPath)
 				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
+			else if (e.NameWithoutLocale == furnitureData)
+				e.Edit(AddCatalogue, AssetEditPriority.Default);
+			else if (e.NameWithoutLocale == sprite)
+				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);
+		}
+
+		private void AddCatalogue(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, string> data)
+				data.TryAdd(
+					manifest.UniqueID + "_Catalogue",
+					$"Happy Home Catalogue/11/2 2/-1/1/230000/{i18n.Get("furniture.Catalog.name")}/-1/0/Mods\\{manifest.UniqueID}\\Catalogue"
+				);
 		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
@@ -120,6 +138,7 @@ namespace HappyHomeDesigner
 
 		private static void Patch(Harmony harmony)
 		{
+			ReplaceShop.Apply(harmony);
 			ItemCloneFix.Apply(harmony);
 			FurnitureAction.Apply(harmony);
 			InventoryCombine.Apply(harmony);
