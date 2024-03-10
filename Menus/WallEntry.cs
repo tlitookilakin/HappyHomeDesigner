@@ -91,6 +91,9 @@ namespace HappyHomeDesigner.Menus
 					item.ParentSheetIndex.ToString() :
 					$"{modData.Id}:{item.ParentSheetIndex}";
 
+				if (existing == name)
+					return false;
+
 				where.SetFloor(name, id);
 
 				state = new() { area = id, isFloor = true, old = existing, which = name};
@@ -111,6 +114,9 @@ namespace HappyHomeDesigner.Menus
 				var name = modData is null ?
 					item.ParentSheetIndex.ToString() :
 					$"{modData.Id}:{item.ParentSheetIndex}";
+
+				if (existing == name)
+					return false;
 
 				where.SetWallpaper(name, id);
 
