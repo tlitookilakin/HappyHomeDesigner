@@ -36,9 +36,11 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
 		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 4, 4};
-		internal static HashSet<string> knownFurnitureIDs;
+		internal static HashSet<string> knownFurnitureIDs = new();
 
-		public FurniturePage(ShopMenu existing = null)
+		private static string[] preservedFavorites;
+
+		public FurniturePage(ShopMenu existing = null, string ID = null)
 		{
 			int[] Map;
 			int default_slot;
@@ -56,23 +58,29 @@ namespace HappyHomeDesigner.Menus
 				iconRow = 8;
 			}
 
+			if (ID is null or "Combined")
+				ID = "Furniture Catalogue";
+
 			filter_count = Map.Max() + 1;
 			Filters = new List<FurnitureEntry>[filter_count];
 			for (int i = 0; i < Filters.Length; i++)
 				Filters[i] = new();
 			filter_count += 2;
 
-			var favorites = Game1.player.modData.TryGetValue(KeyFavs, out var s) ? s.Split('	') : Array.Empty<string>();
+			var favorites = new HashSet<string>(
+				Game1.player.modData.TryGetValue(KeyFavs, out var s) ? 
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
+				Array.Empty<string>()
+			);
+
 			var season = Game1.player.currentLocation.GetSeason();
 			var seasonName = season.ToString();
 
-			bool populateIds = knownFurnitureIDs is null;
-			if (populateIds)
-				knownFurnitureIDs = new();
+			knownFurnitureIDs.Clear();
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in ModUtilities.GetCatalogItems(true, existing))
+			foreach (var item in ModUtilities.GetCatalogItems(true, existing, ID))
 			{
 				if (item is Furniture furn)
 				{
@@ -88,8 +96,7 @@ namespace HappyHomeDesigner.Menus
 					if (entry.Favorited)
 						Favorites.Add(entry);
 
-					if (populateIds)
-						knownFurnitureIDs.Add(furn.ItemId);
+					knownFurnitureIDs.Add(furn.ItemId);
 				}
 			}
 
@@ -100,6 +107,12 @@ namespace HappyHomeDesigner.Menus
 
 			MainPanel.Items = entries;
 			VariantPanel.Items = variants;
+
+			preservedFavorites = favorites.ToArray();
+		}
+		public override int Count()
+		{
+			return entries.Count;
 		}
 		public void UpdateDisplay()
 		{
@@ -285,7 +298,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override void Exit()
 		{
-			Game1.player.modData[KeyFavs] = string.Join('	', Favorites);
+			Game1.player.modData[KeyFavs] = string.Join('	', Favorites) + '	' + string.Join('	', preservedFavorites);
 		}
 	}
 }

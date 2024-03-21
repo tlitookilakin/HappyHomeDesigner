@@ -8,6 +8,7 @@ using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -25,13 +26,27 @@ namespace HappyHomeDesigner.Menus
 		private readonly GridPanel FloorsPanel = new(72, 72, true);
 		private readonly UndoRedoButton undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 		private GridPanel ActivePanel;
+		private string[] preservedWallFavorites;
+		private string[] preservedFloorFavorites;
 
-		public WallFloorPage(ShopMenu existing = null)
+		public WallFloorPage(ShopMenu existing = null, string ID = null)
 		{
 			filter_count = 4;
 
-			var wallFavs = Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? s.Split('	') : Array.Empty<string>();
-			var floorFavs = Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? s.Split('	') : Array.Empty<string>();
+			if (ID is null or "Combined")
+				ID = "Catalogue";
+
+			var wallFavs = new HashSet<string>(
+				Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? 
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
+				Array.Empty<string>()
+			);
+
+			var floorFavs = new HashSet<string>(
+				Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? 
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
+				Array.Empty<string>()
+			);
 
 			var knownWalls = new HashSet<string>();
 			var knownFloors = new HashSet<string>();
@@ -41,7 +56,7 @@ namespace HappyHomeDesigner.Menus
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in ModUtilities.GetCatalogItems(false, existing))
+			foreach (var item in ModUtilities.GetCatalogItems(false, existing, "Catalogue"))
 			{
 				if (item is not Wallpaper wall)
 					continue;
@@ -84,6 +99,14 @@ namespace HappyHomeDesigner.Menus
 			WallPanel.Items = walls;
 			FloorsPanel.Items = floors;
 			ActivePanel = WallPanel;
+
+			preservedWallFavorites = wallFavs.ToArray();
+			preservedFloorFavorites = floorFavs.ToArray();
+		}
+
+		public override int Count()
+		{
+			return Math.Max(floors.Count, walls.Count);
 		}
 
 		public override void draw(SpriteBatch b)
@@ -185,8 +208,8 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override void Exit()
 		{
-			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors);
-			Game1.player.modData[KeyWallFav] = string.Join('	', favoriteWalls);
+			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors) + '	' + string.Join('	', preservedFloorFavorites);
+			Game1.player.modData[KeyWallFav] = string.Join('	', favoriteWalls) + '	' + string.Join('	', preservedWallFavorites);
 		}
 	}
 }

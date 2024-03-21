@@ -19,6 +19,8 @@ namespace HappyHomeDesigner.Menus
 		public abstract ClickableTextureComponent GetTab();
 		public virtual void Exit() { }
 
+		public abstract int Count();
+
 		public virtual void Resize(Rectangle region)
 		{
 			width = region.Width;

@@ -30,12 +30,12 @@ namespace HappyHomeDesigner.Menus
 		/// <summary>Standard constructor. Used for main catalog page.</summary>
 		/// <param name="Item">The contained furniture item.</param>
 		/// <param name="season">The local season. Required to accurately check for AT variants.</param>
-		public FurnitureEntry(Furniture Item, Season season, string seasonName, IList<string> favorites)
+		public FurnitureEntry(Furniture Item, Season season, string seasonName, ICollection<string> favorites)
 		{
 			this.Item = Item;
 			this.season = season;
 			HasVariants = AlternativeTextures.Installed && AlternativeTextures.HasVariant( "Furniture_" + Item.ItemId, "Furniture_" + Item.Name, seasonName);
-			Favorited = favorites.Contains(Item.ItemId);
+			Favorited = favorites.Remove(Item.ItemId);
 		}
 
 		/// <summary>Used for AT variant entries.</summary>

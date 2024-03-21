@@ -16,33 +16,26 @@ namespace HappyHomeDesigner.Menus
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
 
-		public enum AvailableCatalogs
-		{
-			Furniture = 1,
-			Wallpaper = 2,
-			All = 3,
-		}
-
-		public static bool TryShowCatalog(AvailableCatalogs catalogs, ShopMenu existing = null)
+		public static bool TryShowCatalog(string type, ShopMenu existing = null)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
 
 			// catalog is open
 			if (ActiveMenu.Value is Catalog catalog)
 				// the same or more permissive
-				if ((catalog.Catalogs | catalogs) == catalog.Catalogs)
+				if (catalog.Type == type)
 					return false;
 				else
 					catalog.exitThisMenuNoSound();
 
-			var menu = new Catalog(catalogs);
+			var menu = new Catalog(type);
 			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
 			return true;
 		}
 
-		public readonly AvailableCatalogs Catalogs;
+		public readonly string Type;
 
 		private List<ScreenPage> Pages = new();
 		private int tab = 0;
@@ -53,17 +46,19 @@ namespace HappyHomeDesigner.Menus
 		private bool Toggled = true;
 		private Point screenSize;
 
-		public Catalog(AvailableCatalogs catalogs, ShopMenu existing = null)
+		public Catalog(string type, ShopMenu existing = null)
 		{
-			Catalogs = catalogs;
-			if ((catalogs & AvailableCatalogs.Furniture) is not 0)
-				Pages.Add(new FurniturePage(existing));
-			if ((catalogs & AvailableCatalogs.Wallpaper) is not 0)
-				Pages.Add(new WallFloorPage(existing));
+			Type = type;
+
+			Pages.Add(new FurniturePage(existing, type));
+			Pages.Add(new WallFloorPage(existing, type));
 
 			if (Pages.Count is not 1)
-				for (int i = 0; i < Pages.Count; i++)
-					Tabs.Add(Pages[i].GetTab());
+				for (int i = Pages.Count - 1; i >= 0; i--)
+					if (Pages[i].Count() is 0)
+						Pages.RemoveAt(i);
+					else
+						Tabs.Add(Pages[i].GetTab());
 
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);

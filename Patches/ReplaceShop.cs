@@ -3,6 +3,7 @@ using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.GameData.Shops;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
@@ -49,19 +50,30 @@ namespace HappyHomeDesigner.Patches
 			{
 				"Catalogue" => 
 					ModEntry.config.ReplaceWallpaperCatalog && 
-					ShowCatalog(Catalog.AvailableCatalogs.Wallpaper, menu) 
+					ShowCatalog(menu.ShopId, menu) 
 					? null : menu,
+
 				"Furniture Catalogue" => 
 					ModEntry.config.ReplaceFurnitureCatalog && 
-					ShowCatalog(Catalog.AvailableCatalogs.Furniture, menu) 
+					ShowCatalog(menu.ShopId, menu) 
 					? null : menu,
-				_ => menu
+
+				"Happy Home Designer" =>
+					ShowCatalog("Combined", null) ? null : menu,
+
+				_ => 
+					menu.ShopData is ShopData data && 
+					data.CustomFields is Dictionary<string, string> fields &&
+					fields.ContainsKey("HappyHomeDesigner/Catalogue") &&
+					ModEntry.config.ReplaceModCatalogs &&
+					ShowCatalog(menu.ShopId, menu)
+					? null : menu
 			};
 		}
 
-		private static bool ShowCatalog(Catalog.AvailableCatalogs catalogs, ShopMenu menu)
+		private static bool ShowCatalog(string id, ShopMenu menu)
 		{
-			if (Catalog.TryShowCatalog(catalogs, menu))
+			if (Catalog.TryShowCatalog(id, menu))
 				ModEntry.monitor.Log("Table activated!", LogLevel.Debug);
 			else
 				ModEntry.monitor.Log("Failed to display UI", LogLevel.Debug);

@@ -179,21 +179,24 @@ namespace HappyHomeDesigner.Framework
 		public static Rectangle ToRect(this xTile.Dimensions.Rectangle rect)
 			=> new(rect.X, rect.Y, rect.Width, rect.Height);
 
-		public static IEnumerable<ISalable> GetCatalogItems(bool furniture, ShopMenu existing = null)
+		public static IEnumerable<ISalable> GetCatalogItems(bool furniture, ShopMenu existing = null, string name = null)
 		{
-			var name = furniture ? "Furniture Catalogue" : "Catalogue";
 			IEnumerable<ISalable> output;
 
-			if (existing is null)
+			if (existing is not null)
 			{
-
+				output = existing.forSale;
+			}
+			else if (name is not null)
+			{
 				if (!DataLoader.Shops(Game1.content).TryGetValue(name, out var catalog))
 					return Array.Empty<ISalable>();
 
-				 output = ShopBuilder.GetShopStock(name, catalog).Keys;
-			} else
+				output = ShopBuilder.GetShopStock(name, catalog).Keys;
+			} 
+			else
 			{
-				output = existing.forSale;
+				return Array.Empty<ISalable>();
 			}
 
 			if (CustomFurniture.Installed && furniture)

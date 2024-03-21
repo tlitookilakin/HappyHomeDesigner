@@ -26,7 +26,7 @@ namespace HappyHomeDesigner.Patches
 		{
 			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue")
 			{
-				ShowCatalog(Catalog.AvailableCatalogs.All);
+				ShowCatalog();
 				__result = true;
 				return false;
 			}
@@ -36,7 +36,7 @@ namespace HappyHomeDesigner.Patches
 				// Furniture catalog
 				case "1226":
 					if (__instance.heldObject.Value is Furniture sobj && sobj.ItemId is "1308")
-						ShowCatalog(Catalog.AvailableCatalogs.All);
+						ShowCatalog();
 					else
 						return true;
 					break;
@@ -49,9 +49,9 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
-		private static void ShowCatalog(Catalog.AvailableCatalogs available)
+		private static void ShowCatalog()
 		{
-			if (Catalog.TryShowCatalog(available))
+			if (Catalog.TryShowCatalog("Combined"))
 				ModEntry.monitor.Log("Table activated!", LogLevel.Debug);
 			else
 				ModEntry.monitor.Log("Failed to display UI", LogLevel.Debug);
@@ -59,8 +59,10 @@ namespace HappyHomeDesigner.Patches
 
 		private static string EditDescription(string original, Furniture __instance)
 		{
-			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue" && 
-				!ItemRegistry.GetDataOrErrorItem(__instance.ItemId).IsErrorItem)
+			if (ItemRegistry.GetDataOrErrorItem(__instance.ItemId).IsErrorItem)
+				return original;
+
+			if (__instance.ItemId == ModEntry.manifest.UniqueID + "_Catalogue")
 				return ModEntry.i18n.Get("furniture.Catalog.description");
 			return original;
 		}
