@@ -46,38 +46,9 @@ namespace HappyHomeDesigner.Patches
 
 		public static ShopMenu CheckAndReplace(ShopMenu menu)
 		{
-			return menu.ShopId switch
-			{
-				"Catalogue" => 
-					ModEntry.config.ReplaceWallpaperCatalog && 
-					ShowCatalog(menu.ShopId, menu) 
-					? null : menu,
-
-				"Furniture Catalogue" => 
-					ModEntry.config.ReplaceFurnitureCatalog && 
-					ShowCatalog(menu.ShopId, menu) 
-					? null : menu,
-
-				"Happy Home Designer" =>
-					ShowCatalog("Combined", null) ? null : menu,
-
-				_ => 
-					menu.ShopData is ShopData data && 
-					data.CustomFields is Dictionary<string, string> fields &&
-					fields.ContainsKey("HappyHomeDesigner/Catalogue") &&
-					ModEntry.config.ReplaceModCatalogs &&
-					ShowCatalog(menu.ShopId, menu)
-					? null : menu
-			};
-		}
-
-		private static bool ShowCatalog(string id, ShopMenu menu)
-		{
-			if (Catalog.TryShowCatalog(id, menu))
-				ModEntry.monitor.Log("Table activated!", LogLevel.Debug);
-			else
-				ModEntry.monitor.Log("Failed to display UI", LogLevel.Debug);
-			return true;
+			if (Catalog.TryShowCatalog(menu))
+				return null;
+			return menu;
 		}
 	}
 }

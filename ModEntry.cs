@@ -14,6 +14,8 @@ namespace HappyHomeDesigner
 {
 	public class ModEntry : Mod
 	{
+		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";
+
 		internal static IMonitor monitor;
 		internal static IManifest manifest;
 		internal static IModHelper helper;

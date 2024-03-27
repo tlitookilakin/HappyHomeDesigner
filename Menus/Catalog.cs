@@ -16,42 +16,58 @@ namespace HappyHomeDesigner.Menus
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
 
-		public static bool TryShowCatalog(string type, ShopMenu existing = null)
+		/// <summary>Attempts to open the menu from an existing shop</summary>
+		/// <param name="existing">The shop to try and replace</param>
+		/// <returns>whether or not the shop is replaced</returns>
+		public static bool TryShowCatalog(ShopMenu existing)
+		{
+			if (existing is null)
+				return false;
+
+			if (!existing.CountsAsCatalog())
+				return false;
+
+			ShowCatalog(
+				existing.itemPriceAndStock.Keys.GetAdditionalCatalogItems(existing.ShopId),
+				existing.ShopId
+			);
+
+			return true;
+		}
+
+		public static void ShowCatalog(IEnumerable<ISalable> items, string ID)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
 
-			// catalog is open
 			if (ActiveMenu.Value is Catalog catalog)
-				// the same or more permissive
-				if (catalog.Type == type)
-					return false;
+				if (catalog.Type == ID)
+					return;
 				else
 					catalog.exitThisMenuNoSound();
 
-			var menu = new Catalog(type);
+			var menu = new Catalog(items, ID);
 			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
-			return true;
 		}
 
 		public readonly string Type;
 
-		private List<ScreenPage> Pages = new();
-		private int tab = 0;
-		private List<ClickableTextureComponent> Tabs = new();
-		private ClickableTextureComponent CloseButton;
+		private readonly List<ScreenPage> Pages = new();
+		private readonly List<ClickableTextureComponent> Tabs = new();
+		private readonly ClickableTextureComponent CloseButton;
 		private readonly ClickableTextureComponent SettingsButton;
 		private readonly ClickableTextureComponent ToggleButton;
+		private int tab = 0;
 		private bool Toggled = true;
 		private Point screenSize;
 
-		public Catalog(string type, ShopMenu existing = null)
+		public Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
-			Type = type;
+			Type = id;
 
-			Pages.Add(new FurniturePage(existing, type));
-			Pages.Add(new WallFloorPage(existing, type));
+			Pages.Add(new FurniturePage(items));
+			Pages.Add(new WallFloorPage(items));
 
 			if (Pages.Count is not 1)
 				for (int i = Pages.Count - 1; i >= 0; i--)
@@ -59,6 +75,11 @@ namespace HappyHomeDesigner.Menus
 						Pages.RemoveAt(i);
 					else
 						Tabs.Add(Pages[i].GetTab());
+
+			if (Tabs.Count is 1)
+				Tabs.Clear();
+			else
+				Tabs.Reverse();
 
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
@@ -70,7 +91,7 @@ namespace HappyHomeDesigner.Menus
 			AltTex.forcePreviewDraw = true;
 			AltTex.forceMenuDraw = true;
 
-			if (existing is null)
+			if (playSound)
 				Game1.playSound("bigSelect");
 		}
 

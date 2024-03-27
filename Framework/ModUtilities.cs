@@ -21,6 +21,9 @@ namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
+		[Flags]
+		public enum CatalogType {None = 0, Furniture = 1, Wallpaper = 2, Collector = 4};
+
 		private static readonly FieldInfo OldValueBackingField =
 			typeof(MouseWheelScrolledEventArgs).GetField("<OldValue>k__BackingField", 
 				BindingFlags.Instance | BindingFlags.NonPublic);
@@ -179,27 +182,11 @@ namespace HappyHomeDesigner.Framework
 		public static Rectangle ToRect(this xTile.Dimensions.Rectangle rect)
 			=> new(rect.X, rect.Y, rect.Width, rect.Height);
 
-		public static IEnumerable<ISalable> GetCatalogItems(bool furniture, ShopMenu existing = null, string name = null)
+		public static IEnumerable<ISalable> GetAdditionalCatalogItems(this IEnumerable<ISalable> original, string ID)
 		{
-			IEnumerable<ISalable> output;
+			var output = original;
 
-			if (existing is not null)
-			{
-				output = existing.forSale;
-			}
-			else if (name is not null)
-			{
-				if (!DataLoader.Shops(Game1.content).TryGetValue(name, out var catalog))
-					return Array.Empty<ISalable>();
-
-				output = ShopBuilder.GetShopStock(name, catalog).Keys;
-			} 
-			else
-			{
-				return Array.Empty<ISalable>();
-			}
-
-			if (CustomFurniture.Installed && furniture)
+			if (CustomFurniture.Installed && ID.Contains("Furniture"))
 				output = output.Concat(CustomFurniture.customFurniture);
 
 			return output;
@@ -212,6 +199,46 @@ namespace HappyHomeDesigner.Framework
 				if (item.Name == name)
 					yield return item;
 			}
+		}
+
+		public static bool CountsAsCatalog(this ShopMenu shop, bool ignore_config = false)
+		{
+			return shop.ShopId switch
+			{
+				"Furniture Catalogue" => (ignore_config || ModEntry.config.ReplaceFurnitureCatalog),
+				"Catalogue" => (ignore_config || ModEntry.config.ReplaceWallpaperCatalog),
+				_ =>
+					(ignore_config || ModEntry.config.ReplaceRareCatalogs) &&
+					shop.ShopData is ShopData data &&
+					data.CustomFields is Dictionary<string, string> fields &&
+					fields.ContainsKey("HappyHomeDesigner/Catalogue")
+			};
+		}
+
+		public static IEnumerable<ISalable> GenerateCombined(CatalogType catalog)
+		{
+			IEnumerable<ISalable> output = Array.Empty<ISalable>();
+			var shopData = DataLoader.Shops(Game1.content);
+
+			if (catalog.HasFlag(CatalogType.Furniture) && shopData.TryGetValue("Furniture Catalogue", out var data))
+				output = output.Concat(ShopBuilder.GetShopStock("Furniture Catalogue", data).Keys);
+
+			if (catalog.HasFlag(CatalogType.Wallpaper) && shopData.TryGetValue("Catalogue", out data))
+				output = output.Concat(ShopBuilder.GetShopStock("Catalogue", data).Keys);
+
+			if (catalog.HasFlag(CatalogType.Collector))
+			{
+				foreach ((var id, var sdata) in shopData)
+				{
+					if (sdata.CustomFields is Dictionary<string, string> fields && 
+						fields.ContainsKey("HappyHomeDesigner/Catalogue"))
+					{
+						output = output.Concat(ShopBuilder.GetShopStock(id, sdata).Keys);
+					}
+				}
+			}
+
+			return output;
 		}
 	}
 }

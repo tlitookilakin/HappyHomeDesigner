@@ -40,7 +40,7 @@ namespace HappyHomeDesigner.Menus
 
 		private static string[] preservedFavorites;
 
-		public FurniturePage(ShopMenu existing = null, string ID = null)
+		public FurniturePage(IEnumerable<ISalable> items = null)
 		{
 			int[] Map;
 			int default_slot;
@@ -57,9 +57,6 @@ namespace HappyHomeDesigner.Menus
 				default_slot = DEFAULT_DEFAULT;
 				iconRow = 8;
 			}
-
-			if (ID is null or "Combined")
-				ID = "Furniture Catalogue";
 
 			filter_count = Map.Max() + 1;
 			Filters = new List<FurnitureEntry>[filter_count];
@@ -80,7 +77,7 @@ namespace HappyHomeDesigner.Menus
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in ModUtilities.GetCatalogItems(true, existing, ID))
+			foreach (var item in items)
 			{
 				if (item is Furniture furn)
 				{

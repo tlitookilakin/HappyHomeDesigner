@@ -19,7 +19,7 @@ namespace HappyHomeDesigner.Framework
 		public bool PauseTime { get; set; }
 		public bool ReplaceFurnitureCatalog { get; set; }
 		public bool ReplaceWallpaperCatalog { get; set; }
-		public bool ReplaceModCatalogs { get; set; }
+		public bool ReplaceRareCatalogs { get; set; }
 		public KeybindList ToggleShortcut { get; set; }
 
 		public Config()
@@ -42,7 +42,7 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(PauseTime));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
-			gmcm.QuickBind(man, this, nameof(ReplaceModCatalogs));
+			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
 		}
 
@@ -56,7 +56,7 @@ namespace HappyHomeDesigner.Framework
 			PauseTime = true;
 			ReplaceFurnitureCatalog = true;
 			ReplaceWallpaperCatalog = true;
-			ReplaceModCatalogs = true;
+			ReplaceRareCatalogs = true;
 			ToggleShortcut = new(SButton.None);
 		}
 		private void Save()

@@ -21,20 +21,18 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<WallEntry> floors = new();
 		private readonly List<WallEntry> favoriteWalls = new();
 		private readonly List<WallEntry> favoriteFloors = new();
+		private readonly string[] preservedWallFavorites;
+		private readonly string[] preservedFloorFavorites;
 
 		private readonly GridPanel WallPanel = new(56, 140, true);
 		private readonly GridPanel FloorsPanel = new(72, 72, true);
 		private readonly UndoRedoButton undoRedo = new(new(0, 0, 144, 80), "undo_redo");
-		private GridPanel ActivePanel;
-		private string[] preservedWallFavorites;
-		private string[] preservedFloorFavorites;
 
-		public WallFloorPage(ShopMenu existing = null, string ID = null)
+		private GridPanel ActivePanel;
+
+		public WallFloorPage(IEnumerable<ISalable> items)
 		{
 			filter_count = 4;
-
-			if (ID is null or "Combined")
-				ID = "Catalogue";
 
 			var wallFavs = new HashSet<string>(
 				Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? 
@@ -56,7 +54,7 @@ namespace HappyHomeDesigner.Menus
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in ModUtilities.GetCatalogItems(false, existing, "Catalogue"))
+			foreach (var item in items)
 			{
 				if (item is not Wallpaper wall)
 					continue;
