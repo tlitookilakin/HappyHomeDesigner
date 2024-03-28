@@ -1,103 +1,66 @@
 ﻿using HappyHomeDesigner.Framework;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using StardewValley;
 using StardewValley.Menus;
-using StardewValley.Objects;
+using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace HappyHomeDesigner.Menus
 {
-	internal class FurniturePage : ScreenPage
+	internal abstract class VariantPage<T, TE> : ScreenPage 
+		where TE: Item
+		where T : VariantEntry<TE>
 	{
-		private const int FURNITURE_MAX = 18;
-		private const string KeyFavs = "tlitookilakin.HappyHomeDesigner/FurnitureFavorites";
-		private const int DEFAULT_EXTENDED = 2;
-		private const int DEFAULT_DEFAULT = 4;
+		private readonly string KeyFavs;
 
-		private readonly List<FurnitureEntry> entries = new();
-		private readonly List<FurnitureEntry> variants = new();
+		protected readonly List<T> entries = new();
+		protected List<T> variants = new();
+		protected readonly List<T> Favorites = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
-		private Furniture hovered;
+		protected TE hovered;
 
-		private readonly int iconRow;
-		private readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
-		private readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
-		private readonly List<FurnitureEntry>[] Filters;
-		private readonly List<FurnitureEntry> Favorites = new();
-		private readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
+		protected int iconRow;
+		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
+		protected readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
+		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
-		private static readonly int[] ExtendedTabMap = {0, 0, 1, 1, 2, 3, 4, 5, 6, 2, 2, 3, 7, 8, 2, 9, 5, 8};
-		private static readonly int[] DefaultTabMap = {1, 1, 1, 1, 0, 0, 2, 4, 4, 4, 4, 0, 3, 2, 4, 5, 4, 4};
-		internal static HashSet<string> knownFurnitureIDs = new();
+		internal static HashSet<string> knownIDs = new();
 
 		private static string[] preservedFavorites;
 
-		public FurniturePage(IEnumerable<ISalable> items = null)
+		public VariantPage(IEnumerable<ISalable> existing, string FavoritesKey, string typeName)
 		{
-			int[] Map;
-			int default_slot;
-
-			if (ModEntry.config.ExtendedCategories)
-			{
-				Map = ExtendedTabMap;
-				default_slot = DEFAULT_EXTENDED;
-				iconRow = 0;
-			}
-			else
-			{
-				Map = DefaultTabMap;
-				default_slot = DEFAULT_DEFAULT;
-				iconRow = 8;
-			}
-
-			filter_count = Map.Max() + 1;
-			Filters = new List<FurnitureEntry>[filter_count];
-			for (int i = 0; i < Filters.Length; i++)
-				Filters[i] = new();
-			filter_count += 2;
+			KeyFavs = FavoritesKey;
 
 			var favorites = new HashSet<string>(
-				Game1.player.modData.TryGetValue(KeyFavs, out var s) ? 
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
+				Game1.player.modData.TryGetValue(KeyFavs, out var s) ?
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
 				Array.Empty<string>()
 			);
 
-			var season = Game1.player.currentLocation.GetSeason();
-			var seasonName = season.ToString();
-
-			knownFurnitureIDs.Clear();
+			knownIDs.Clear();
+			int skipped = 0;
 
 			var timer = Stopwatch.StartNew();
 
-			foreach (var item in items)
+			foreach (var item in GetItemsFrom(existing, favorites))
 			{
-				if (item is Furniture furn)
-				{
-					var entry = new FurnitureEntry(furn, season, seasonName, favorites);
-					var type = furn.furniture_type.Value;
-
-					entries.Add(entry);
-					if (type is < FURNITURE_MAX and >= 0)
-						Filters[Map[type]].Add(entry);
-					else
-						Filters[default_slot].Add(entry);
-
-					if (entry.Favorited)
-						Favorites.Add(entry);
-
-					knownFurnitureIDs.Add(furn.ItemId);
-				}
+				if (knownIDs.Add(item.ToString()))
+					entries.Add(item);
+				else
+					skipped++;
 			}
 
 			timer.Stop();
-			ModEntry.monitor.Log($"Populated {entries.Count} furniture items in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
+			ModEntry.monitor.Log($"Populated {entries.Count} {typeName} items in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
+			if (skipped is not 0)
+				ModEntry.monitor.Log($"Found and skipped {skipped} duplicate {typeName} items", LogLevel.Debug);
 
 			MainPanel.DisplayChanged += UpdateDisplay;
 
@@ -106,6 +69,9 @@ namespace HappyHomeDesigner.Menus
 
 			preservedFavorites = favorites.ToArray();
 		}
+
+		public abstract IEnumerable<T> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites);
+
 		public override int Count()
 		{
 			return entries.Count;
@@ -132,11 +98,11 @@ namespace HappyHomeDesigner.Menus
 				int cols = MainPanel.Columns;
 				int variantDrawIndex = variantIndex - MainPanel.Offset;
 				if (variantDrawIndex >= 0 && variantDrawIndex < MainPanel.VisibleCells)
-				b.DrawFrame(Game1.menuTexture, new(
-					xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 55,
-					yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
-					CELL_SIZE + 16, CELL_SIZE + 16),
-					FrameSource, 13, 1, Color.White, 0);
+					b.DrawFrame(Game1.menuTexture, new(
+						xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 55,
+						yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
+						CELL_SIZE + 16, CELL_SIZE + 16),
+						FrameSource, 13, 1, Color.White, 0);
 			}
 
 			if (hovered is not null && ModEntry.config.FurnitureTooltips)
@@ -154,7 +120,7 @@ namespace HappyHomeDesigner.Menus
 			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			VariantPanel.Resize(CELL_SIZE * 3 + 32, height - 496, Game1.uiViewport.Width - CELL_SIZE * 3 - 64, yPositionOnScreen + 256);
 			TrashSlot.setPosition(
-				MainPanel.xPositionOnScreen + MainPanel.width - 48 + GridPanel.BORDER_WIDTH, 
+				MainPanel.xPositionOnScreen + MainPanel.width - 48 + GridPanel.BORDER_WIDTH,
 				MainPanel.yPositionOnScreen + MainPanel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
 			);
 		}
@@ -164,9 +130,12 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.performHoverAction(x, y);
 
 			hovered = MainPanel.TrySelect(x, y, out int index) ?
-				(MainPanel.FilteredItems[index] as FurnitureEntry).Item : 
+				(MainPanel.FilteredItems[index] as T).Item :
 				null;
 		}
+
+		public abstract IReadOnlyList<IGridItem> ApplyFilter();
+
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);
@@ -174,13 +143,7 @@ namespace HappyHomeDesigner.Menus
 			if (!MainPanel.isWithinBounds(x, y) && TrySelectFilter(x, y, playSound))
 			{
 				HideVariants();
-				MainPanel.Items = 
-					// all items
-					(current_filter is 0) ? entries :
-					// categories
-					(current_filter <= Filters.Length) ? Filters[current_filter - 1] :
-					// favorites
-					Favorites;
+				MainPanel.Items = ApplyFilter();
 				return;
 			}
 
@@ -200,13 +163,10 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
-		private void ShowVariantsFor(FurnitureEntry entry, int index)
+		private void ShowVariantsFor(T entry, int index)
 		{
 			variantIndex = index;
-			var vars = entry.GetVariants();
-			variants.Clear();
-			for(int i = 0; i < vars.Count; i++)
-				variants.Add(new(vars[i]));
+			variants = (List<T>)entry.GetVariants();
 			VariantPanel.Items = variants;
 			showVariants = true;
 		}
@@ -232,7 +192,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (panel.TrySelect(mx, my, out int index))
 			{
-				var entry = panel.FilteredItems[index] as FurnitureEntry;
+				var entry = panel.FilteredItems[index] as T;
 
 				if (allowVariants)
 				{
@@ -267,7 +227,7 @@ namespace HappyHomeDesigner.Menus
 					return;
 				}
 
-				if (!entry.CanPlaceHere())
+				if (!entry.CanPlace())
 					return;
 
 				if (Game1.player.ActiveObject.CanDelete())
@@ -281,15 +241,11 @@ namespace HappyHomeDesigner.Menus
 		}
 		public override bool isWithinBounds(int x, int y)
 		{
-			return 
-				base.isWithinBounds(x, y) || 
-				MainPanel.isWithinBounds(x, y) || 
+			return
+				base.isWithinBounds(x, y) ||
+				MainPanel.isWithinBounds(x, y) ||
 				(showVariants && VariantPanel.isWithinBounds(x, y)) ||
 				TrashSlot.containsPoint(x, y);
-		}
-		public override ClickableTextureComponent GetTab()
-		{
-			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
 		}
 
 		public override void Exit()

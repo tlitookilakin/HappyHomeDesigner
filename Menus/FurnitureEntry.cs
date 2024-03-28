@@ -54,7 +54,7 @@ namespace HappyHomeDesigner.Menus
 				return new[] {Item};
 
 			List<Furniture> skins = new() { Item };
-			AlternativeTextures.VariantsOf(Item, season, skins);
+			AlternativeTextures.VariantsOfFurniture(Item, season, skins);
 			return skins;
 		}
 
@@ -116,12 +116,12 @@ namespace HappyHomeDesigner.Menus
 
 		public override string ToString()
 		{
-			return Item?.ItemId ?? string.Empty;
+			return Item.ItemId;
 		}
 
 		public string GetName()
 		{
-			return Item?.DisplayName;
+			return Item.DisplayName;
 		}
 	}
 }

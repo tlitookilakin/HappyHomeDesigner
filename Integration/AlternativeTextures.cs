@@ -22,7 +22,8 @@ namespace HappyHomeDesigner.Integration
 		public static bool Installed;
 
 		public static Func<string, string, string, bool> HasVariant;
-		public static Action<Furniture, Season, List<Furniture>> VariantsOf;
+		public static Action<Furniture, Season, List<Furniture>> VariantsOfFurniture;
+		public static Action<StardewValley.Object, Season, List<StardewValley.Object>> VariantsOfCraftable;
 
 		internal static void Init(IModHelper helper)
 		{
@@ -54,9 +55,14 @@ namespace HappyHomeDesigner.Integration
 				ModEntry.monitor.Log("Failed to bind HasVariant", LogLevel.Warn);
 				return;
 			}
-			if (!BindVariantsOf(manager))
+			if (!TryBindVariantsOf(manager, "Furniture_", out VariantsOfFurniture))
 			{
-				ModEntry.monitor.Log("Failed to bind VariantOf", LogLevel.Warn);
+				ModEntry.monitor.Log("Failed to bind Furniture variants", LogLevel.Warn);
+				return;
+			}
+			if (!TryBindVariantsOf(manager, "Craftable_", out VariantsOfCraftable))
+			{
+				ModEntry.monitor.Log("Failed to bind Craftable variants", LogLevel.Warn);
 				return;
 			}
 			ModEntry.monitor.Log("Integration successful.", LogLevel.Debug);
@@ -103,17 +109,20 @@ namespace HappyHomeDesigner.Integration
 			);
 		}
 
-		internal static bool BindVariantsOf(FieldInfo manager)
+		internal static bool TryBindVariantsOf<T>(FieldInfo manager, string prefix, out Action<T, Season, List<T>> variantsOf)
+			where T : Item
 		{
+			variantsOf = null;
+
 			var mg = manager.FieldType.GetMethod("GetAvailableTextureModels", new[] {typeof(string), typeof(string), typeof(Season)});
 			if (!mg.ReturnType.TryGetGenericOf(0, out var modelType))
 				return false;
 
 			var seasonGetter = modelType.GetProperty("Season", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetMethod;
 
-			VariantsOf = (source, season, list) => {
+			variantsOf = (source, season, list) => {
 				var tm = manager.GetValue(null);
-				IList models = mg.Invoke(tm, new object[] { "Furniture_" + source.ItemId, "Furniture_" + source.Name, season }) as IList;
+				IList models = mg.Invoke(tm, new object[] { prefix + source.ItemId, prefix + source.Name, season }) as IList;
 				for (int i = 0; i < models.Count; i++)
 				{
 					var m = models[i] as dynamic;
@@ -131,7 +140,7 @@ namespace HappyHomeDesigner.Integration
 					{
 						for (int j = 0; j < manualIndices.Count; j++)
 						{
-							var furn = source.getOne() as Furniture;
+							var furn = source.getOne() as T;
 							GetVariant(manualIndices[j], m, furn, seasonGetter);
 							list.Add(furn);
 						}
@@ -140,7 +149,7 @@ namespace HappyHomeDesigner.Integration
 						int count = m.Variations;
 						for (int j = 0; j < count; j++)
 						{
-							var furn = source.getOne() as Furniture;
+							var furn = source.getOne() as T;
 							GetVariant(j, m, furn, seasonGetter);
 							list.Add(furn);
 						}
@@ -151,7 +160,7 @@ namespace HappyHomeDesigner.Integration
 			return true;
 		}
 
-		private static void GetVariant(int variant, dynamic model, Furniture furn, MethodBase SeasonGetter)
+		private static void GetVariant(int variant, dynamic model, Item furn, MethodBase SeasonGetter)
 		{
 			furn.modData[KEY_OWNER] = model.Owner;
 			furn.modData[KEY_NAME] = model.GetId();

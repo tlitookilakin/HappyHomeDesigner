@@ -68,6 +68,7 @@ namespace HappyHomeDesigner.Menus
 
 			Pages.Add(new FurniturePage(items));
 			Pages.Add(new WallFloorPage(items));
+			Pages.Add(new BigObjectPage(items));
 
 			if (Pages.Count is not 1)
 				for (int i = Pages.Count - 1; i >= 0; i--)

@@ -131,6 +131,25 @@ namespace HappyHomeDesigner.Framework
 						ItemId = "(F)" + COLLECTORS_ID,
 						Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
 					});
+
+				#if DEBUG
+
+				if (data.TryGetValue("Catalogue", out var catalogue))
+				{
+					catalogue.Items.Add(new() {
+						Id = "DEBUG_HAPPYHOME_HOUSEPLANT",
+						ItemId = "(BC)7",
+						Price = 0
+					});
+
+					catalogue.Items.Add(new() {
+						Id = "DEBUG_HAPPYHOME_STONE",
+						ItemId = "(O)390",
+						Price = 0
+					});
+				}
+
+				#endif
 			}
 		}
 

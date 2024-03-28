@@ -1,0 +1,32 @@
+﻿using StardewValley;
+using System.Collections.Generic;
+using SObject = StardewValley.Object;
+
+namespace HappyHomeDesigner.Menus
+{
+	internal class BigObjectEntry : VariantEntry<SObject>
+	{
+		/// <inheritdoc/>
+		public BigObjectEntry(SObject Item) : base(Item){}
+
+		/// <inheritdoc/>
+		public BigObjectEntry(SObject Item, Season season, string seasonName, ICollection<string> favorites) : 
+			base(Item, season, seasonName, favorites, "Craftable_"){}
+
+		public override bool CanPlace()
+		{
+			return true;
+		}
+
+		public override SObject GetOne()
+		{
+			return Item.getOne() as SObject;
+		}
+
+		public override IList<VariantEntry<SObject>> GetVariants()
+		{
+			// TODO
+			return null;
+		}
+	}
+}
