@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -52,16 +51,16 @@ namespace HappyHomeDesigner.Patches
 			}
 
 			var flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-			harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(skipNameCaching)));
-			harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(fixFurniturePreview)));
-			harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(preventRandomVariant)));
-			harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(fixBedPreview)));
-			harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(menuDraw)));
+			harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(SkipNameCaching)));
+			harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixFurniturePreview)));
+			harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(PreventRandomVariant)));
+			harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixBedPreview)));
+			harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(MenuDraw)));
 
 			IsApplied = true;
 		}
 
-		private static IEnumerable<CodeInstruction> menuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
+		private static IEnumerable<CodeInstruction> MenuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
 		{
 			var skipRotation = gen.DefineLabel();
 			var skipOffset = gen.DefineLabel();
@@ -79,7 +78,7 @@ namespace HappyHomeDesigner.Patches
 				.Advance(-1)
 				.InsertAndAdvance(
 					new(OpCodes.Ldarg_0),
-					new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(shouldForceDrawObject))),
+					new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(ShouldForceDrawObject))),
 					new(OpCodes.Brtrue, skipCheck)
 				)
 				.MatchEndForward(
@@ -132,7 +131,7 @@ namespace HappyHomeDesigner.Patches
 			return il.InstructionEnumeration();
 		}
 
-		public static bool shouldForceDrawObject(Furniture f)
+		public static bool ShouldForceDrawObject(Furniture f)
 			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName") && 
 			f.modData.TryGetValue("AlternativeTextureOwner", out var owner) && owner is not "Stardew.Default";
 
@@ -151,7 +150,7 @@ namespace HappyHomeDesigner.Patches
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static void drawFront(Furniture f, Texture2D texture, Rectangle source, Vector2 location, SpriteBatch batch,
+		public static void DrawFront(Furniture f, Texture2D texture, Rectangle source, Vector2 location, SpriteBatch batch,
 			float scale, float alpha, float depth)
 		{
 			//if (f is not BedFurniture)
@@ -191,7 +190,7 @@ namespace HappyHomeDesigner.Patches
 				.1f;
 		}
 
-		private static bool skipNameCaching(ref bool __result, StardewValley.Object __0)
+		private static bool SkipNameCaching(ref bool __result, StardewValley.Object __0)
 		{
 			if (!forcePreviewDraw)
 				return true;
@@ -203,7 +202,7 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
-		private static IEnumerable<CodeInstruction> fixFurniturePreview(IEnumerable<CodeInstruction> source)
+		private static IEnumerable<CodeInstruction> FixFurniturePreview(IEnumerable<CodeInstruction> source)
 		{
 			// when not drawing in-world, still use AT sourcerect instead of default sourcerect
 			var il = new CodeMatcher(source)
@@ -224,7 +223,7 @@ namespace HappyHomeDesigner.Patches
 				);
 			return il.InstructionEnumeration();
 		}
-		private static IEnumerable<CodeInstruction> fixBedPreview(IEnumerable<CodeInstruction> source, ILGenerator gen)
+		private static IEnumerable<CodeInstruction> FixBedPreview(IEnumerable<CodeInstruction> source, ILGenerator gen)
 		{
 			LocalBuilder bounds = gen.DeclareLocal(typeof(Vector2));
 			// just remove location furniture check completely and fix the offset
@@ -267,14 +266,14 @@ namespace HappyHomeDesigner.Patches
 				return DrawPosition;
 			return new(x * 64, y * 64 - (__instance.sourceRect.Height * 4 - __instance.boundingBox.Height));
 		}
-		private static bool preventRandomVariant(StardewValley.Object __0)
+		private static bool PreventRandomVariant(StardewValley.Object __0)
 		{
 			return __0 is not Furniture || !forcePreviewDraw;
 		}
 
 		private static class Android
 		{
-			public static IEnumerable<CodeInstruction> menuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
+			public static IEnumerable<CodeInstruction> MenuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
 			{
 				var skipRotation = gen.DefineLabel();
 				var skipOffset = gen.DefineLabel();

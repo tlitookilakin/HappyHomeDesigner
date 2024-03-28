@@ -1,12 +1,10 @@
-﻿using HappyHomeDesigner.Framework;
-using HappyHomeDesigner.Menus;
+﻿using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.GameData.Shops;
 using StardewValley.Menus;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -17,9 +15,11 @@ namespace HappyHomeDesigner.Patches
 		internal static void Apply(Harmony harmony)
 		{
 			var patch = new HarmonyMethod(typeof(ReplaceShop), nameof(PatchOpenShop));
+			var targets = typeof(Utility).GetMethods(
+				BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static
+			).Where(m => m.Name is nameof(Utility.TryOpenShopMenu));
 
-			foreach (var method in typeof(Utility).GetMethodsNamed(nameof(Utility.TryOpenShopMenu), 
-				BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static))
+			foreach (var method in targets)
 				harmony.Patch(method, transpiler: patch);
 		}
 

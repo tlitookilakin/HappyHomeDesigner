@@ -1,5 +1,4 @@
 ﻿using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,7 +9,6 @@ using StardewValley;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
-using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -122,9 +120,6 @@ namespace HappyHomeDesigner.Framework
 				);
 		}
 
-		public static T ToDelegate<T>(this MethodInfo method) where T : Delegate
-			=> (T)Delegate.CreateDelegate(typeof(T), method);
-
 		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
 			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
 
@@ -187,15 +182,6 @@ namespace HappyHomeDesigner.Framework
 				output = output.Concat(CustomFurniture.customFurniture);
 
 			return output;
-		}
-
-		public static IEnumerable<MethodInfo> GetMethodsNamed(this Type type, string name, BindingFlags flags = BindingFlags.Default)
-		{
-			foreach (var item in type.GetMethods(flags))
-			{
-				if (item.Name == name)
-					yield return item;
-			}
 		}
 
 		public static bool CountsAsCatalog(this ShopMenu shop, bool ignore_config = false)

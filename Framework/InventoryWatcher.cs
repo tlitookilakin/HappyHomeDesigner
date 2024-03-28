@@ -35,9 +35,7 @@ namespace HappyHomeDesigner.Framework
 			}
 
 			if (rareAdded && HasAll(Game1.MasterPlayer.modData))
-			{
 				Game1.addMailForTomorrow(AssetManager.CARD_MAIL, false, true);
-			}
 		}
 
 		private static bool HasAll(ModDataDictionary data)

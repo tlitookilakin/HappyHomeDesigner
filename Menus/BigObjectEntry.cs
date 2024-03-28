@@ -1,5 +1,7 @@
-﻿using StardewValley;
+﻿using HappyHomeDesigner.Integration;
+using StardewValley;
 using System.Collections.Generic;
+using System.Linq;
 using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Menus
@@ -25,8 +27,13 @@ namespace HappyHomeDesigner.Menus
 
 		public override IList<VariantEntry<SObject>> GetVariants()
 		{
-			// TODO
-			return null;
+			if (!HasVariants)
+				return new[] { new BigObjectEntry(Item) };
+
+			List<SObject> skins = new() { Item };
+			AlternativeTextures.VariantsOfCraftable(Item, season, skins);
+
+			return skins.Select(f => new BigObjectEntry(f) as VariantEntry<SObject>).ToList();
 		}
 	}
 }
