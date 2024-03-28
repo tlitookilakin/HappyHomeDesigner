@@ -30,10 +30,7 @@ namespace HappyHomeDesigner.Framework
 
 		public static bool CanDelete(this Item item, ICollection<string> knownIDs)
 		{
-			if (item is not Furniture furn)
-				return false;
-
-			return knownIDs is not null && knownIDs.Contains(furn.ItemId);
+			return knownIDs is not null && item is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)

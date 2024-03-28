@@ -69,7 +69,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override string ToString()
 		{
-			return Item.ItemId;
+			return Item.QualifiedItemId;
 		}
 
 		public virtual bool ToggleFavorite(bool playSound)

@@ -10,7 +10,6 @@ using System;
 
 namespace HappyHomeDesigner
 {
-	// TODO add tab for misc items
 	public class ModEntry : Mod
 	{
 		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";
