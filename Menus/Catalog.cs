@@ -37,7 +37,7 @@ namespace HappyHomeDesigner.Menus
 
 		public static void ShowCatalog(IEnumerable<ISalable> items, string ID)
 		{
-			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(ModEntry.uiPath);
+			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 
 			if (ActiveMenu.Value is Catalog catalog)
 				if (catalog.Type == ID)

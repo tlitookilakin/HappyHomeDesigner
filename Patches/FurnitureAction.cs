@@ -83,9 +83,9 @@ namespace HappyHomeDesigner.Patches
 
 			return __instance.ItemId switch
 			{
-				AssetManager.CATALOGUE_ID => ModEntry.i18n.Get("furniture.Catalog.description"),
-				AssetManager.COLLECTORS_ID => ModEntry.i18n.Get("furniture.CollectorsCatalog.description"),
-				AssetManager.DELUXE_ID => ModEntry.i18n.Get("furniture.DeluxeCatalog.description"),
+				AssetManager.CATALOGUE_ID => ModEntry.i18n.Get("furniture.Catalogue.desc"),
+				AssetManager.COLLECTORS_ID => ModEntry.i18n.Get("furniture.CollectorsCatalogue.desc"),
+				AssetManager.DELUXE_ID => ModEntry.i18n.Get("furniture.DeluxeCatalogue.desc"),
 				_ => original
 			};
 		}

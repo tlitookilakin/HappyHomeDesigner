@@ -1,12 +1,158 @@
-﻿using static HappyHomeDesigner.ModEntry;
+﻿using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewValley.GameData.Objects;
+using StardewValley.GameData.Powers;
+using StardewValley.GameData.Shops;
+using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Framework
 {
 	internal class AssetManager
 	{
+		private const string MOD_ID = ModEntry.MOD_ID;
+
 		public const string CATALOGUE_ID = MOD_ID + "_Catalogue";
 		public const string COLLECTORS_ID = MOD_ID + "_CollectorsCatalogue";
 		public const string DELUXE_ID = MOD_ID + "_DeluxeCatalogue";
 		public const string CARD_ID = MOD_ID + "_MembershipCard";
+		public const string CARD_MAIL = MOD_ID + "_CardMail";
+		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
+
+		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
+		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
+
+		private static string whichUI = "ui";
+		private static ITranslationHelper i18n;
+
+		private static readonly string[] RareCatalogueShops = 
+			{ "JunimoFurnitureCatalogue", "TrashFurnitureCatalogue", "RetroFurnitureCatalogue", "WizardFurnitureCatalogue", "JojaFurnitureCatalogue" };
+
+		public static void Init(IModHelper helper)
+		{
+			whichUI =
+				helper.ModRegistry.IsLoaded("Maraluna.OvergrownFloweryInterface") ?
+				"ui_overgrown" :
+				helper.ModRegistry.IsLoaded("ManaKirel.VintageInterface2") ?
+				"ui_vintage" :
+				// vanilla
+				"ui";
+
+			i18n = helper.Translation;
+			helper.Events.Content.AssetRequested += ProvideData;
+		}
+
+		public static void ProvideData(object sender, AssetRequestedEventArgs e)
+		{
+			var name = e.NameWithoutLocale;
+
+			if (name.IsEquivalentTo(UI_PATH))
+				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
+
+			else if (name.IsEquivalentTo("Data/Furniture"))
+				e.Edit(AddCatalogues, AssetEditPriority.Early);
+
+			else if (name.IsEquivalentTo(TEXTURE_PATH))
+				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);
+
+			else if (name.IsEquivalentTo("Data/Shops"))
+				e.Edit(TagShops, AssetEditPriority.Default);
+
+			else if (name.IsEquivalentTo("Data/Powers"))
+				e.Edit(AddCardPower, AssetEditPriority.Early);
+
+			else if (name.IsEquivalentTo("Data/Mail"))
+				e.Edit(AddMail, AssetEditPriority.Early);
+
+			else if (name.IsEquivalentTo("Data/Objects"))
+				e.Edit(AddCardItem, AssetEditPriority.Early);
+		}
+
+		private static void AddCardItem(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, ObjectData> data)
+			{
+				data.TryAdd(
+					CARD_ID,
+					new()
+					{
+						Name = "Collector's Card",
+						DisplayName = i18n.Get("item.card.name"),
+						Texture = TEXTURE_PATH,
+						SpriteIndex = 8,
+						Category = StardewValley.Object.trinketCategory,
+						ExcludeFromFishingCollection = true,
+						ExcludeFromRandomSale = true,
+						ExcludeFromShippingCollection = true
+					}
+				);
+			}
+		}
+
+		private static void AddMail(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, string> data)
+			{
+				data.TryAdd(
+					CARD_MAIL,
+					i18n.Get("mail.collectorAcceptance") + "%item id (O)" + CARD_ID + " 1 %%"
+				);
+			}
+		}
+
+		private static void AddCardPower(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, PowersData> data)
+			{
+				data.TryAdd(
+					CARD_ID, new()
+					{
+						DisplayName = i18n.Get("item.card.name"),
+						Description = i18n.Get("item.card.desc"),
+						TexturePath = TEXTURE_PATH,
+						TexturePosition = new(32, 32),
+						UnlockedCondition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
+					}
+				);
+			}
+		}
+
+		private static void TagShops(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, ShopData> data)
+			{
+				for (int i = 0; i < RareCatalogueShops.Length; i++)
+					if (data.TryGetValue(RareCatalogueShops[i], out var shop))
+						(shop.CustomFields ??= new())["HappyHomeDesigner/Catalogue"] = "True";
+
+				if (data.TryGetValue("Carpenter", out var carpenter))
+					carpenter.Items.Add(new() { 
+						Id = COLLECTORS_ID,
+						ItemId = "(F)" + COLLECTORS_ID,
+						Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
+					});
+			}
+		}
+
+		private static void AddCatalogues(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, string> data)
+			{
+				var entries = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
+
+				data.TryAdd(CATALOGUE_ID, GetEntry(entries, "furniture", "Catalogue"));
+				data.TryAdd(COLLECTORS_ID, GetEntry(entries, "furniture", "CollectorsCatalogue"));
+				data.TryAdd(DELUXE_ID, GetEntry(entries, "furniture", "DeluxeCatalogue"));
+			}
+		}
+
+		private static string GetEntry(IDictionary<string, string> data, string prefix, string name)
+		{
+			return string.Format(
+				data[name],
+				i18n.Get($"{prefix}.{name}.name"),
+				"Mods\\" + MOD_ID + "\\Catalogue"
+			);
+		}
 	}
 }
