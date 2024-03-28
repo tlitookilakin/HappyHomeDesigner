@@ -11,7 +11,8 @@ namespace HappyHomeDesigner.Menus
 		public BigObjectPage(IEnumerable<ISalable> existing) : 
 			base(existing, ModEntry.MOD_ID + "/favorite_craftables", "craftable")
 		{
-			iconRow = 8;
+			iconRow = 64;
+			filter_count = 2;
 		}
 
 		public override IReadOnlyList<IGridItem> ApplyFilter()
@@ -33,5 +34,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			return new(new(0, 0, 64, 64), Catalog.MenuTexture, new(48, 48, 16, 16), 4f);
 		}
+
+		public override void Init() { }
 	}
 }

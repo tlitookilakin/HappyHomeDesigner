@@ -11,6 +11,10 @@ namespace HappyHomeDesigner.Menus
 	{
 		internal const int CELL_SIZE = 80;
 
+		// 384 396 15 15 cursors
+		// 256 256 10 10 cursors
+		// 128 128 64 64 menus
+
 		private static readonly Rectangle background = new(128, 128, 64, 64);
 		private static readonly Rectangle star = new(6, 38, 7, 7);
 		private static readonly Rectangle favRibbon = new(0, 38, 6, 6);

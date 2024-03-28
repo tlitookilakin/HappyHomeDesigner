@@ -47,6 +47,8 @@ namespace HappyHomeDesigner.Menus
 			knownIDs.Clear();
 			int skipped = 0;
 
+			Init();
+
 			var timer = Stopwatch.StartNew();
 
 			foreach (var item in GetItemsFrom(existing, favorites))
@@ -69,6 +71,8 @@ namespace HappyHomeDesigner.Menus
 
 			preservedFavorites = favorites.ToArray();
 		}
+
+		public abstract void Init();
 
 		public abstract IEnumerable<T> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites);
 
@@ -151,7 +155,7 @@ namespace HappyHomeDesigner.Menus
 			if (showVariants)
 				HandleGridClick(x, y, playSound, VariantPanel, false);
 
-			if (TrashSlot.containsPoint(x, y) && Game1.player.ActiveObject.CanDelete())
+			if (TrashSlot.containsPoint(x, y) && Game1.player.ActiveObject.CanDelete(knownIDs))
 			{
 				if (Game1.player.ActiveObject == Game1.player.TemporaryItem)
 					Game1.player.TemporaryItem = null;
@@ -230,7 +234,7 @@ namespace HappyHomeDesigner.Menus
 				if (!entry.CanPlace())
 					return;
 
-				if (Game1.player.ActiveObject.CanDelete())
+				if (Game1.player.ActiveObject.CanDelete(knownIDs))
 					if (Game1.player.ActiveObject != Game1.player.TemporaryItem)
 						Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
 

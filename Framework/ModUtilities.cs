@@ -28,12 +28,12 @@ namespace HappyHomeDesigner.Framework
 			typeof(MouseWheelScrolledEventArgs).GetField("<OldValue>k__BackingField", 
 				BindingFlags.Instance | BindingFlags.NonPublic);
 
-		public static bool CanDelete(this Item item)
+		public static bool CanDelete(this Item item, ICollection<string> knownIDs)
 		{
 			if (item is not Furniture furn)
 				return false;
 
-			return FurniturePage.knownFurnitureIDs is not null && FurniturePage.knownFurnitureIDs.Contains(furn.ItemId);
+			return knownIDs is not null && knownIDs.Contains(furn.ItemId);
 		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
