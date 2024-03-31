@@ -8,17 +8,17 @@ namespace HappyHomeDesigner.Patches
 	{
 		public static void Apply(Harmony harmony)
 		{
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Farmer).GetMethod(nameof(Farmer.GetItemReceiveBehavior)),
 				postfix: new(typeof(ItemReceive), nameof(ChangeItemReceiveBehavior))
 			);
 
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Farmer).GetMethod(nameof(Farmer.OnItemReceived)),
 				postfix: new(typeof(ItemReceive), nameof(ReceiveItem))
 			);
 
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Item).GetMethod(nameof(Item.checkForSpecialItemHoldUpMeessage)),
 				postfix: new(typeof(ItemReceive), nameof(AddHoldUpMessage))
 			);

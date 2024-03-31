@@ -20,6 +20,7 @@ namespace HappyHomeDesigner.Menus
 		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
 		public IReadOnlyList<IGridItem> FilteredItems => search.Filtered;
 		public IReadOnlyList<IGridItem> LastFiltered => search.LastFiltered;
+		public string SearchText => search.Text;
 
 		public event Action DisplayChanged;
 		public ScrollBar scrollBar = new();

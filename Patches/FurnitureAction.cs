@@ -12,12 +12,12 @@ namespace HappyHomeDesigner.Patches
 	{
 		internal static void Apply(Harmony harmony)
 		{
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Furniture).GetMethod(nameof(Furniture.checkForAction)),
 				prefix: new(typeof(FurnitureAction), nameof(CheckAction))
 			);
 
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Furniture).GetMethod("loadDescription", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public),
 				postfix: new(typeof(FurnitureAction), nameof(EditDescription))
 			);

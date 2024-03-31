@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace HappyHomeDesigner.Framework
 {
@@ -222,6 +223,22 @@ namespace HappyHomeDesigner.Framework
 			}
 
 			return output;
+		}
+
+		public static bool TryPatch(this Harmony harmony, MethodInfo method, HarmonyMethod prefix = null, 
+			HarmonyMethod postfix = null, HarmonyMethod transpiler = null, HarmonyMethod finalizer = null, 
+			[CallerMemberName] string source = null)
+		{
+			try
+			{
+				harmony.Patch(method, prefix, postfix, transpiler, finalizer);
+			} 
+			catch (Exception e)
+			{
+				ModEntry.monitor.Log($"Failed to patch {method?.Name ?? "NULL"} from {source ?? "NULL"}:\t {e}", LogLevel.Error);
+				return false;
+			}
+			return true;
 		}
 	}
 }

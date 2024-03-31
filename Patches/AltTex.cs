@@ -51,13 +51,21 @@ namespace HappyHomeDesigner.Patches
 			}
 
 			var flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-			harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(SkipNameCaching)));
-			harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixFurniturePreview)));
-			harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(PreventRandomVariant)));
-			harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixBedPreview)));
-			harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(MenuDraw)));
 
-			IsApplied = true;
+			try
+			{
+				harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(SkipNameCaching)));
+				harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixFurniturePreview)));
+				harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(PreventRandomVariant)));
+				harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixBedPreview)));
+				harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(MenuDraw)));
+
+				IsApplied = true;
+			} 
+			catch (Exception ex)
+			{
+				ModEntry.monitor.Log($"Failed to patch AT: {ex}", LogLevel.Warn);
+			}
 		}
 
 		private static IEnumerable<CodeInstruction> MenuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)

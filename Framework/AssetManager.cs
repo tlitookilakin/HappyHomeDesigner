@@ -21,6 +21,7 @@ namespace HappyHomeDesigner.Framework
 
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
+		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
 
 		private static string whichUI = "ui";
 		private static ITranslationHelper i18n;
@@ -31,12 +32,14 @@ namespace HappyHomeDesigner.Framework
 		public static void Init(IModHelper helper)
 		{
 			whichUI =
+
 				helper.ModRegistry.IsLoaded("Maraluna.OvergrownFloweryInterface") ?
-				"ui_overgrown" :
+				"ui_overgrown" : // overgrown flowery
+
 				helper.ModRegistry.IsLoaded("ManaKirel.VintageInterface2") ?
-				"ui_vintage" :
-				// vanilla
-				"ui";
+				"ui_vintage" : // vintage v2
+
+				"ui"; // vanilla
 
 			i18n = helper.Translation;
 			helper.Events.Content.AssetRequested += ProvideData;
@@ -66,6 +69,9 @@ namespace HappyHomeDesigner.Framework
 
 			else if (name.IsEquivalentTo("Data/Objects"))
 				e.Edit(AddCardItem, AssetEditPriority.Early);
+
+			else if (name.IsEquivalentTo(MAIL_BG))
+				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);
 		}
 
 		private static void AddCardItem(IAssetData asset)
@@ -93,9 +99,9 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (asset.Data is Dictionary<string, string> data)
 			{
-				data.TryAdd(
-					CARD_MAIL,
-					i18n.Get("mail.collectorAcceptance") + "%item id (O)" + CARD_ID + " 1 %%"
+				const string key = "mail.collectorAcceptance.";
+				data.TryAdd( CARD_MAIL,
+					$"[letterbg {MAIL_BG} 0]^{i18n.Get(key + "text")} ^ ^\t\t-Esme Blackbriar%item id (O){CARD_ID} 1 %%[#]{i18n.Get(key + "name")}"
 				);
 			}
 		}

@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Menus;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;
@@ -20,7 +21,7 @@ namespace HappyHomeDesigner.Patches
 			).Where(m => m.Name is nameof(Utility.TryOpenShopMenu));
 
 			foreach (var method in targets)
-				harmony.Patch(method, transpiler: patch);
+				harmony.TryPatch(method, transpiler: patch);
 		}
 
 		public static IEnumerable<CodeInstruction> PatchOpenShop(IEnumerable<CodeInstruction> src, ILGenerator gen)

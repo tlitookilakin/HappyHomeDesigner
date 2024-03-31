@@ -16,7 +16,7 @@ namespace HappyHomeDesigner.Patches
 
 		public static void Apply(Harmony harmony)
 		{
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(InventoryMenu).GetMethod(nameof(InventoryMenu.rightClick)),
 				transpiler: new(typeof(InventoryCombine), nameof(InsertCombineCheck))
 			);
