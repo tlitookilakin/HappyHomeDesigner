@@ -15,7 +15,7 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle Spyglass = new(0, 48, 16, 16);
 
 		public IReadOnlyList<IGridItem> Filtered => filtered ?? source;
-		public IReadOnlyList<IGridItem> LastFiltered => lastFilter ?? Filtered;
+
 		public event Action OnTextChanged;
 
 		public IReadOnlyList<IGridItem> Source
@@ -33,7 +33,6 @@ namespace HappyHomeDesigner.Menus
 		private IReadOnlyList<string> filtered_map;
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
-		private IReadOnlyList<IGridItem> lastFilter;
 		private float iconOpacity = 1f;
 
 		public SearchBox(Texture2D textBoxTexture, Texture2D caretTexture, SpriteFont font, Color textColor) 
@@ -144,13 +143,10 @@ namespace HappyHomeDesigner.Menus
 
 			if (search.Length is 0)
 			{
-				lastFilter = filtered;
 				filtered_map = null;
 				filtered = null;
 				return;
 			}
-
-			lastFilter = refresh || filtered_map is null ? source : filtered;
 
 			IReadOnlyList<IGridItem> source_items = filtered;
 			IReadOnlyList<string> source_names = filtered_map;

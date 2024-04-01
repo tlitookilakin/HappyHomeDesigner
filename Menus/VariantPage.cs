@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using System.Text;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -23,6 +22,7 @@ namespace HappyHomeDesigner.Menus
 		protected readonly List<T> Favorites = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
+		private T? variantItem;
 		protected TE hovered;
 
 		protected int iconRow;
@@ -83,22 +83,11 @@ namespace HappyHomeDesigner.Menus
 		}
 		public void UpdateDisplay()
 		{
-			if (variantIndex >= MainPanel.LastFiltered.Count)
-			{
-				ModEntry.monitor.Log($"Something is wrong! Search filter was desynced and selected index could not be preserved!", LogLevel.Warn);
-				var sb = new StringBuilder();
-				sb.AppendLine("Diagnostic info:");
-				sb.Append("\tindex: ").AppendLine(variantIndex.ToString());
-				sb.Append("\told filter: [").AppendJoin(',', MainPanel.LastFiltered).AppendLine("]");
-				sb.Append("\tnew filter: [").AppendJoin(',', MainPanel.FilteredItems).AppendLine("]");
-				sb.Append("\tsearch text: '").Append(MainPanel.SearchText).AppendLine("'");
-				ModEntry.monitor.Log(sb.ToString(), LogLevel.Trace);
+			variantIndex = MainPanel.FilteredItems.Find(variantItem);
 
-				variantIndex = -1;
-			}
+			if (variantIndex is -1)
+				variantItem = null;
 
-			if (variantIndex is not -1)
-				variantIndex = MainPanel.FilteredItems.Find(MainPanel.LastFiltered[variantIndex]);
 			showVariants = variantIndex is not -1;
 		}
 		public override void draw(SpriteBatch b)
@@ -185,6 +174,7 @@ namespace HappyHomeDesigner.Menus
 		private void ShowVariantsFor(T entry, int index)
 		{
 			variantIndex = index;
+			variantItem = entry;
 			variants = (List<T>)entry.GetVariants();
 			VariantPanel.Items = variants;
 			showVariants = true;
