@@ -105,6 +105,7 @@ namespace HappyHomeDesigner
 			InventoryCombine.Apply(harmony);
 			SearchFocusFix.Apply(harmony);
 			ItemReceive.Apply(harmony);
+			HandCatalogue.Apply(harmony);
 
 			AltTex.Apply(harmony);
 			// TODO rewrite patches when dga comes back

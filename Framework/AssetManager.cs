@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewValley;
 using StardewValley.GameData.Objects;
 using StardewValley.GameData.Powers;
 using StardewValley.GameData.Shops;
+using StardewValley.GameData.Tools;
 using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Framework
@@ -18,6 +20,7 @@ namespace HappyHomeDesigner.Framework
 		public const string CARD_ID = MOD_ID + "_MembershipCard";
 		public const string CARD_MAIL = MOD_ID + "_CardMail";
 		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
+		public const string PORTABLE_ID = MOD_ID + "_HandCatalogue";
 
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
@@ -72,6 +75,32 @@ namespace HappyHomeDesigner.Framework
 
 			else if (name.IsEquivalentTo(MAIL_BG))
 				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);
+
+			else if (name.IsEquivalentTo("Data/Tools"))
+				e.Edit(AddHandCatalogue, AssetEditPriority.Early);
+		}
+
+		private static void AddHandCatalogue(IAssetData asset)
+		{
+			if (asset.Data is Dictionary<string, ToolData> data)
+			{
+				data.TryAdd(
+					PORTABLE_ID,
+					new()
+					{
+						Name = "Magic Catalogue",
+						DisplayName = i18n.Get("item.portable.name"),
+						Description = i18n.Get("item.portable.desc"),
+						Texture = TEXTURE_PATH,
+						SpriteIndex = 11,
+						ClassName = "GenericTool",
+						SetProperties = new()
+						{
+							{nameof(Tool.InstantUse), "True"}
+						}
+					}
+				);
+			}
 		}
 
 		private static void AddCardItem(IAssetData asset)

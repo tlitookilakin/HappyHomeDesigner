@@ -32,5 +32,7 @@
 	"mail.collectorAcceptance.text": "The Rare Curio Collector's Society of Ferngill wishes to formally recognize @ for their outstanding collection of rare and unique home decor. As an award for this collection, and an unwavering dedication to the preservation of history, the Society hereby extends an official offer of membership to @.",
 	"mail.collectorAcceptance.name": "RCCS membership mail",
 	"config.ReplaceRareCatalogs.name": "Replace Rare Catalogues",
-	"config.ReplaceRareCatalogs.desc": "While anabled, replaces the default rare catalog UIs with the new one."
+	"config.ReplaceRareCatalogs.desc": "While anabled, replaces the default rare catalog UIs with the new one.",
+	"item.portable.name": "Architect's Catalogue",
+	"item.portable.desc": "A portable catalogue truly worthy of the finest home."
 }
