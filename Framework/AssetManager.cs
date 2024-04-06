@@ -21,6 +21,7 @@ namespace HappyHomeDesigner.Framework
 		public const string CARD_MAIL = MOD_ID + "_CardMail";
 		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
 		public const string PORTABLE_ID = MOD_ID + "_HandCatalogue";
+		public const string FAIRY_MAIL = MOD_ID + "_FairyMail";
 
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
@@ -115,7 +116,7 @@ namespace HappyHomeDesigner.Framework
 						DisplayName = i18n.Get("item.card.name"),
 						Texture = TEXTURE_PATH,
 						SpriteIndex = 8,
-						Category = StardewValley.Object.trinketCategory,
+						Category = Object.trinketCategory,
 						ExcludeFromFishingCollection = true,
 						ExcludeFromRandomSale = true,
 						ExcludeFromShippingCollection = true
@@ -128,9 +129,13 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (asset.Data is Dictionary<string, string> data)
 			{
-				const string key = "mail.collectorAcceptance.";
-				data.TryAdd( CARD_MAIL,
-					$"[letterbg {MAIL_BG} 0]^{i18n.Get(key + "text")} ^ ^\t\t-Esme Blackbriar%item id (O){CARD_ID} 1 %%[#]{i18n.Get(key + "name")}"
+				data.TryAdd(CARD_MAIL,
+					$"[letterbg {MAIL_BG} 0]^{i18n.Get("mail.collectorAcceptance.text")}" + 
+					$" ^ ^\t\t-Esme Blackbriar%item id (O){CARD_ID} 1 %%[#]{i18n.Get("mail.collectorAcceptance.name")}"
+				);
+
+				data.TryAdd(FAIRY_MAIL,
+					$"[letterbg 2]{i18n.Get("mail.fairyDust.text")}[#]{i18n.Get("mail.fairyDust.name")}"
 				);
 			}
 		}

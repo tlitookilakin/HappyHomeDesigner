@@ -59,7 +59,7 @@ namespace HappyHomeDesigner.Patches
 			Game1.playSound("secret1");
 			int FlashDelay = 1500;
 
-			Utility.addStarsAndSpirals(location, Region.X, Region.Y + Region.Height - 2, Region.Width, 1, FlashDelay, 50, Color.Purple);
+			Utility.addStarsAndSpirals(location, Region.X, Region.Y + Region.Height - 2, Region.Width, 1, FlashDelay, 50, Color.Magenta);
 
 			DelayedAction.screenFlashAfterDelay(.5f, FlashDelay, "wand");
 			DelayedAction.functionAfterDelay(() => {

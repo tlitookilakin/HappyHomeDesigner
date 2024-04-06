@@ -19,7 +19,24 @@ namespace HappyHomeDesigner.Framework
 		private static void InventoryChanged(object sender, InventoryChangedEventArgs ev)
 		{
 			if (Game1.MasterPlayer.hasOrWillReceiveMail(AssetManager.CARD_MAIL))
+			{
+				if (Game1.MasterPlayer.hasOrWillReceiveMail(AssetManager.FAIRY_MAIL))
+					return;
+
+				foreach (var item in ev.Added)
+				{
+					if (item is null || item.Stack <= 0)
+						continue;
+
+					if (item.QualifiedItemId == "(F)" + AssetManager.DELUXE_ID)
+					{
+						Game1.addMailForTomorrow(AssetManager.FAIRY_MAIL, false, true);
+						break;
+					}
+				}
+
 				return;
+			}
 
 			bool rareAdded = false;
 			foreach (var item in ev.Added)

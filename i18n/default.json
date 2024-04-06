@@ -31,6 +31,8 @@
 	"furniture.DeluxeCatalogue.desc": "A catalogue truly worthy of the finest home.",
 	"mail.collectorAcceptance.text": "The Rare Curio Collector's Society of Ferngill wishes to formally recognize @ for their outstanding collection of rare and unique home decor. As an award for this collection, and an unwavering dedication to the preservation of history, the Society hereby extends an official offer of membership to @.",
 	"mail.collectorAcceptance.name": "RCCS membership mail",
+	"mail.fairyDust.text": "Greetings, @.^It seems you've discovered the perfect catalogue. Or rather, almost perfect. My alchemy experiments indicate that it may be possible to convert it into a more... pocketable form, with the help of the magical properties of Fairy Dust. If you attempt such a thing, please inform me of the results.^\t-Rasmodius",
+	"mail.fairyDust.name": "Fairy Dust & Catalogues",
 	"config.ReplaceRareCatalogs.name": "Replace Rare Catalogues",
 	"config.ReplaceRareCatalogs.desc": "While anabled, replaces the default rare catalog UIs with the new one.",
 	"item.portable.name": "Architect's Catalogue",
