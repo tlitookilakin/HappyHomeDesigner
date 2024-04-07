@@ -33,7 +33,7 @@ namespace HappyHomeDesigner.Integration
 
 			ModEntry.monitor.Log("Alternative Textures detected! Integrating...", LogLevel.Debug);
 
-			const BindingFlags PrivateStatic = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+			const BindingFlags STATIC = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 			string error = null;
 			Type entry;
 			FieldInfo manager;
@@ -48,7 +48,7 @@ namespace HappyHomeDesigner.Integration
 				error = "Failed to find entry point for Alternative Textures.";
 
 			// Get handle for texture manager
-			else if ((manager = entry.GetField("textureManager", PrivateStatic)) is null)
+			else if ((manager = entry.GetField("textureManager", STATIC)) is null)
 				error = "Failed to find texture manager.";
 
 			// bind variant checker

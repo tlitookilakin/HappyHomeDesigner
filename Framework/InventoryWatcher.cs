@@ -20,19 +20,16 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (Game1.MasterPlayer.hasOrWillReceiveMail(AssetManager.CARD_MAIL))
 			{
-				if (Game1.MasterPlayer.hasOrWillReceiveMail(AssetManager.FAIRY_MAIL))
-					return;
-
-				foreach (var item in ev.Added)
+				if (
+					!Game1.MasterPlayer.hasOrWillReceiveMail(AssetManager.FAIRY_MAIL) &&
+					ev.Added.Where(i => 
+						i is not null && 
+						i.Stack > 0 && 
+						i.QualifiedItemId is "(F)" + AssetManager.DELUXE_ID
+					).Any()
+				)
 				{
-					if (item is null || item.Stack <= 0)
-						continue;
-
-					if (item.QualifiedItemId == "(F)" + AssetManager.DELUXE_ID)
-					{
-						Game1.addMailForTomorrow(AssetManager.FAIRY_MAIL, false, true);
-						break;
-					}
+					Game1.addMailForTomorrow(AssetManager.FAIRY_MAIL, false, true);
 				}
 
 				return;
@@ -41,10 +38,11 @@ namespace HappyHomeDesigner.Framework
 			bool rareAdded = false;
 			foreach (var item in ev.Added)
 			{
-				if (item is null || item.Stack <= 0)
-					continue;
-
-				if (RareCatalogueIDs.Contains(item.QualifiedItemId))
+				if (
+					item is not null &&
+					item.Stack > 0 &&
+					RareCatalogueIDs.Contains(item.QualifiedItemId)
+				)
 				{
 					rareAdded = true;
 					Game1.MasterPlayer.modData[ModEntry.MOD_ID + "_Found_" + item.QualifiedItemId] = "T";

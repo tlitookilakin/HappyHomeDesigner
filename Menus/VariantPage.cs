@@ -22,7 +22,7 @@ namespace HappyHomeDesigner.Menus
 		protected readonly List<T> Favorites = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
-		private T? variantItem;
+		private T variantItem;
 		protected TE hovered;
 
 		protected int iconRow;
@@ -77,10 +77,9 @@ namespace HappyHomeDesigner.Menus
 
 		public abstract IEnumerable<T> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites);
 
-		public override int Count()
-		{
-			return entries.Count;
-		}
+		public override int Count() 
+			=> entries.Count;
+
 		public void UpdateDisplay()
 		{
 			variantIndex = MainPanel.FilteredItems.Find(variantItem);
@@ -189,8 +188,10 @@ namespace HappyHomeDesigner.Menus
 		public override void receiveScrollWheelAction(int direction)
 		{
 			var pos = Game1.getMousePosition(true);
+
 			if (MainPanel.isWithinBounds(pos.X, pos.Y))
 				MainPanel.receiveScrollWheelAction(direction);
+
 			else if (VariantPanel.isWithinBounds(pos.X, pos.Y))
 				VariantPanel.receiveScrollWheelAction(direction);
 		}
