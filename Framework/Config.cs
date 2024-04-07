@@ -20,6 +20,7 @@ namespace HappyHomeDesigner.Framework
 		public bool ReplaceWallpaperCatalog { get; set; }
 		public bool ReplaceRareCatalogs { get; set; }
 		public KeybindList ToggleShortcut { get; set; }
+		public bool AlwaysLockScroll { get; set; }
 
 		public Config()
 		{
@@ -43,6 +44,7 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
+			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
 		}
 
 		private void Reset()
@@ -57,6 +59,7 @@ namespace HappyHomeDesigner.Framework
 			ReplaceWallpaperCatalog = true;
 			ReplaceRareCatalogs = true;
 			ToggleShortcut = new(SButton.None);
+			AlwaysLockScroll = false;
 		}
 		private void Save()
 		{

@@ -48,7 +48,7 @@ namespace HappyHomeDesigner
 			if (e.Delta is not 0 && Catalog.ActiveMenu.Value is Catalog catalog)
 			{
 				var mouse = Game1.getMousePosition(true);
-				if (catalog.isWithinBounds(mouse.X, mouse.Y))
+				if (config.AlwaysLockScroll || catalog.isWithinBounds(mouse.X, mouse.Y))
 				{
 					catalog.receiveScrollWheelAction(-Math.Sign(e.Delta));
 					e.Suppress();
@@ -60,8 +60,8 @@ namespace HappyHomeDesigner
 		{
 			if (!e.IsSuppressed() && config.CloseWithKey && Game1.activeClickableMenu is null)
 			{
-				if (Catalog.ActiveMenu.Value is Catalog cat) {
-
+				if (Catalog.ActiveMenu.Value is Catalog cat) 
+				{
 					if (config.ToggleShortcut.JustPressed())
 					{
 						cat.Toggle(true);

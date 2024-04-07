@@ -35,6 +35,8 @@
 	"mail.fairyDust.name": "Fairy Dust & Catalogues",
 	"config.ReplaceRareCatalogs.name": "Replace Rare Catalogues",
 	"config.ReplaceRareCatalogs.desc": "While anabled, replaces the default rare catalog UIs with the new one.",
+	"config.AlwaysLockScroll.name": "Always Lock Scroll",
+	"config.AlwaysLockScroll.desc": "When disabled, scroll wheel is only captured when hovering over the menu. When enabled, scroll wheel is always captured while the menu is open.",
 	"item.portable.name": "Architect's Catalogue",
 	"item.portable.desc": "A portable catalogue truly worthy of the finest home."
 }
