@@ -201,6 +201,9 @@ namespace HappyHomeDesigner.Framework
 			IEnumerable<ISalable> output = Array.Empty<ISalable>();
 			var shopData = DataLoader.Shops(Game1.content);
 
+			if (ModEntry.config.EarlyDeluxe && catalog.HasFlag(CatalogType.Furniture) && catalog.HasFlag(CatalogType.Wallpaper))
+				catalog |= CatalogType.Collector;
+
 			if (catalog.HasFlag(CatalogType.Furniture) && shopData.TryGetValue("Furniture Catalogue", out var data))
 				output = output.Concat(ShopBuilder.GetShopStock("Furniture Catalogue", data).Keys);
 

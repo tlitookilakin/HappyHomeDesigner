@@ -21,6 +21,9 @@ namespace HappyHomeDesigner.Framework
 		public bool ReplaceRareCatalogs { get; set; }
 		public KeybindList ToggleShortcut { get; set; }
 		public bool AlwaysLockScroll { get; set; }
+		public bool ClientMode { get; set; }
+		public bool EarlyDeluxe { get; set; }
+		public bool LargeVariants { get; set; }
 
 		public Config()
 		{
@@ -45,6 +48,9 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
 			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
+			gmcm.QuickBind(man, this, nameof(ClientMode));
+			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
+			gmcm.QuickBind(man, this, nameof(LargeVariants));
 		}
 
 		private void Reset()
@@ -60,7 +66,11 @@ namespace HappyHomeDesigner.Framework
 			ReplaceRareCatalogs = true;
 			ToggleShortcut = new(SButton.None);
 			AlwaysLockScroll = false;
+			ClientMode = false;
+			EarlyDeluxe = false;
+			LargeVariants = false;
 		}
+
 		private void Save()
 		{
 			ModEntry.helper.WriteConfig(this);

@@ -56,29 +56,32 @@ namespace HappyHomeDesigner.Framework
 			if (name.IsEquivalentTo(UI_PATH))
 				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
 
-			else if (name.IsEquivalentTo("Data/Furniture"))
-				e.Edit(AddCatalogues, AssetEditPriority.Early);
-
 			else if (name.IsEquivalentTo(TEXTURE_PATH))
 				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);
-
-			else if (name.IsEquivalentTo("Data/Shops"))
-				e.Edit(TagShops, AssetEditPriority.Default);
-
-			else if (name.IsEquivalentTo("Data/Powers"))
-				e.Edit(AddCardPower, AssetEditPriority.Early);
-
-			else if (name.IsEquivalentTo("Data/Mail"))
-				e.Edit(AddMail, AssetEditPriority.Early);
-
-			else if (name.IsEquivalentTo("Data/Objects"))
-				e.Edit(AddCardItem, AssetEditPriority.Early);
 
 			else if (name.IsEquivalentTo(MAIL_BG))
 				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);
 
-			else if (name.IsEquivalentTo("Data/Tools"))
-				e.Edit(AddHandCatalogue, AssetEditPriority.Early);
+			else if (name.IsEquivalentTo("Data/Shops"))
+				e.Edit(TagShops, AssetEditPriority.Default);
+
+			else if (!ModEntry.config.ClientMode)
+			{
+				if (name.IsEquivalentTo("Data/Furniture"))
+					e.Edit(AddCatalogues, AssetEditPriority.Early);
+
+				else if (name.IsEquivalentTo("Data/Powers"))
+					e.Edit(AddCardPower, AssetEditPriority.Early);
+
+				else if (name.IsEquivalentTo("Data/Mail"))
+					e.Edit(AddMail, AssetEditPriority.Early);
+
+				else if (name.IsEquivalentTo("Data/Objects"))
+					e.Edit(AddCardItem, AssetEditPriority.Early);
+
+				else if (name.IsEquivalentTo("Data/Tools"))
+					e.Edit(AddHandCatalogue, AssetEditPriority.Early);
+			}
 		}
 
 		private static void AddHandCatalogue(IAssetData asset)
