@@ -48,7 +48,7 @@ namespace HappyHomeDesigner.Menus
 			HasVariants = false;
 		}
 
-		public abstract IList<VariantEntry<T>> GetVariants();
+		public abstract IReadOnlyList<VariantEntry<T>> GetVariants();
 
 		public void Draw(SpriteBatch b, int x, int y)
 		{

@@ -32,7 +32,7 @@ namespace HappyHomeDesigner.Menus
 			return item;
 		}
 
-		public override IList<VariantEntry<Furniture>> GetVariants()
+		public override IReadOnlyList<VariantEntry<Furniture>> GetVariants()
 		{
 			if (!HasVariants)
 				return new[] { new FurnitureEntry(Item) };

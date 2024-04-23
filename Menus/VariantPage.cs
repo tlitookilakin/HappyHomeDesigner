@@ -18,7 +18,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly string KeyFavs;
 
 		protected readonly List<T> entries = new();
-		protected List<T> variants = new();
+		protected IReadOnlyList<VariantEntry<TE>> variants = Array.Empty<VariantEntry<TE>>();
 		protected readonly List<T> Favorites = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
@@ -174,7 +174,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			variantIndex = index;
 			variantItem = entry;
-			variants = (List<T>)entry.GetVariants();
+			variants = entry.GetVariants();
 			VariantPanel.Items = variants;
 			showVariants = true;
 		}

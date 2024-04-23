@@ -21,7 +21,7 @@ namespace HappyHomeDesigner.Menus
 		public override SObject GetOne()
 			=> Item.getOne() as SObject;
 
-		public override IList<VariantEntry<SObject>> GetVariants()
+		public override IReadOnlyList<VariantEntry<SObject>> GetVariants()
 		{
 			if (!HasVariants)
 				return new[] { new BigObjectEntry(Item) };

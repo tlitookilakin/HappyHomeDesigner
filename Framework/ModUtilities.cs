@@ -29,9 +29,9 @@ namespace HappyHomeDesigner.Framework
 
 		public static bool CanDelete(this Item item, ICollection<string> knownIDs)
 		{
-			return 
-				item is not Tool && item.canBeTrashed() && knownIDs is not null && 
-				item is not null && knownIDs.Contains(item.QualifiedItemId);
+			return
+				item is not null && item is not Tool && item.canBeTrashed() && 
+				knownIDs is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 
 		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
