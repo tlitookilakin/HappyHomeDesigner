@@ -214,7 +214,7 @@ namespace HappyHomeDesigner.Framework
 
 		public static IEnumerable<ISalable> GenerateCombined(CatalogType catalog)
 		{
-			IEnumerable<ISalable> output = Array.Empty<ISalable>();
+			IEnumerable<ISalable> output = [];
 			var shopData = DataLoader.Shops(Game1.content);
 
 			if (ModEntry.config.EarlyDeluxe && catalog.HasFlag(CatalogType.Furniture) && catalog.HasFlag(CatalogType.Wallpaper))

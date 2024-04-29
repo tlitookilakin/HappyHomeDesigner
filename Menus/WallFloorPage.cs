@@ -36,14 +36,14 @@ namespace HappyHomeDesigner.Menus
 
 			var wallFavs = new HashSet<string>(
 				Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? 
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
-				Array.Empty<string>()
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
+				[]
 			);
 
 			var floorFavs = new HashSet<string>(
 				Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? 
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) : 
-				Array.Empty<string>()
+				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
+				[]
 			);
 
 			var knownWalls = new HashSet<string>();
@@ -98,8 +98,8 @@ namespace HappyHomeDesigner.Menus
 			FloorsPanel.Items = floors;
 			ActivePanel = WallPanel;
 
-			preservedWallFavorites = wallFavs.ToArray();
-			preservedFloorFavorites = floorFavs.ToArray();
+			preservedWallFavorites = [.. wallFavs];
+			preservedFloorFavorites = [.. floorFavs];
 		}
 
 		public override int Count() 

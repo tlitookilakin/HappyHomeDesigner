@@ -37,7 +37,7 @@ namespace HappyHomeDesigner.Menus
 			if (!HasVariants)
 				return new[] { new FurnitureEntry(Item) };
 
-			List<Furniture> skins = new() { Item };
+			List<Furniture> skins = [Item];
 			AlternativeTextures.VariantsOfFurniture(Item, season, skins);
 
 			return skins.Select(f => new FurnitureEntry(f) as VariantEntry<Furniture>).ToList();

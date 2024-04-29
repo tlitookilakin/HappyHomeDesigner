@@ -32,12 +32,12 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
-		private static void BeforeDropIn(Item dropInItem, Farmer who, out Furniture __state)
+		private static void BeforeDropIn(Farmer who, out Furniture __state)
 		{
 			__state = who.TemporaryItem as Furniture;
 		}
 
-		private static void AfterDropIn(Item dropInItem, Farmer who, Furniture __state)
+		private static void AfterDropIn(Farmer who, Furniture __state)
 		{
 			if (__state is not null && who.TemporaryItem != __state)
 			{

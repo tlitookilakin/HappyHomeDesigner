@@ -18,7 +18,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly string KeyFavs;
 
 		protected readonly List<T> entries = new();
-		protected IReadOnlyList<VariantEntry<TE>> variants = Array.Empty<VariantEntry<TE>>();
+		protected IReadOnlyList<VariantEntry<TE>> variants = [];
 		protected readonly List<T> Favorites = new();
 		private bool showVariants = false;
 		private int variantIndex = -1;
@@ -42,7 +42,7 @@ namespace HappyHomeDesigner.Menus
 			var favorites = new HashSet<string>(
 				Game1.player.modData.TryGetValue(KeyFavs, out var s) ?
 				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
-				Array.Empty<string>()
+				[]
 			);
 
 			knownIDs.Clear();
@@ -70,7 +70,7 @@ namespace HappyHomeDesigner.Menus
 			MainPanel.Items = entries;
 			VariantPanel.Items = variants;
 
-			preservedFavorites = favorites.ToArray();
+			preservedFavorites = [.. favorites];
 		}
 
 		public abstract void Init();

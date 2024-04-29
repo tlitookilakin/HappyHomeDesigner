@@ -5,25 +5,25 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-    public partial class UndoRedoButton : ClickableComponent
-    {
-        private readonly Stack<WallFloorState> backwards = new();
-        private readonly Stack<WallFloorState> forwards = new();
+	public partial class UndoRedoButton : ClickableComponent
+	{
+		private readonly Stack<WallFloorState> backwards = new();
+		private readonly Stack<WallFloorState> forwards = new();
 
-        public void Push(WallFloorState state)
-        {
-            forwards.Clear();
-            backwards.Push(state);
-        }
+		public void Push(WallFloorState state)
+		{
+			forwards.Clear();
+			backwards.Push(state);
+		}
 
-        public bool Undo(bool playSound)
-            => Do(backwards, forwards, playSound, false);
+		public bool Undo(bool playSound)
+			=> Do(backwards, forwards, playSound, false);
 
-        public bool Redo(bool playSound)
-            => Do(forwards, backwards, playSound, true);
+		public bool Redo(bool playSound)
+			=> Do(forwards, backwards, playSound, true);
 
-        private static bool Do(Stack<WallFloorState> from, Stack<WallFloorState> to, bool playSound, bool forward)
-        {
+		private static bool Do(Stack<WallFloorState> from, Stack<WallFloorState> to, bool playSound, bool forward)
+		{
 			if (from.Count is 0)
 				return false;
 
@@ -43,10 +43,10 @@ namespace HappyHomeDesigner.Menus
 			return false;
 		}
 
-        public void Clear()
-        {
-            backwards.Clear();
-            forwards.Clear();
-        }
-    }
+		public void Clear()
+		{
+			backwards.Clear();
+			forwards.Clear();
+		}
+	}
 }

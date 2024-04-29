@@ -74,9 +74,10 @@ namespace HappyHomeDesigner.Patches
 			var skipOffset = gen.DefineLabel();
 			var skipCheck = gen.DefineLabel();
 
-			var batchdraw = typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), new[] {
+			var batchdraw = typeof(SpriteBatch).GetMethod(nameof(SpriteBatch.Draw), [
 				typeof(Texture2D), typeof(Vector2), typeof(Rectangle?), typeof(Color),
-				typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) });
+				typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float) 
+			]);
 
 			var il = new CodeMatcher(source)
 				.MatchStartForward(
@@ -98,7 +99,7 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Brfalse),
 					new(OpCodes.Nop)
 				)
-				.AddLabels(new[] { skipCheck })
+				.AddLabels([skipCheck])
 				.MatchStartForward(
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.rotations)))
@@ -111,7 +112,7 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Ldarg_0),
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
 				)
-				.AddLabels(new[] { skipRotation })
+				.AddLabels([skipRotation])
 				.MatchStartForward(
 					new(OpCodes.Ldc_I4_0),
 					new(OpCodes.Ldarg_0),
@@ -126,7 +127,7 @@ namespace HappyHomeDesigner.Patches
 				.MatchStartForward(
 					new CodeMatch(OpCodes.Stfld, typeof(Rectangle).GetField(nameof(Rectangle.X)))
 				)
-				.AddLabels(new[] { skipOffset })
+				.AddLabels([skipOffset])
 				.MatchEndForward(
 					new CodeMatch(OpCodes.Callvirt, batchdraw)
 				)
