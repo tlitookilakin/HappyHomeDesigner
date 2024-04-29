@@ -22,12 +22,14 @@ namespace HappyHomeDesigner.Patches
 		internal static bool IsApplied = false;
 		internal static Assembly asm;
 
+		private const string MINIMUM_VERSION = "6.10.4";
+
 		internal static void Apply(Harmony harmony)
 		{
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out asm))
 				return;
 
-			var min_version = new Version(ModEntry.manifest.ExtraFields["AlternativeTexturesVersion"].ToString());
+			var min_version = new Version(MINIMUM_VERSION);
 			var current_version = asm.GetName().Version;
 
 			if (current_version < min_version)
