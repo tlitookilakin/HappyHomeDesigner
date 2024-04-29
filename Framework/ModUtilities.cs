@@ -161,7 +161,7 @@ namespace HappyHomeDesigner.Framework
 				() => ModEntry.i18n.Get($"config.{name}.name"),
 				() => ModEntry.i18n.Get($"config.{name}.desc")
 			);
-			gmcm.AddPage(manifest, name, () => ModEntry.i18n.Get($"config.{name}.title"));
+			gmcm.AddPage(manifest, name, () => ModEntry.i18n.Get($"config.{name}.name"));
 		}
 
 		public static bool AssertValid(this CodeMatcher matcher, string message, LogLevel level = LogLevel.Debug)
