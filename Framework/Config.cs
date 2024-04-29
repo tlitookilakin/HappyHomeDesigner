@@ -7,7 +7,6 @@ namespace HappyHomeDesigner.Framework
 {
 	public class Config
 	{
-
 		private static Texture2D logo;
 
 		public bool CloseWithKey { get; set; }
@@ -24,6 +23,7 @@ namespace HappyHomeDesigner.Framework
 		public bool ClientMode { get; set; }
 		public bool EarlyDeluxe { get; set; }
 		public bool LargeVariants { get; set; }
+		public KeybindList OpenMenu { get; set; }
 
 		public Config()
 		{
@@ -37,20 +37,25 @@ namespace HappyHomeDesigner.Framework
 
 			gmcm.AddImage(man, () => logo, logo.Bounds, 2);
 
-			gmcm.QuickBind(man, this, nameof(CloseWithKey));
 			gmcm.QuickBind(man, this, nameof(GiveModifier));
 			gmcm.QuickBind(man, this, nameof(FavoriteModifier));
 			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
-			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
 			gmcm.QuickBind(man, this, nameof(PauseTime));
+			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
+			gmcm.QuickBind(man, this, nameof(ClientMode), true);
+
+			gmcm.QuickPage(man, "tweaks");
+			gmcm.QuickBind(man, this, nameof(CloseWithKey));
+			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
+			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
+			gmcm.QuickBind(man, this, nameof(LargeVariants));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
-			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
-			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
-			gmcm.QuickBind(man, this, nameof(ClientMode));
+
+			gmcm.QuickPage(man, "cheats");
 			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
-			gmcm.QuickBind(man, this, nameof(LargeVariants));
+			gmcm.QuickBind(man, this, nameof(OpenMenu));
 		}
 
 		private void Reset()
@@ -69,11 +74,13 @@ namespace HappyHomeDesigner.Framework
 			ClientMode = false;
 			EarlyDeluxe = false;
 			LargeVariants = false;
+			OpenMenu = new(SButton.None);
 		}
 
 		private void Save()
 		{
 			ModEntry.helper.WriteConfig(this);
+			AssetManager.ReloadIfNecessary();
 		}
 	}
 }

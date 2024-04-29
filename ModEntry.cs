@@ -79,6 +79,17 @@ namespace HappyHomeDesigner
 						}
 					}
 				}
+				else if (config.OpenMenu.JustPressed())
+				{
+					helper.Input.Suppress(e.Button);
+
+					var catalogues =
+						ModUtilities.CatalogType.Collector |
+						ModUtilities.CatalogType.Furniture |
+						ModUtilities.CatalogType.Wallpaper;
+
+					Catalog.ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
+				}
 			}
 		}
 

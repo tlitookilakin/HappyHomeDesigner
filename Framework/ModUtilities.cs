@@ -121,10 +121,13 @@ namespace HappyHomeDesigner.Framework
 		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
 			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
 
-		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name)
+		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name, bool titleOnly = false)
 		{
 			var prop = config.GetType().GetProperty(name) ??
 				throw new ArgumentException($"Public property of name '{name}' not found on config.");
+
+			if (titleOnly)
+				gmcm.SetTitleScreenOnlyForNextOptions(manifest, true);
 
 			var title = $"config.{prop.Name}.name";
 			var desc = $"config.{prop.Name}.desc";
@@ -146,6 +149,19 @@ namespace HappyHomeDesigner.Framework
 
 			else
 				throw new ArgumentException($"Config property '{name}' is of unsupported type '{type.FullName}'.");
+
+			if (titleOnly)
+				gmcm.SetTitleScreenOnlyForNextOptions(manifest, false);
+		}
+
+		public static void QuickPage(this IGMCM gmcm, IManifest manifest, string name, string owner = "")
+		{
+			gmcm.AddPage(manifest, owner);
+			gmcm.AddPageLink(manifest, name,
+				() => ModEntry.i18n.Get($"config.{name}.name"),
+				() => ModEntry.i18n.Get($"config.{name}.desc")
+			);
+			gmcm.AddPage(manifest, name, () => ModEntry.i18n.Get($"config.{name}.title"));
 		}
 
 		public static bool AssertValid(this CodeMatcher matcher, string message, LogLevel level = LogLevel.Debug)

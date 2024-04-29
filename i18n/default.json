@@ -44,5 +44,11 @@
 	"config.EarlyDeluxe.name": "Early Deluxe Catalogue",
 	"config.EarlyDeluxe.desc": "Adds the collector's catalogue's contents to the standard combined catalogue.",
 	"config.LargeVariants.name": "Large Variants",
-	"config.LargeVariants.desc": "Increases the height of the variant panel. Covers up some HUD elements."
+	"config.LargeVariants.desc": "Increases the height of the variant panel. Covers up some HUD elements.",
+	"config.cheats.name": "Cheats",
+	"config.cheats.desc": "Options that impact game balance",
+	"config.tweaks.name": "Tweaks",
+	"config.tweaks.desc": "Options that make small changes",
+	"config.OpenMenu.name": "Open Menu Key",
+	"config.OpenMenu.desc": "Opens the Designer's Dream Catalogue for free from anywhere, and ignores unlock conditions.",
 }

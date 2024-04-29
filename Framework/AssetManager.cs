@@ -29,9 +29,12 @@ namespace HappyHomeDesigner.Framework
 
 		private static string whichUI = "ui";
 		private static ITranslationHelper i18n;
+		private static bool IsClientMode;
+		private static readonly string[] ServerRequired = 
+			["Data/Furniture", "Data/Powers", "Data/Shops", "Data/Mail", "Data/Tools"];
 
 		private static readonly string[] RareCatalogueShops = 
-			{ "JunimoFurnitureCatalogue", "TrashFurnitureCatalogue", "RetroFurnitureCatalogue", "WizardFurnitureCatalogue", "JojaFurnitureCatalogue" };
+			["JunimoFurnitureCatalogue", "TrashFurnitureCatalogue", "RetroFurnitureCatalogue", "WizardFurnitureCatalogue", "JojaFurnitureCatalogue"];
 
 		public static void Init(IModHelper helper)
 		{
@@ -47,6 +50,18 @@ namespace HappyHomeDesigner.Framework
 
 			i18n = helper.Translation;
 			helper.Events.Content.AssetRequested += ProvideData;
+			IsClientMode = ModEntry.config.ClientMode;
+		}
+
+		public static void ReloadIfNecessary()
+		{
+			if (IsClientMode == ModEntry.config.ClientMode)
+				return; // no change
+
+			IsClientMode = ModEntry.config.ClientMode;
+
+			foreach (var item in ServerRequired)
+				ModEntry.helper.GameContent.InvalidateCache(item);
 		}
 
 		public static void ProvideData(object sender, AssetRequestedEventArgs e)
@@ -166,9 +181,9 @@ namespace HappyHomeDesigner.Framework
 			{
 				for (int i = 0; i < RareCatalogueShops.Length; i++)
 					if (data.TryGetValue(RareCatalogueShops[i], out var shop))
-						(shop.CustomFields ??= new())["HappyHomeDesigner/Catalogue"] = "True";
+						(shop.CustomFields ??= [])["HappyHomeDesigner/Catalogue"] = "True";
 
-				if (data.TryGetValue("Carpenter", out var carpenter))
+				if (!IsClientMode && data.TryGetValue("Carpenter", out var carpenter))
 					carpenter.Items.Add(new() { 
 						Id = COLLECTORS_ID,
 						ItemId = "(F)" + COLLECTORS_ID,
