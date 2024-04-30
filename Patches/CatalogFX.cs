@@ -52,6 +52,15 @@ namespace HappyHomeDesigner.Patches
 					DrawDeluxeFX(__instance, spriteBatch, pos, Color.White * alpha, depth, 4f, effect, Vector2.Zero);
 					break;
 			}
+
+			if (__instance.heldObject.Value is Item item && item.QualifiedItemId is "(O)" + AssetManager.PORTABLE_ID)
+			{
+				HandCatalogue.DrawInWorld(
+					item, spriteBatch,
+					new(__instance.boundingBox.Center.X - 32, __instance.boundingBox.Center.Y - (__instance.drawHeldObjectLow.Value ? 32 : 85)),
+					(__instance.boundingBox.Bottom + 1) * PIXEL_DEPTH
+				);
+			}
 		}
 
 		private static void DrawMenu(Furniture __instance, SpriteBatch spriteBatch, Vector2 location, 

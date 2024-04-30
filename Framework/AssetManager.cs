@@ -39,20 +39,36 @@ namespace HappyHomeDesigner.Framework
 
 		private static Dictionary<string, string> localFurniture;
 		private static Dictionary<string, JToken> localItems;
+		private static IGameContentHelper gameContent;
+
+		public static Texture2D BookSpriteSheet
+			=> bookSprite ??= gameContent.Load<Texture2D>("LooseSprites/Book_Animation");
+		private static Texture2D bookSprite;
 
 		public static void Init(IModHelper helper)
 		{
-			ReadLocalData();
+			gameContent = helper.GameContent;
+			ReadLocalData(helper);
 			i18n = helper.Translation;
 			IsClientMode = ModEntry.config.ClientMode;
 			helper.Events.Content.AssetRequested += ProvideData;
+			helper.Events.Content.AssetsInvalidated += ReloadCached;
 		}
 
-		private static void ReadLocalData()
+		private static void ReloadCached(object sender, AssetsInvalidatedEventArgs e)
 		{
-			localFurniture = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
-			localItems = ModEntry.helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
-			var recolors = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/recolors.json");
+			foreach (var name in e.NamesWithoutLocale)
+			{
+				if (name.IsEquivalentTo("LooseSprites/Book_Animation"))
+					bookSprite = null;
+			}
+		}
+
+		private static void ReadLocalData(IModHelper helper)
+		{
+			localFurniture = helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
+			localItems = helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
+			var recolors = helper.ModContent.Load<Dictionary<string, string>>("assets/recolors.json");
 
 			string defaultName;
 			foreach(var (id, name) in recolors)
@@ -135,8 +151,15 @@ namespace HappyHomeDesigner.Framework
 			{
 				var entry = localItems["card"].ToObject<ObjectData>();
 				entry.DisplayName = i18n.Get("item.card.name");
+				entry.Description = i18n.Get("item.card.desc");
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(CARD_ID, entry);
+
+				entry = localItems["handheld_dummy"].ToObject<ObjectData>();
+				entry.DisplayName = i18n.Get("item.portable.name");
+				entry.Description = i18n.Get("item.portable.desc");
+				entry.Texture = TEXTURE_PATH;
+				data.TryAdd(PORTABLE_ID, entry);
 			}
 		}
 
