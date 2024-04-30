@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -36,21 +37,38 @@ namespace HappyHomeDesigner.Framework
 		private static readonly string[] RareCatalogueShops = 
 			["JunimoFurnitureCatalogue", "TrashFurnitureCatalogue", "RetroFurnitureCatalogue", "WizardFurnitureCatalogue", "JojaFurnitureCatalogue"];
 
+		private static Dictionary<string, string> localFurniture;
+		private static Dictionary<string, JToken> localItems;
+
 		public static void Init(IModHelper helper)
 		{
-			whichUI =
-
-				helper.ModRegistry.IsLoaded("Maraluna.OvergrownFloweryInterface") ?
-				"ui_overgrown" : // overgrown flowery
-
-				helper.ModRegistry.IsLoaded("ManaKirel.VintageInterface2") ?
-				"ui_vintage" : // vintage v2
-
-				"ui"; // vanilla
-
+			ReadLocalData();
 			i18n = helper.Translation;
-			helper.Events.Content.AssetRequested += ProvideData;
 			IsClientMode = ModEntry.config.ClientMode;
+			helper.Events.Content.AssetRequested += ProvideData;
+		}
+
+		private static void ReadLocalData()
+		{
+			localFurniture = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
+			localItems = ModEntry.helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
+			var recolors = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/recolors.json");
+
+			string defaultName;
+			foreach(var (id, name) in recolors)
+			{
+				if (id is "Default")
+				{
+					defaultName = name;
+					continue;
+				}
+				
+				if (ModEntry.helper.ModRegistry.IsLoaded(id))
+				{
+					whichUI = name;
+					break;
+				}
+			}
 		}
 
 		public static void ReloadIfNecessary()
@@ -103,22 +121,11 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (asset.Data is Dictionary<string, ToolData> data)
 			{
-				data.TryAdd(
-					PORTABLE_ID,
-					new()
-					{
-						Name = "Magic Catalogue",
-						DisplayName = i18n.Get("item.portable.name"),
-						Description = i18n.Get("item.portable.desc"),
-						Texture = TEXTURE_PATH,
-						SpriteIndex = 11,
-						ClassName = "GenericTool",
-						SetProperties = new()
-						{
-							{nameof(Tool.InstantUse), "True"}
-						}
-					}
-				);
+				var entry = localItems["handheld"].ToObject<ToolData>();
+				entry.DisplayName = i18n.Get("item.portable.name");
+				entry.Description = i18n.Get("item.portable.desc");
+				entry.Texture = TEXTURE_PATH;
+				data.TryAdd(PORTABLE_ID, entry);
 			}
 		}
 
@@ -126,20 +133,10 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (asset.Data is Dictionary<string, ObjectData> data)
 			{
-				data.TryAdd(
-					CARD_ID,
-					new()
-					{
-						Name = "Collector's Card",
-						DisplayName = i18n.Get("item.card.name"),
-						Texture = TEXTURE_PATH,
-						SpriteIndex = 8,
-						Category = Object.trinketCategory,
-						ExcludeFromFishingCollection = true,
-						ExcludeFromRandomSale = true,
-						ExcludeFromShippingCollection = true
-					}
-				);
+				var entry = localItems["card"].ToObject<ObjectData>();
+				entry.DisplayName = i18n.Get("item.card.name");
+				entry.Texture = TEXTURE_PATH;
+				data.TryAdd(CARD_ID, entry);
 			}
 		}
 
@@ -168,7 +165,7 @@ namespace HappyHomeDesigner.Framework
 						DisplayName = i18n.Get("item.card.name"),
 						Description = i18n.Get("item.card.desc"),
 						TexturePath = TEXTURE_PATH,
-						TexturePosition = new(32, 32),
+						TexturePosition = ItemRegistry.GetData(CARD_ID).GetSourceRect().Location,
 						UnlockedCondition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
 					}
 				);
@@ -215,11 +212,9 @@ namespace HappyHomeDesigner.Framework
 		{
 			if (asset.Data is Dictionary<string, string> data)
 			{
-				var entries = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
-
-				data.TryAdd(CATALOGUE_ID, GetEntry(entries, "furniture", "Catalogue"));
-				data.TryAdd(COLLECTORS_ID, GetEntry(entries, "furniture", "CollectorsCatalogue"));
-				data.TryAdd(DELUXE_ID, GetEntry(entries, "furniture", "DeluxeCatalogue"));
+				data.TryAdd(CATALOGUE_ID, GetEntry(localFurniture, "furniture", "Catalogue"));
+				data.TryAdd(COLLECTORS_ID, GetEntry(localFurniture, "furniture", "CollectorsCatalogue"));
+				data.TryAdd(DELUXE_ID, GetEntry(localFurniture, "furniture", "DeluxeCatalogue"));
 			}
 		}
 

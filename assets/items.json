@@ -1,0 +1,18 @@
+﻿{
+	"handheld": {
+		"Name": "Architect's Catalogue",
+		"SpriteIndex": 14,
+		"ClassName": "GenericTool",
+		"SetProperties": {
+			"InstantUse": true
+		}
+	},
+	"card": {
+		"Name": "Collector's Card",
+		"SpriteIndex": 10,
+		"Category": -101,
+		"ExcludeFromFishingCollection": true,
+		"ExcludeFromRandomSale": true,
+		"ExcludeFromShippingCollection": true
+	}
+}

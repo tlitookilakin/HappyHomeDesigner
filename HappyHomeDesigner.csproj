@@ -20,9 +20,6 @@
 	<ItemGroup>
 		<PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.3.1" />
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
+		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll" private="false" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<GamePath>C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley</GamePath>
-	</PropertyGroup>
 </Project>
