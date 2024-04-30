@@ -252,5 +252,21 @@ namespace HappyHomeDesigner.Framework
 			}
 			return true;
 		}
+
+		public static Color Mult(this Color a, Color b)
+			=> new(
+				(a.R / 255f) * (b.R / 255f),
+				(a.G / 255f) * (b.G / 255f),
+				(a.B / 255f) * (b.B / 255f),
+				(a.A / 255f) * (b.A / 255f)
+			);
+
+		public static Color Lerp(this Color a, Color b, float amount)
+			=> new(
+				Utility.Lerp(a.R / 255f, b.R / 255f, amount),
+				Utility.Lerp(a.G / 255f, b.G / 255f, amount),
+				Utility.Lerp(a.B / 255f, b.B / 255f, amount),
+				Utility.Lerp(a.A / 255f, b.A / 255f, amount)
+			);
 	}
 }

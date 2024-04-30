@@ -14,7 +14,9 @@ namespace HappyHomeDesigner.Patches
 	{
 		private static AccessTools.FieldRef<Furniture, NetVector2> drawPosition;
 		private static Func<Furniture, float> getScaleSize;
-		private static readonly Vector2 menuOffset = new Vector2(32f, 32f);
+		private static readonly Vector2 menuOffset = new(32f, 32f);
+		private const float PIXEL_DEPTH = 1f / 10_000f;
+		private const float DISCRIMINATOR = PIXEL_DEPTH / 10f;
 
 		internal static void Apply(Harmony harmony)
 		{
@@ -23,15 +25,15 @@ namespace HappyHomeDesigner.Patches
 				.GetMethod("getScaleSize", BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic)
 				.CreateDelegate<Func<Furniture, float>>();
 
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Furniture).GetMethod(nameof(Furniture.draw), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly),
 				postfix: new(typeof(CatalogFX), nameof(DrawPatch))
 			);
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Furniture).GetMethod(nameof(Furniture.drawAtNonTileSpot)),
 				postfix: new(typeof(CatalogFX), nameof(DrawOnSpot))
 			);
-			harmony.Patch(
+			harmony.TryPatch(
 				typeof(Furniture).GetMethod(nameof(Furniture.drawInMenu), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly),
 				postfix: new(typeof(CatalogFX), nameof(DrawMenu))
 			);
@@ -44,6 +46,10 @@ namespace HappyHomeDesigner.Patches
 				case "(F)" + AssetManager.COLLECTORS_ID:
 					GetVars(__instance, x, y, out var pos, out var effect, out var depth);
 					DrawCollectorFX(__instance, spriteBatch, pos, Color.White * alpha, depth, 4f, effect, Vector2.Zero);
+					break;
+				case "(F)" + AssetManager.DELUXE_ID:
+					GetVars(__instance, x, y, out pos, out effect, out depth);
+					DrawDeluxeFX(__instance, spriteBatch, pos, Color.White * alpha, depth, 4f, effect, Vector2.Zero);
 					break;
 			}
 		}
@@ -59,6 +65,12 @@ namespace HappyHomeDesigner.Patches
 						layerDepth, scaleSize * getScaleSize(__instance), SpriteEffects.None, 
 						new(__instance.sourceRect.Width / 2, __instance.sourceRect.Height / 2)
 					); break;
+				case "(F)" + AssetManager.DELUXE_ID:
+					DrawDeluxeFX(
+						__instance, spriteBatch, location + menuOffset, color * transparency, 
+						layerDepth, scaleSize * getScaleSize(__instance), SpriteEffects.None, 
+						new(__instance.sourceRect.Width / 2, __instance.sourceRect.Height / 2)
+					); break;
 			}
 		}
 
@@ -69,6 +81,10 @@ namespace HappyHomeDesigner.Patches
 				case "(F)" + AssetManager.COLLECTORS_ID:
 					var flipped = __instance.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 					DrawCollectorFX(__instance, spriteBatch, location, Color.White * alpha, layerDepth, 4f, flipped, Vector2.Zero);
+					break;
+				case "(F)" + AssetManager.DELUXE_ID:
+					flipped = __instance.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+					DrawDeluxeFX(__instance, spriteBatch, location, Color.White * alpha, layerDepth, 4f, flipped, Vector2.Zero);
 					break;
 			}
 		}
@@ -84,18 +100,40 @@ namespace HappyHomeDesigner.Patches
 			effect = furn.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 			depth =
 				Furniture.isDrawingLocationFurniture ?
-				(furn.TileLocation.Y + furn.boundingBox.Height) * (64f / 10000f) :
+				(furn.boundingBox.Bottom - 8) * PIXEL_DEPTH :
 				0f;
 		}
 
 		private static void DrawCollectorFX(Furniture furn, SpriteBatch batch, Vector2 pos, Color color, float depth, float scale, SpriteEffects effect, Vector2 origin)
 		{
 			var data = ItemRegistry.GetData(furn.QualifiedItemId);
-			pos = new(pos.X, pos.Y + (float)Math.Sin(Game1.ticks * (Math.Tau / 100.0)) * 6f);
+			pos = new(pos.X, pos.Y + (float)Math.Sin(Game1.ticks * (Math.Tau / 100.0)) * 1.5f * scale);
 			var source = furn.sourceRect.Value;
 			source.X += source.Width;
 
-			batch.Draw(data.GetTexture(), pos, source, color, 0f, origin, scale, effect, depth + (1f / 10000f));
+			batch.Draw(data.GetTexture(), pos, source, color, 0f, origin, scale, effect, depth + DISCRIMINATOR);
+		}
+
+		private static void DrawDeluxeFX(Furniture furn, SpriteBatch batch, Vector2 pos, Color color, float depth, float scale, SpriteEffects effect, Vector2 origin)
+		{
+			var data = ItemRegistry.GetData(furn.QualifiedItemId);
+			var texture = data.GetTexture();
+			var source = furn.sourceRect.Value;
+			var col1 = Utility.GetPrismaticColor(0);
+			var col2 = Utility.GetPrismaticColor(1);
+
+			var col = color.Mult(col1);
+			source.X += source.Width;
+			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (1f * DISCRIMINATOR));
+
+			col = color.Mult(col1.Lerp(col2, .5f));
+			source.Y += source.Height;
+			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (2f * DISCRIMINATOR));
+
+			col = color.Mult(col2);
+			source.X -= source.Width;
+			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (3f * DISCRIMINATOR));
+
 		}
 	}
 }
