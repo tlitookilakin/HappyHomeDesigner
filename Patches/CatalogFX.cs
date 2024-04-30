@@ -122,15 +122,15 @@ namespace HappyHomeDesigner.Patches
 			var col1 = Utility.GetPrismaticColor(0);
 			var col2 = Utility.GetPrismaticColor(1);
 
-			var col = color.Mult(col1);
+			var col = color.Mult(Utility.GetPrismaticColor(0));
 			source.X += source.Width;
 			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (1f * DISCRIMINATOR));
 
-			col = color.Mult(col1.Lerp(col2, .5f));
+			col = color.Mult(Utility.GetPrismaticColor(2));
 			source.Y += source.Height;
 			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (2f * DISCRIMINATOR));
 
-			col = color.Mult(col2);
+			col = color.Mult(Utility.GetPrismaticColor(4));
 			source.X -= source.Width;
 			batch.Draw(texture, pos, source, col, 0f, origin, scale, effect, depth + (3f * DISCRIMINATOR));
 
