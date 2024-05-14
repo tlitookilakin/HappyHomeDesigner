@@ -185,12 +185,24 @@ namespace HappyHomeDesigner.Framework
 					if (data.TryGetValue(RareCatalogueShops[i], out var shop))
 						(shop.CustomFields ??= [])["HappyHomeDesigner/Catalogue"] = "True";
 
-				if (!IsClientMode && data.TryGetValue("Carpenter", out var carpenter))
-					carpenter.Items.Add(new() { 
-						Id = COLLECTORS_ID,
-						ItemId = "(F)" + COLLECTORS_ID,
-						Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
-					});
+				if (!IsClientMode)
+				{
+					if (data.TryGetValue("Carpenter", out var shop)) 
+						shop.Items.Add(new()
+						{
+							Id = COLLECTORS_ID,
+							ItemId = "(F)" + COLLECTORS_ID,
+							Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
+						});
+
+					if (ModEntry.config.EasierTrashCatalogue && data.TryGetValue("ShadowShop", out shop))
+						shop.Items.Add(new() {
+							Id = MOD_ID + "_TrashCatalogue",
+							ItemId = "(F)TrashCatalogue",
+							Condition = "PLAYER_HEARTS Current Krobus 6",
+							Price = 1000
+						});
+				}
 
 				#if DEBUG
 
