@@ -28,7 +28,6 @@ namespace HappyHomeDesigner.Framework
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
 		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
 
-		private static string whichUI = "ui";
 		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
 		private static readonly string[] ServerRequired = 
@@ -68,23 +67,6 @@ namespace HappyHomeDesigner.Framework
 		{
 			localFurniture = helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
 			localItems = helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
-			var recolors = helper.ModContent.Load<Dictionary<string, string>>("assets/recolors.json");
-
-			string defaultName;
-			foreach(var (id, name) in recolors)
-			{
-				if (id is "Default")
-				{
-					defaultName = name;
-					continue;
-				}
-				
-				if (ModEntry.helper.ModRegistry.IsLoaded(id))
-				{
-					whichUI = name;
-					break;
-				}
-			}
 		}
 
 		public static void ReloadIfNecessary()
@@ -103,7 +85,7 @@ namespace HappyHomeDesigner.Framework
 			var name = e.NameWithoutLocale;
 
 			if (name.IsEquivalentTo(UI_PATH))
-				e.LoadFromModFile<Texture2D>($"assets/{whichUI}.png", AssetLoadPriority.Low);
+				e.LoadFromModFile<Texture2D>($"assets/{ModEntry.config.UiName}.png", AssetLoadPriority.Low);
 
 			else if (name.IsEquivalentTo(TEXTURE_PATH))
 				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);

@@ -121,7 +121,8 @@ namespace HappyHomeDesigner.Framework
 		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
 			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
 
-		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name, bool titleOnly = false)
+		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name, 
+			bool titleOnly = false, string[] allowedValues = null, Func<string, string> formatValue = null)
 		{
 			var prop = config.GetType().GetProperty(name) ??
 				throw new ArgumentException($"Public property of name '{name}' not found on config.");
@@ -146,6 +147,14 @@ namespace HappyHomeDesigner.Framework
 				prop.SetMethod.ToDelegate<Action<KeybindList>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc));
+
+			else if (type == typeof(string))
+				gmcm.AddTextOption(manifest,
+				prop.GetMethod.ToDelegate<Func<string>>(config),
+				prop.SetMethod.ToDelegate<Action<string>>(config),
+				() => ModEntry.i18n.Get(title),
+				() => ModEntry.i18n.Get(desc),
+				allowedValues, formatValue);
 
 			else
 				throw new ArgumentException($"Config property '{name}' is of unsupported type '{type.FullName}'.");
