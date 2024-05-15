@@ -164,46 +164,6 @@ namespace HappyHomeDesigner.Patches
 			b.Draw(tex, pos, source, tint, ang, origin, scale, fx, depth);
 		}
 
-		public static void DrawFront(Furniture f, Texture2D texture, Rectangle source, Vector2 location, SpriteBatch batch,
-			float scale, float alpha, float depth)
-		{
-			//if (f is not BedFurniture)
-			//	return;
-
-			source.X += source.Width;
-
-			batch.Draw(
-				texture,
-				new Vector2(location.X + 32f, location.Y + 32f),
-				source,
-				Color.White * alpha,
-				0f, 
-				new Vector2(source.Width / 2, source.Height / 2),
-				scale * GetScaledSize(source),
-				f.Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
-				depth
-			);
-		}
-
-		private static float GetScaledSize(Rectangle source)
-		{
-			// based on Furniture.getScaleSize from vanilla
-			// and GetScaledSize from AT
-
-			int tilesWide = source.Width / 16;
-			int tilesHigh = source.Height / 16;
-
-			return
-				tilesWide >= 7 ? .05f :
-				tilesWide is 6 ? .66f :
-				tilesWide is 5 ? .75f :
-				tilesHigh >= 5 ? .80f :
-				tilesHigh >= 3 ? 1.0f :
-				tilesWide <= 2 ? 2.0f :
-				tilesWide <= 4 ? 1.0f :
-				.1f;
-		}
-
 		private static bool SkipNameCaching(ref bool __result, StardewValley.Object __0)
 		{
 			if (!forcePreviewDraw)
