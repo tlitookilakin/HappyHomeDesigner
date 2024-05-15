@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using HappyHomeDesigner.Menus;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -60,6 +61,8 @@ namespace HappyHomeDesigner.Framework
 			{
 				if (name.IsEquivalentTo("LooseSprites/Book_Animation"))
 					bookSprite = null;
+				else if (name.IsEquivalentTo(UI_PATH) && Catalog.HasAnyActive())
+					Catalog.MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(UI_PATH);
 			}
 		}
 

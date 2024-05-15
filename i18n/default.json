@@ -58,5 +58,9 @@
 	"skin.Maraluna.OvergrownFloweryInterface": "Overgrown Flowery",
 	"skin.ManaKirel.VintageInterface2": "Vintage V2",
 	"config.EasierTrashCatalogue.name": "Easier Trash Catalogue",
-	"config.EasierTrashCatalogue.desc": "Makes the trash catalogue less difficult to obtain."
+	"config.EasierTrashCatalogue.desc": "Makes the trash catalogue less difficult to obtain.",
+	"config.Magnify.name": "Magnify",
+	"config.Magnify.desc": "Shows a larger preview tooltip, to make detail on large items more visible.",
+	"config.MagnifyScale.name": "Magnify Scale",
+	"config.MagnifyScale.desc": "Size multiplier for the preview tooltip. Does nothing if Magnify is disabled."
 }

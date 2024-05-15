@@ -24,6 +24,7 @@ namespace HappyHomeDesigner.Menus
 		private int variantIndex = -1;
 		private T variantItem;
 		protected TE hovered;
+		protected TE hovered_variant;
 
 		protected int iconRow;
 		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
@@ -112,14 +113,30 @@ namespace HappyHomeDesigner.Menus
 						FrameSource, 13, 1, Color.White, 0);
 			}
 
-			if (hovered is not null && ModEntry.config.FurnitureTooltips)
-				drawToolTip(b, hovered.getDescription(), hovered.DisplayName, hovered);
-
 			//AltTex.forceMenuDraw = true;
 			if (showVariants)
 				VariantPanel.draw(b);
 			//AltTex.forceMenuDraw = false;
 		}
+
+		public override void DrawTooltip(SpriteBatch b)
+		{
+			if (hovered is not null)
+			{
+				if (ModEntry.config.FurnitureTooltips)
+					drawToolTip(b, hovered.getDescription(), hovered.DisplayName, hovered);
+
+				if (ModEntry.config.Magnify)
+					drawMagnified(b, hovered);
+			}
+
+			if (hovered_variant is not null)
+			{
+				if (ModEntry.config.Magnify)
+					drawMagnified(b, hovered_variant);
+			}
+		}
+
 		public override void Resize(Rectangle region)
 		{
 			base.Resize(region);
@@ -146,6 +163,10 @@ namespace HappyHomeDesigner.Menus
 
 			hovered = MainPanel.TrySelect(x, y, out int index) ?
 				(MainPanel.FilteredItems[index] as T).Item :
+				null;
+
+			hovered_variant = VariantPanel.TrySelect(x, y, out index) ?
+				(VariantPanel.FilteredItems[index] as T).Item :
 				null;
 		}
 

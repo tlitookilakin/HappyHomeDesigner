@@ -28,6 +28,36 @@ namespace HappyHomeDesigner.Menus
 			yPositionOnScreen = region.Y;
 		}
 
+		public virtual void DrawTooltip(SpriteBatch batch)
+		{
+
+		}
+
+		protected static void drawMagnified(SpriteBatch b, Item hovered)
+		{
+			float scale = ModEntry.config.MagnifyScale;
+			int boxSize = (int)(64f * scale);
+			int itemOffset = (int)(32f * (scale - 1f));
+			const int BORDER = 16;
+			const int CURSOR = 48;
+
+			var mouse = Game1.getMousePosition(true);
+
+			if (mouse.X < boxSize)
+			{
+				mouse.X += CURSOR;
+				mouse.Y -= boxSize + BORDER - 24;
+			} 
+			else
+			{
+				mouse.X -= boxSize + BORDER;
+				mouse.Y += CURSOR;
+			}
+
+			drawTextureBox(b, mouse.X - BORDER, mouse.Y - BORDER, boxSize + (BORDER * 2), boxSize + (BORDER * 2), Color.White);
+			hovered.drawInMenu(b, new(mouse.X + itemOffset, mouse.Y + itemOffset), scale);
+		}
+
 		public bool TrySelectFilter(int x, int y, bool playSound)
 		{
 			int relX = x - xPositionOnScreen;

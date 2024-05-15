@@ -7,6 +7,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -48,6 +49,11 @@ namespace HappyHomeDesigner.Menus
 			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
+		}
+
+		internal static bool HasAnyActive()
+		{
+			return ActiveMenu.GetActiveValues().Where(v => v.Value is not null).Any();
 		}
 
 		public readonly string Type;
@@ -147,6 +153,8 @@ namespace HappyHomeDesigner.Menus
 
 			for (int i = 0; i < Tabs.Count; i++)
 				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
+
+			Pages[tab].DrawTooltip(b);
 		}
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{

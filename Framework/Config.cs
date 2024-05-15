@@ -43,6 +43,13 @@ namespace HappyHomeDesigner.Framework
 			}
 		}
 		public bool EasierTrashCatalogue { get; set; }
+		public bool Magnify { get; set; }
+		public float MagnifyScale
+		{
+			get => magnifyScale;
+			set => magnifyScale = Math.Clamp(value, 1f, 5f);
+		}
+		private float magnifyScale;
 
 		public Config()
 		{
@@ -64,6 +71,7 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
 			gmcm.QuickBind(man, this, nameof(ClientMode), true);
 			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
+			gmcm.QuickBind(man, this, nameof(Magnify));
 
 			gmcm.QuickPage(man, "tweaks");
 			gmcm.QuickBind(man, this, nameof(UiSkin),
@@ -77,7 +85,13 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
-
+			gmcm.AddNumberOption(man,
+				() => magnifyScale,
+				v => magnifyScale = v, 
+				() => ModEntry.i18n.Get("config.MagnifyScale.name"),
+				() => ModEntry.i18n.Get("config.MagnifyScale.desc"),
+				1f, 5f, .1f
+			);
 			gmcm.QuickPage(man, "cheats");
 			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
 			gmcm.QuickBind(man, this, nameof(OpenMenu));
@@ -102,6 +116,8 @@ namespace HappyHomeDesigner.Framework
 			OpenMenu = new(SButton.None);
 			UiSkin = "Auto";
 			EasierTrashCatalogue = true;
+			Magnify = false;
+			MagnifyScale = 2f;
 		}
 
 		private void Save()
