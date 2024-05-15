@@ -35,6 +35,9 @@ namespace HappyHomeDesigner.Menus
 			return true;
 		}
 
+		/// <summary>Opens the menu with an arbitrary list of items</summary>
+		/// <param name="items">The items to display in the menu</param>
+		/// <param name="ID">Used to identify the contents of the menu. May or may not be a shop ID.</param>
 		public static void ShowCatalog(IEnumerable<ISalable> items, string ID)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
@@ -51,6 +54,7 @@ namespace HappyHomeDesigner.Menus
 			Game1.isTimePaused = ModEntry.config.PauseTime;
 		}
 
+		/// <returns>True if any menu is active on any screen, otherwise false</returns>
 		internal static bool HasAnyActive()
 		{
 			return ActiveMenu.GetActiveValues().Where(v => v.Value is not null).Any();
@@ -67,7 +71,8 @@ namespace HappyHomeDesigner.Menus
 		private bool Toggled = true;
 		private Point screenSize;
 
-		public Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
+
+		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
 			Type = id;
 
@@ -117,6 +122,7 @@ namespace HappyHomeDesigner.Menus
 			if (Game1.keyboardDispatcher.Subscriber is SearchBox)
 				Game1.keyboardDispatcher.Subscriber = null;
 		}
+
 		public override void performHoverAction(int x, int y)
 		{
 			ToggleButton.tryHover(x, y);
@@ -126,11 +132,13 @@ namespace HappyHomeDesigner.Menus
 
 			Pages[tab].performHoverAction(x, y);
 		}
+
 		public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
 		{
 			base.gameWindowSizeChanged(oldBounds, newBounds);
 			Resize(newBounds);
 		}
+
 		public override void draw(SpriteBatch b)
 		{
 			if (screenSize.X != Game1.uiViewport.Width || screenSize.Y != Game1.uiViewport.Height)
@@ -156,6 +164,7 @@ namespace HappyHomeDesigner.Menus
 
 			Pages[tab].DrawTooltip(b);
 		}
+
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);
@@ -188,6 +197,7 @@ namespace HappyHomeDesigner.Menus
 					Game1.playSound("bigSelect");
 			}
 		}
+
 		public override bool isWithinBounds(int x, int y)
 		{
 			if (ToggleButton.containsPoint(x, y))
@@ -205,6 +215,7 @@ namespace HappyHomeDesigner.Menus
 				CloseButton.containsPoint(x, y) || 
 				(SettingsButton is not null && SettingsButton.containsPoint(x, y));
 		}
+
 		private void Resize(Rectangle bounds)
 		{
 			screenSize = bounds.Size;

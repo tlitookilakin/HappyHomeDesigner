@@ -6,11 +6,13 @@ using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Xna.Framework;
 
 namespace HappyHomeDesigner.Menus
 {
+	/// <summary>Base type used for pages that with a list of items that support variants and direct placement.</summary>
+	/// <typeparam name="T">The variant entry type</typeparam>
+	/// <typeparam name="TE">The wrapped item type</typeparam>
 	internal abstract class VariantPage<T, TE> : ScreenPage 
 		where TE: Item
 		where T : VariantEntry<TE>
@@ -36,6 +38,10 @@ namespace HappyHomeDesigner.Menus
 
 		private static string[] preservedFavorites;
 
+		/// <summary>Create and setup a variant page</summary>
+		/// <param name="existing">A list of items that belong to this page</param>
+		/// <param name="FavoritesKey">The moddata key used to track favorites for this page</param>
+		/// <param name="typeName">Used for logging</param>
 		public VariantPage(IEnumerable<ISalable> existing, string FavoritesKey, string typeName)
 		{
 			KeyFavs = FavoritesKey;
@@ -74,13 +80,20 @@ namespace HappyHomeDesigner.Menus
 			preservedFavorites = [.. favorites];
 		}
 
+		/// <summary>Initial setup. Happens after favorites are loaded and before items are processed.</summary>
 		public abstract void Init();
 
+		/// <summary>Processes the source items into appropriate variant entries</summary>
+		/// <param name="source">The raw item list</param>
+		/// <param name="favorites">The favorites list</param>
+		/// <returns>The processed items</returns>
 		public abstract IEnumerable<T> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites);
 
+		/// <inheritdoc/>
 		public override int Count() 
 			=> entries.Count;
 
+		/// <summary>Updates the selected cell index when the search or filter changes</summary>
 		public void UpdateDisplay()
 		{
 			variantIndex = MainPanel.FilteredItems.Find(variantItem);
@@ -90,6 +103,7 @@ namespace HappyHomeDesigner.Menus
 
 			showVariants = variantIndex is not -1;
 		}
+
 		public override void draw(SpriteBatch b)
 		{
 			MainPanel.DrawShadow(b);
@@ -119,6 +133,7 @@ namespace HappyHomeDesigner.Menus
 			//AltTex.forceMenuDraw = false;
 		}
 
+		/// <inheritdoc/>
 		public override void DrawTooltip(SpriteBatch b)
 		{
 			if (hovered is not null)
@@ -127,13 +142,13 @@ namespace HappyHomeDesigner.Menus
 					drawToolTip(b, hovered.getDescription(), hovered.DisplayName, hovered);
 
 				if (ModEntry.config.Magnify)
-					drawMagnified(b, hovered);
+					DrawMagnified(b, hovered);
 			}
 
 			if (hovered_variant is not null)
 			{
 				if (ModEntry.config.Magnify)
-					drawMagnified(b, hovered_variant);
+					DrawMagnified(b, hovered_variant);
 			}
 		}
 
@@ -156,6 +171,7 @@ namespace HappyHomeDesigner.Menus
 				MainPanel.yPositionOnScreen + MainPanel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
 			);
 		}
+
 		public override void performHoverAction(int x, int y)
 		{
 			MainPanel.performHoverAction(x, y);
@@ -170,6 +186,10 @@ namespace HappyHomeDesigner.Menus
 				null;
 		}
 
+		/// <summary>
+		/// Change which items are displayed based on the current filter
+		/// </summary>
+		/// <returns>The new list of items to be displayed</returns>
 		public abstract IReadOnlyList<IGridItem> ApplyFilter();
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -199,6 +219,9 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
+		/// <summary>Opens the variant panel for a given item</summary>
+		/// <param name="entry">The item to get variants from</param>
+		/// <param name="index">The index of the item</param>
 		private void ShowVariantsFor(T entry, int index)
 		{
 			variantIndex = index;
@@ -208,6 +231,7 @@ namespace HappyHomeDesigner.Menus
 			showVariants = true;
 		}
 
+		/// <summary>Closes the variant panel</summary>
 		private void HideVariants()
 		{
 			variantIndex = -1;
@@ -225,6 +249,12 @@ namespace HappyHomeDesigner.Menus
 				VariantPanel.receiveScrollWheelAction(direction);
 		}
 
+		/// <summary>Handles mouse interaction with a specific panel of this page</summary>
+		/// <param name="mx">Mouse X</param>
+		/// <param name="my">Mouse Y</param>
+		/// <param name="playSound">Whether or not to play sounds</param>
+		/// <param name="panel">Which panel to test</param>
+		/// <param name="allowVariants">Whether variants can be displayed for items in this panel or not</param>
 		private void HandleGridClick(int mx, int my, bool playSound, GridPanel panel, bool allowVariants)
 		{
 			panel.receiveLeftClick(mx, my, playSound);
@@ -278,6 +308,7 @@ namespace HappyHomeDesigner.Menus
 					Game1.playSound("stoneStep");
 			}
 		}
+
 		public override bool isWithinBounds(int x, int y)
 		{
 			return
@@ -287,6 +318,7 @@ namespace HappyHomeDesigner.Menus
 				TrashSlot.containsPoint(x, y);
 		}
 
+		/// <inheritdoc/>
 		public override void Exit()
 		{
 			Game1.player.modData[KeyFavs] = string.Join('	', Favorites) + '	' + string.Join('	', preservedFavorites);

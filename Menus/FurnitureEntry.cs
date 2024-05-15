@@ -23,6 +23,7 @@ namespace HappyHomeDesigner.Menus
 			Item.updateRotation();
 		}
 
+		/// <inheritdoc/>
 		public override Furniture GetOne()
 		{
 			var item = Item.getOne() as Furniture;
@@ -32,6 +33,7 @@ namespace HappyHomeDesigner.Menus
 			return item;
 		}
 
+		/// <inheritdoc/>
 		public override IReadOnlyList<VariantEntry<Furniture>> GetVariants()
 		{
 			if (!HasVariants)
@@ -43,6 +45,7 @@ namespace HappyHomeDesigner.Menus
 			return skins.Select(f => new FurnitureEntry(f) as VariantEntry<Furniture>).ToList();
 		}
 
+		/// <inheritdoc/>
 		public override bool CanPlace()
 		{
 			if (Item is BedFurniture bed)

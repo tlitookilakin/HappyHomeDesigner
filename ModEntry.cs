@@ -105,7 +105,6 @@ namespace HappyHomeDesigner
 			Patch(new(ModManifest.UniqueID));
 
 			AlternativeTextures.Init(Helper);
-			CustomFurniture.Init(Helper);
 		}
 
 		private static void Patch(Harmony harmony)

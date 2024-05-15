@@ -8,7 +8,6 @@ using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -26,7 +25,7 @@ namespace HappyHomeDesigner.Menus
 
 		private readonly GridPanel WallPanel = new(56, 140, true);
 		private readonly GridPanel FloorsPanel = new(72, 72, true);
-		private readonly UndoRedoButton undoRedo = new(new(0, 0, 144, 80), "undo_redo");
+		private readonly UndoRedoButton<WallFloorState> undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 
 		private GridPanel ActivePanel;
 
@@ -62,7 +61,7 @@ namespace HappyHomeDesigner.Menus
 				if (wall.isFloor.Value)
 				{
 					var entry = new WallEntry(wall, floorFavs);
-					if (knownFloors.Add(entry.GetName()))
+					if (knownFloors.Add(entry.ToString()))
 					{
 						floors.Add(entry);
 						if (entry.Favorited)
@@ -75,7 +74,7 @@ namespace HappyHomeDesigner.Menus
 				else
 				{
 					var entry = new WallEntry(wall, wallFavs);
-					if (knownWalls.Add(entry.GetName()))
+					if (knownWalls.Add(entry.ToString()))
 					{
 						walls.Add(entry);
 						if (entry.Favorited)
@@ -102,6 +101,7 @@ namespace HappyHomeDesigner.Menus
 			preservedFloorFavorites = [.. floorFavs];
 		}
 
+		/// <inheritdoc/>
 		public override int Count() 
 			=> Math.Max(floors.Count, walls.Count);
 
@@ -128,6 +128,7 @@ namespace HappyHomeDesigner.Menus
 			MoveButtons();
 		}
 
+		/// <summary>Adjusts positions of bottom buttons when panel changes size</summary>
 		private void MoveButtons()
 		{
 			undoRedo.bounds = new(
@@ -201,9 +202,11 @@ namespace HappyHomeDesigner.Menus
 				undoRedo.containsPoint(x, y);
 		}
 
+		/// <inheritdoc/>
 		public override ClickableTextureComponent GetTab() 
 			=> new(new(0, 0, 64, 64), Catalog.MenuTexture, new(80, 24, 16, 16), 4f);
 
+		/// <inheritdoc/>
 		public override void Exit()
 		{
 			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors) + '	' + string.Join('	', preservedFloorFavorites);

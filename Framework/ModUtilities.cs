@@ -199,12 +199,7 @@ namespace HappyHomeDesigner.Framework
 
 		public static IEnumerable<ISalable> GetAdditionalCatalogItems(this IEnumerable<ISalable> original, string ID)
 		{
-			var output = original;
-
-			if (CustomFurniture.Installed && ID.Contains("Furniture"))
-				output = output.Concat(CustomFurniture.customFurniture);
-
-			return output;
+			return original;
 		}
 
 		public static bool CountsAsCatalog(this ShopMenu shop, bool ignore_config = false)
@@ -268,14 +263,6 @@ namespace HappyHomeDesigner.Framework
 				(a.G / 255f) * (b.G / 255f),
 				(a.B / 255f) * (b.B / 255f),
 				(a.A / 255f) * (b.A / 255f)
-			);
-
-		public static Color Lerp(this Color a, Color b, float amount)
-			=> new(
-				Utility.Lerp(a.R / 255f, b.R / 255f, amount),
-				Utility.Lerp(a.G / 255f, b.G / 255f, amount),
-				Utility.Lerp(a.B / 255f, b.B / 255f, amount),
-				Utility.Lerp(a.A / 255f, b.A / 255f, amount)
 			);
 	}
 }

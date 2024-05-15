@@ -22,6 +22,7 @@ namespace HappyHomeDesigner.Menus
 		public FurniturePage(IEnumerable<ISalable> items)
 			: base(items, KeyFavs, "furniture") { }
 
+		/// <inheritdoc/>
 		public override void Init()
 		{
 			if (ModEntry.config.ExtendedCategories)
@@ -44,6 +45,7 @@ namespace HappyHomeDesigner.Menus
 			filter_count += 2;
 		}
 
+		/// <inheritdoc/>
 		public override IEnumerable<FurnitureEntry> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites)
 		{
 			var season = Game1.currentLocation.GetSeason();
@@ -69,6 +71,7 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
+		/// <inheritdoc/>
 		public override IReadOnlyList<IGridItem> ApplyFilter()
 		{
 			return	// all items
@@ -79,6 +82,7 @@ namespace HappyHomeDesigner.Menus
 					Favorites;
 		}
 
+		/// <inheritdoc/>
 		public override ClickableTextureComponent GetTab() 
 			=> new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
 	}
