@@ -193,7 +193,7 @@ namespace HappyHomeDesigner.Patches
 			int tilesWide = source.Width / 16;
 			int tilesHigh = source.Height / 16;
 
-			float s =
+			return
 				tilesWide >= 7 ? .05f :
 				tilesWide is 6 ? .66f :
 				tilesWide is 5 ? .75f :
@@ -202,8 +202,6 @@ namespace HappyHomeDesigner.Patches
 				tilesWide <= 2 ? 2.0f :
 				tilesWide <= 4 ? 1.0f :
 				.1f;
-
-			return s * 2.0f;
 		}
 
 		private static bool SkipNameCaching(ref bool __result, StardewValley.Object __0)
