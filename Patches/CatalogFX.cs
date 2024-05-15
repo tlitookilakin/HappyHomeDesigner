@@ -128,8 +128,6 @@ namespace HappyHomeDesigner.Patches
 			var data = ItemRegistry.GetData(furn.QualifiedItemId);
 			var texture = data.GetTexture();
 			var source = furn.sourceRect.Value;
-			var col1 = Utility.GetPrismaticColor(0);
-			var col2 = Utility.GetPrismaticColor(1);
 
 			var col = color.Mult(Utility.GetPrismaticColor(0));
 			source.X += source.Width;

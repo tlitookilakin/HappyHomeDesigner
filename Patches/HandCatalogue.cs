@@ -211,16 +211,10 @@ namespace HappyHomeDesigner.Patches
 			return minDist;
 		}
 
-		private class FrameData
+		private class FrameData(int frame)
 		{
-			public int Frame;
-			public int LastTickedAt;
-
-			public FrameData(int frame)
-			{
-				Frame = frame;
-				LastTickedAt = Game1.ticks;
-			}
+			public int Frame = frame;
+			public int LastTickedAt = Game1.ticks;
 		}
 	}
 }
