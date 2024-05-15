@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -149,6 +148,11 @@ namespace HappyHomeDesigner.Patches
 		public static void DrawReplace(SpriteBatch b, Texture2D tex, Vector2 pos, Rectangle? src, Color tint, 
 			float ang, Vector2 origin, float scale, SpriteEffects fx, float depth, Furniture f)
 		{
+			// fixes shrunken AT objects
+			// why are they shrunken? who knows.
+			// if AT items start looking too large in menus, try tweaking/removing this
+			scale *= 1.3f;
+
 			b.Draw(tex, pos, src, tint, ang, origin, scale, fx, depth);
 
 			if (f is not BedFurniture || !src.HasValue)
@@ -160,7 +164,6 @@ namespace HappyHomeDesigner.Patches
 			b.Draw(tex, pos, source, tint, ang, origin, scale, fx, depth);
 		}
 
-		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static void DrawFront(Furniture f, Texture2D texture, Rectangle source, Vector2 location, SpriteBatch batch,
 			float scale, float alpha, float depth)
 		{
@@ -190,7 +193,7 @@ namespace HappyHomeDesigner.Patches
 			int tilesWide = source.Width / 16;
 			int tilesHigh = source.Height / 16;
 
-			return
+			float s =
 				tilesWide >= 7 ? .05f :
 				tilesWide is 6 ? .66f :
 				tilesWide is 5 ? .75f :
@@ -199,6 +202,8 @@ namespace HappyHomeDesigner.Patches
 				tilesWide <= 2 ? 2.0f :
 				tilesWide <= 4 ? 1.0f :
 				.1f;
+
+			return s * 2.0f;
 		}
 
 		private static bool SkipNameCaching(ref bool __result, StardewValley.Object __0)
@@ -282,57 +287,6 @@ namespace HappyHomeDesigner.Patches
 		private static bool PreventRandomVariant(StardewValley.Object __0)
 		{
 			return __0 is not Furniture || !forcePreviewDraw;
-		}
-
-		private static class Android
-		{
-			public static IEnumerable<CodeInstruction> MenuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
-			{
-				var skipRotation = gen.DefineLabel();
-				var skipOffset = gen.DefineLabel();
-
-				var il = new CodeMatcher(source, gen)
-					.MatchEndForward(
-						new(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).GetMethod),
-						new(OpCodes.Isinst),
-						new(OpCodes.Brfalse_S)
-					)
-					.Advance(1)
-					.CreateLabel(out var skipCheck)
-					.Advance(-3)
-					.InsertAndAdvance(
-						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
-						new(OpCodes.Brtrue, skipCheck)
-					).MatchStartForward(
-						new(OpCodes.Ldarg_0),
-						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.rotations)))
-					).InsertAndAdvance(
-						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
-						new(OpCodes.Brtrue, skipRotation)
-					).MatchStartForward(
-						new(OpCodes.Ldarg_0),
-						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
-					);
-				il.Instruction.labels.Add(skipRotation);
-
-				il.MatchStartForward(
-						new(OpCodes.Ldc_I4_0),
-						new(OpCodes.Ldarg_0),
-						new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.sourceRect)))
-					)
-					.InsertAndAdvance(
-						new(OpCodes.Ldc_I4_0),
-						new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
-						new(OpCodes.Brtrue, skipOffset),
-						new(OpCodes.Pop)
-					)
-					.MatchStartForward(
-						new CodeMatch(OpCodes.Stfld, typeof(Rectangle).GetField(nameof(Rectangle.X)))
-					);
-				il.Instruction.labels.Add(skipOffset);
-
-				return il.InstructionEnumeration();
-			}
 		}
 	}
 }
