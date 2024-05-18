@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
+using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -22,6 +24,8 @@ namespace HappyHomeDesigner.Patches
 		internal static Assembly asm;
 
 		private const string MINIMUM_VERSION = "6.10.4";
+
+		private static readonly ItemDrawMetadata impl_drawData = new();
 
 		internal static void Apply(Harmony harmony)
 		{
@@ -60,6 +64,14 @@ namespace HappyHomeDesigner.Patches
 				harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(PreventRandomVariant)));
 				harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixBedPreview)));
 				harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(MenuDraw)));
+				harmony.CreateReversePatcher(objectPatcher.GetMethod("DrawPrefix", flag), new(typeof(AltTex), nameof(ObjectDraw))).Patch();
+				harmony.Patch(
+					typeof(SObject).GetMethod(nameof(SObject.drawInMenu), 
+						[typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), 
+						typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)]
+					), 
+					prefix: new(typeof(AltTex), nameof(ObjectMenuPrefix))
+				);
 
 				IsApplied = true;
 			} 
@@ -67,6 +79,132 @@ namespace HappyHomeDesigner.Patches
 			{
 				ModEntry.monitor.Log($"Failed to patch AT: {ex}", LogLevel.Warn);
 			}
+		}
+
+		private static bool ObjectMenuPrefix(SObject __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, 
+			float transparency, float layerDepth, StackDrawType drawStackNumber, Color color)
+		{
+			if (!forceMenuDraw || !__instance.bigCraftable.Value)
+				return true;
+
+			__instance.AdjustMenuDrawForRecipes(ref transparency, ref scaleSize);
+
+			if (__instance.bigCraftable.Value && scaleSize > .2f)
+				scaleSize /= 2f;
+
+			impl_drawData.Set(scaleSize, layerDepth, color);
+			if (ObjectDraw(__instance, spriteBatch, (int)location.X, (int)location.Y, transparency))
+				return true;
+
+			__instance.DrawMenuIcons(spriteBatch, location, scaleSize, transparency, layerDepth, drawStackNumber, color);
+			return false;
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static bool ObjectDraw(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha = 1f)
+		{
+			// Reverse patch of AT's object draw patch
+			// adjusts method for menu draw instead of world draw
+			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> source, ILGenerator gen)
+			{
+				var il = new CodeMatcher(source, gen);
+				var modelType = AccessTools.TypeByName("AlternativeTextures.Framework.Models.AlternativeTextureModel");
+				var flag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+				LocalBuilder xOffset;
+				Range a, b;
+
+				il
+					// find second return
+					.MatchEndForward(
+						new(OpCodes.Stloc_S),
+						new(OpCodes.Br)
+					)
+					.MatchEndForward(
+						new(OpCodes.Stloc_S),
+						new(OpCodes.Br)
+					)
+					.MatchStartForward(new CodeMatch(OpCodes.Callvirt))
+					.Advance(2)
+
+					// find sourcerect local
+					.MatchEndForward(
+						new(OpCodes.Sub),
+						new(OpCodes.Stloc_S)
+					);
+					xOffset = il.Instruction.operand as LocalBuilder;
+				il
+					// find and remove everything between craftable check and harvest check
+					.MatchStartForward(
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.bigCraftable))),
+						new(OpCodes.Call, typeof(NetBool).GetMethod("op_Implicit"))
+					);
+					int start = il.Pos;
+				il
+					.MatchStartForward(
+						new(OpCodes.Ldarg_0),
+						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.readyForHarvest))),
+						new(OpCodes.Call, typeof(NetBool).GetMethod("op_Implicit"))
+					);
+				il
+					.MatchEndForward(
+						new CodeMatch(OpCodes.Brfalse_S)
+					)
+					.Advance(1);
+					a = start..(il.Pos - 1);
+				il
+					// add our draw call
+					.InsertAndAdvance(
+						new(OpCodes.Ldarg_1),
+						// texture
+						new(OpCodes.Ldloc_1),
+						new(OpCodes.Ldloc_2),
+						new(OpCodes.Callvirt, modelType.GetMethod("GetTexture", flag)),
+						// source construction
+						new(OpCodes.Ldloc_S, xOffset),
+						new(OpCodes.Ldloc_3),
+						new(OpCodes.Ldloc_1),
+						new(OpCodes.Callvirt, modelType.GetMethod("get_TextureWidth", flag)),
+						new(OpCodes.Ldloc_1),
+						new(OpCodes.Callvirt, modelType.GetMethod("get_TextureHeight", flag)),
+						new(OpCodes.Newobj, typeof(Rectangle).GetConstructor([typeof(int), typeof(int), typeof(int), typeof(int)])),
+						// remaining args
+						new(OpCodes.Ldarg_2),
+						new(OpCodes.Ldarg_3),
+						new(OpCodes.Ldarg_S, 4),
+						new(OpCodes.Call, typeof(AltTex).GetMethod(nameof(DrawItemIcon)))
+					)
+					
+					//strip out the rest of the junk code
+					.MatchStartForward(
+						new CodeMatch(OpCodes.Br)
+					);
+					start = il.Pos + 1;
+				il
+					.MatchStartForward(
+						new(OpCodes.Ldc_I4_0),
+						new(OpCodes.Stloc_S),
+						new(OpCodes.Br_S)
+					);
+					b = start..(il.Pos - 1);
+
+				il
+					.RemoveInstructionsInRange(b.Start.Value, b.End.Value)
+					.RemoveInstructionsInRange(a.Start.Value, a.End.Value);
+
+				var d = il.InstructionEnumeration();
+				return d;
+			}
+
+			// junk code to make the compiler happy
+			_ = Transpiler(null, null);
+			return true;
+		}
+
+		public static void DrawItemIcon(SpriteBatch batch, Texture2D texture, Rectangle source, int x, int y, float alpha)
+		{
+			batch.Draw(texture, new Vector2(x + 32f, y + 32f), source, impl_drawData.tint * alpha, 0f,
+				new Vector2(source.Width / 2, source.Height / 2), impl_drawData.scale * 4f, SpriteEffects.None, impl_drawData.depth);
 		}
 
 		private static IEnumerable<CodeInstruction> MenuDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
@@ -245,6 +383,20 @@ namespace HappyHomeDesigner.Patches
 		private static bool PreventRandomVariant(StardewValley.Object __0)
 		{
 			return __0 is not Furniture || !forcePreviewDraw;
+		}
+
+		private class ItemDrawMetadata
+		{
+			public float scale;
+			public float depth;
+			public Color tint;
+
+			public void Set(float Scale, float Depth, Color Tint)
+			{
+				scale = Scale;
+				depth = Depth;
+				tint = Tint;
+			}
 		}
 	}
 }
