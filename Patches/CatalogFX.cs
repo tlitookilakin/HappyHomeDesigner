@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -118,9 +119,14 @@ namespace HappyHomeDesigner.Patches
 			var data = ItemRegistry.GetData(furn.QualifiedItemId);
 			pos = new(pos.X, pos.Y + (float)Math.Sin(Game1.ticks * (Math.Tau / 100.0)) * 1.5f * scale);
 			var source = furn.sourceRect.Value;
+			var texture = data.GetTexture();
+
+			if (AlternativeTextures.Installed)
+				AlternativeTextures.GetTextureSource(furn.modData, furn.defaultSourceRect.Value, ref texture, ref source);
+
 			source.X += source.Width;
 
-			batch.Draw(data.GetTexture(), pos, source, color, 0f, origin, scale, effect, depth + DISCRIMINATOR);
+			batch.Draw(texture, pos, source, color, 0f, origin, scale, effect, depth + DISCRIMINATOR);
 		}
 
 		private static void DrawDeluxeFX(Furniture furn, SpriteBatch batch, Vector2 pos, Color color, float depth, float scale, SpriteEffects effect, Vector2 origin)
@@ -128,6 +134,9 @@ namespace HappyHomeDesigner.Patches
 			var data = ItemRegistry.GetData(furn.QualifiedItemId);
 			var texture = data.GetTexture();
 			var source = furn.sourceRect.Value;
+
+			if (AlternativeTextures.Installed)
+				AlternativeTextures.GetTextureSource(furn.modData, furn.defaultSourceRect.Value, ref texture, ref source);
 
 			var col = color.Mult(Utility.GetPrismaticColor(0));
 			source.X += source.Width;
