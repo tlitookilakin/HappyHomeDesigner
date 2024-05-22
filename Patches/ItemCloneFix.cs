@@ -24,26 +24,13 @@ namespace HappyHomeDesigner.Patches
 			harmony.TryPatch(
 				typeof(Utility).GetMethod(nameof(Utility.tryToPlaceItem)), 
 				postfix: new(typeof(ItemCloneFix), nameof(AfterTryPlace)),
-				transpiler: new(typeof(ItemCloneFix), nameof(PatchTryPlace))
+				prefix: new(typeof(ItemCloneFix), nameof(BeforeTryPlace))
 			);
 		}
 
-		private static IEnumerable<CodeInstruction> PatchTryPlace(IEnumerable<CodeInstruction> source, ILGenerator gen)
+		private static void BeforeTryPlace(Item item)
 		{
-			var il = new CodeMatcher(source, gen);
-
-			il
-				.MatchEndForward(
-					new(OpCodes.Isinst, typeof(Furniture)),
-					new(OpCodes.Brfalse_S)
-				)
-				.Advance(1)
-				.InsertAndAdvance(
-					new(OpCodes.Ldc_I4_1),
-					new(OpCodes.Stsfld, typeof(ItemCloneFix).GetField(nameof(suppress_reduce)))
-				);
-
-			return il.InstructionEnumeration();
+			suppress_reduce = item is Furniture;
 		}
 
 		private static void AfterTryPlace()
