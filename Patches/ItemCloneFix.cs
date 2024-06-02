@@ -2,8 +2,6 @@
 using HarmonyLib;
 using StardewValley;
 using StardewValley.Objects;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -28,6 +26,7 @@ namespace HappyHomeDesigner.Patches
 			);
 		}
 
+		[HarmonyBefore("thimadera.StackEverythingRedux")]
 		private static void BeforeTryPlace(Item item)
 		{
 			suppress_reduce = item is Furniture;
