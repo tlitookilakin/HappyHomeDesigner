@@ -60,12 +60,19 @@ namespace HappyHomeDesigner.Menus
 			return ActiveMenu.GetActiveValues().Where(v => v.Value is not null).Any();
 		}
 
+		internal static void UpdateGMCMButton()
+		{
+			var enabled = ModEntry.config.GMCMButton;
+			foreach (var menu in ActiveMenu.GetActiveValues())
+				menu.Value?.UpdateGMCMButton(enabled);
+		}
+
 		public readonly string Type;
 
 		private readonly List<ScreenPage> Pages = new();
 		private readonly List<ClickableTextureComponent> Tabs = new();
 		private readonly ClickableTextureComponent CloseButton;
-		private readonly ClickableTextureComponent SettingsButton;
+		private ClickableTextureComponent SettingsButton;
 		private readonly ClickableTextureComponent ToggleButton;
 		private int tab = 0;
 		private bool Toggled = true;
@@ -96,7 +103,7 @@ namespace HappyHomeDesigner.Menus
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
 
-			if (IGMCM.Installed)
+			if (IGMCM.Installed && ModEntry.config.GMCMButton)
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
 
 			Resize(Game1.uiViewport.ToRect());
@@ -105,6 +112,17 @@ namespace HappyHomeDesigner.Menus
 
 			if (playSound)
 				Game1.playSound("bigSelect");
+		}
+
+		private void UpdateGMCMButton(bool enabled)
+		{
+			if (!IGMCM.Installed)
+				return;
+
+			if (enabled)
+				SettingsButton ??= new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
+			else
+				SettingsButton = null;
 		}
 
 		protected override void cleanupBeforeExit()
@@ -151,8 +169,8 @@ namespace HappyHomeDesigner.Menus
 
 			// tab shadow
 			b.Draw(MenuTexture, 
-				new Rectangle(xPositionOnScreen + 92, yPositionOnScreen + 20, 64, 64), 
-				new Rectangle(64, 24, 16, 16), 
+				new Rectangle(xPositionOnScreen + 92, yPositionOnScreen + 20, 64, 64),
+				new Rectangle(64, 24, 16, 16),
 				Color.Black * .4f);
 
 			Pages[tab].draw(b);
