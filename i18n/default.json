@@ -64,5 +64,6 @@
 	"config.MagnifyScale.name": "Magnify Scale",
 	"config.MagnifyScale.desc": "Size multiplier for the preview tooltip. Does nothing if Magnify is disabled.",
 	"config.GMCMButton.name": "GMCM Button",
-	"config.GMCMButton.desc": "Whether or not to display the config button in the catalogue menu."
+	"config.GMCMButton.desc": "Whether or not to display the config button in the catalogue menu.",
+	"ui.EmptyCatalogue.text": "This catalogue contains no items!"
 }

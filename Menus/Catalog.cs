@@ -3,6 +3,7 @@ using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
@@ -40,6 +41,13 @@ namespace HappyHomeDesigner.Menus
 		/// <param name="ID">Used to identify the contents of the menu. May or may not be a shop ID.</param>
 		public static void ShowCatalog(IEnumerable<ISalable> items, string ID)
 		{
+			if (!items.Any())
+			{
+				ModEntry.monitor.Log("Attempted to open catalogue with zero items.", LogLevel.Info);
+				Game1.showRedMessage(ModEntry.i18n.Get("ui.EmptyCatalogue.text"), true);
+				return;
+			}
+
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 
 			if (ActiveMenu.Value is Catalog catalog)
