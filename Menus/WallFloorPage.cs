@@ -165,7 +165,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (ActivePanel.TrySelect(x, y, out int index))
 			{
-				var item = ActivePanel.Items[index] as WallEntry;
+				var item = ActivePanel.FilteredItems[index] as WallEntry;
 
 				if (ModEntry.config.FavoriteModifier.IsDown())
 				{
