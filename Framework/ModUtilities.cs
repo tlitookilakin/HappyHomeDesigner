@@ -23,9 +23,24 @@ namespace HappyHomeDesigner.Framework
 		[Flags]
 		public enum CatalogType {None = 0, Furniture = 1, Wallpaper = 2, Collector = 4};
 
-		private static readonly FieldInfo OldValueBackingField =
-			typeof(MouseWheelScrolledEventArgs).GetField("<OldValue>k__BackingField", 
-				BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly AccessTools.FieldRef<MouseWheelScrolledEventArgs, int> ScrollOldValue =
+			GetDirect<MouseWheelScrolledEventArgs, int>(nameof(MouseWheelScrolledEventArgs.OldValue));
+
+		public static void Suppress(this SButton button)
+		{
+			ModEntry.helper.Input.Suppress(button);
+		}
+
+		public static AccessTools.FieldRef<T, F> GetDirect<T, F>(string PropertyName)
+		{
+			if (typeof(T).GetProperty(PropertyName, typeof(F)) is null)
+				throw new InvalidOperationException($"Property '{PropertyName}' with value type '{nameof(F)}' does not exist on type '{nameof(T)}'");
+
+			var field = typeof(T).GetField($"<{PropertyName}>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+				?? throw new InvalidOperationException($"A backing field could not be found for property '{PropertyName}' on type '{nameof(T)}'");
+
+			return AccessTools.FieldRefAccess<T, F>(field);
+		}
 
 		public static bool CanDelete(this Item item, ICollection<string> knownIDs)
 		{
@@ -46,7 +61,7 @@ namespace HappyHomeDesigner.Framework
 			Game1.oldMouseState = Game1.input.GetMouseState();
 
 			// suppress event
-			OldValueBackingField.SetValue(e, e.NewValue);
+			ScrollOldValue(e) = e.NewValue;
 		}
 
 		public static bool TryGetGenericOf(this Type type, int index, [NotNullWhen(true)] out Type generic)

@@ -1,6 +1,7 @@
 ﻿using HappyHomeDesigner.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Menus;
@@ -100,6 +101,14 @@ namespace HappyHomeDesigner.Menus
 				base.isWithinBounds(x, y) ||
 				Panel.isWithinBounds(x, y) || 
 				TrashSlot.containsPoint(x, y);
+		}
+
+		/// <inheritdoc/>
+		public override bool TryApplyButton(SButton button, bool IsPressed)
+		{
+			// TODO controller support
+
+			return false;
 		}
 	}
 }

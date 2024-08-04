@@ -212,5 +212,13 @@ namespace HappyHomeDesigner.Menus
 			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors) + '	' + string.Join('	', preservedFloorFavorites);
 			Game1.player.modData[KeyWallFav] = string.Join('	', favoriteWalls) + '	' + string.Join('	', preservedWallFavorites);
 		}
+
+		/// <inheritdoc/>
+		public override bool TryApplyButton(SButton button, bool IsPressed)
+		{
+			// TODO add controller support
+
+			return false;
+		}
 	}
 }

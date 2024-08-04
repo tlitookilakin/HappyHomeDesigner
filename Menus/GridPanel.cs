@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO add controller support
 	public class GridPanel : IClickableMenu
 	{
 		public const int BORDER_WIDTH = 16;

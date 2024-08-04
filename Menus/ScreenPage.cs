@@ -1,7 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
+using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -152,6 +155,24 @@ namespace HappyHomeDesigner.Menus
 				sx += 10;
 				i++;
 			}
+		}
+
+		/// <summary>Do something when a keyboard, mouse, or controller button is pressed or released</summary>
+		/// <returns>True if it was handled and should be suppressed, otherwise false.</returns>
+		public abstract bool TryApplyButton(SButton button, bool IsPressed);
+
+		protected void DeleteActiveItem(bool playSound, ICollection<string> whitelist)
+		{
+			if (!Game1.player.ActiveObject.CanDelete(whitelist))
+				return;
+
+			if (Game1.player.ActiveObject == Game1.player.TemporaryItem)
+				Game1.player.TemporaryItem = null;
+			else
+				Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
+
+			if (playSound)
+				Game1.playSound("trashcan");
 		}
 	}
 }

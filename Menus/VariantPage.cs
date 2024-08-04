@@ -207,16 +207,8 @@ namespace HappyHomeDesigner.Menus
 			if (showVariants)
 				HandleGridClick(x, y, playSound, VariantPanel, false);
 
-			if (TrashSlot.containsPoint(x, y) && Game1.player.ActiveObject.CanDelete(knownIDs))
-			{
-				if (Game1.player.ActiveObject == Game1.player.TemporaryItem)
-					Game1.player.TemporaryItem = null;
-				else
-					Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
-
-				if (playSound)
-					Game1.playSound("trashcan");
-			}
+			if (TrashSlot.containsPoint(x, y))
+				DeleteActiveItem(playSound, knownIDs);
 		}
 
 		/// <summary>Opens the variant panel for a given item</summary>
@@ -299,9 +291,7 @@ namespace HappyHomeDesigner.Menus
 				if (!entry.CanPlace())
 					return;
 
-				if (Game1.player.ActiveObject.CanDelete(knownIDs))
-					if (Game1.player.ActiveObject != Game1.player.TemporaryItem)
-						Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
+				DeleteActiveItem(false, knownIDs);
 
 				Game1.player.TemporaryItem = entry.GetOne();
 				if (playSound)
@@ -322,6 +312,24 @@ namespace HappyHomeDesigner.Menus
 		public override void Exit()
 		{
 			Game1.player.modData[KeyFavs] = string.Join('	', Favorites) + '	' + string.Join('	', preservedFavorites);
+		}
+
+		/// <inheritdoc/>
+		public override bool TryApplyButton(SButton button, bool IsPressed)
+		{
+			// TODO controller movement
+
+			switch (button)
+			{
+				case SButton.Delete:
+					if (IsPressed)
+						DeleteActiveItem(true, knownIDs);
+					break;
+				default:
+					return false;
+			}
+
+			return true;
 		}
 	}
 }

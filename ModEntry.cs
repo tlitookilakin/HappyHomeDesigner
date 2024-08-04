@@ -30,6 +30,7 @@ namespace HappyHomeDesigner
 
 			helper.Events.GameLoop.GameLaunched += Launched;
 			helper.Events.Input.ButtonPressed += OnButtonPressed;
+			helper.Events.Input.ButtonReleased += OnButtonReleased;
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
 
@@ -58,39 +59,14 @@ namespace HappyHomeDesigner
 
 		private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
 		{
-			if (!e.IsSuppressed() && config.CloseWithKey && Game1.activeClickableMenu is null)
-			{
-				if (Catalog.ActiveMenu.Value is Catalog cat) 
-				{
-					if (config.ToggleShortcut.JustPressed())
-					{
-						cat.Toggle(true);
-						helper.Input.Suppress(e.Button);
-						return;
-					}
+			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, true))
+				e.Button.Suppress();
+		}
 
-					var binds = Game1.options.menuButton;
-					for (int i = 0; i < binds.Length; i++)
-					{
-						if ((int)binds[i].key == (int)e.Button)
-						{
-							cat.exitThisMenu();
-							helper.Input.Suppress(e.Button);
-						}
-					}
-				}
-				else if (config.OpenMenu.JustPressed())
-				{
-					helper.Input.Suppress(e.Button);
-
-					var catalogues =
-						ModUtilities.CatalogType.Collector |
-						ModUtilities.CatalogType.Furniture |
-						ModUtilities.CatalogType.Wallpaper;
-
-					Catalog.ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
-				}
-			}
+		private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
+		{
+			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, false))
+				e.Button.Suppress();
 		}
 
 		private void Launched(object sender, GameLaunchedEventArgs e)

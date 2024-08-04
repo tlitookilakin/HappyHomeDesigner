@@ -3,9 +3,11 @@ using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Characters;
 using StardewValley.Menus;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +75,28 @@ namespace HappyHomeDesigner.Menus
 			var enabled = ModEntry.config.GMCMButton;
 			foreach (var menu in ActiveMenu.GetActiveValues())
 				menu.Value?.UpdateGMCMButton(enabled);
+		}
+
+		/// <summary>Try and do something with a button that was just pressed or released</summary>
+		/// <param name="IsPressed">True if it was just pressed, false if it was just released.</param>
+		/// <returns>True if the button did something and should be suppressed, otherwise false.</returns>
+		public static bool TryApplyButton(SButton button, bool IsPressed)
+		{
+			if (ActiveMenu.Value is Catalog cat)
+				return cat.TryApplyButtonImpl(button, IsPressed);
+
+			if (ModEntry.config.OpenMenu.JustPressed())
+			{
+				var catalogues =
+					ModUtilities.CatalogType.Collector |
+					ModUtilities.CatalogType.Furniture |
+					ModUtilities.CatalogType.Wallpaper;
+
+				ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
+				return true;
+			}
+
+			return false;
 		}
 
 		public readonly string Type;
@@ -279,6 +303,29 @@ namespace HappyHomeDesigner.Menus
 
 			if (playSound)
 				Game1.playSound("shwip");
+		}
+
+		private bool TryApplyButtonImpl(SButton button, bool IsPressed)
+		{
+			if (ModEntry.config.ToggleShortcut.JustPressed())
+			{
+				Toggle(true);
+				return true;
+			}
+
+			var binds = Game1.options.menuButton;
+			for (int i = 0; i < binds.Length; i++)
+			{
+				if ((int)binds[i].key == (int)button)
+				{
+					exitThisMenu();
+					return true;
+				}
+			}
+
+			// TODO controller inputs
+
+			return Pages[tab].TryApplyButton(button, IsPressed);
 		}
 	}
 }
