@@ -24,6 +24,7 @@ namespace HappyHomeDesigner.Integration
 
 		public static bool Installed;
 
+		public static Func<string, int, bool> IsVariationDisabled;
 		public static Func<string, string, string, bool> HasVariant;
 		public static Action<Furniture, Season, List<Furniture>> VariantsOfFurniture;
 		public static Action<StardewValley.Object, Season, List<StardewValley.Object>> VariantsOfCraftable;
@@ -57,6 +58,10 @@ namespace HappyHomeDesigner.Integration
 			else if ((manager = entry.GetField("textureManager", STATIC)) is null)
 				error = "Failed to find texture manager.";
 
+			// Bind IsDisabled
+			else if (!BindVariantDisabled(entry))
+				error = "Failed to bind IsVariantDisabled.";
+
 			// bind variant checker
 			else if (!BindHasVariant(manager))
 				error = "Failed to bind HasVariant.";
@@ -84,6 +89,24 @@ namespace HappyHomeDesigner.Integration
 				ModEntry.monitor.Log("Error integrating Alternative Textures: " + error, LogLevel.Error);
 				Installed = false;
 			}
+		}
+
+		private static bool BindVariantDisabled(Type entry)
+		{
+			var cfg = entry.GetField("modConfig", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null);
+			if (cfg is null)
+				return false;
+
+			var method = cfg.GetType().GetMethod(
+				"IsTextureVariationDisabled", 
+				BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+				[typeof(string), typeof(int)]
+			);
+			if (method is null)
+				return false;
+
+			IsVariationDisabled = method.CreateDelegate<Func<string, int, bool>>(cfg);
+			return true;
 		}
 
 		private static bool BindTextureGetter(FieldInfo manager)
@@ -198,7 +221,7 @@ namespace HappyHomeDesigner.Integration
 			return Expression.Or(
 				Expression.Call(Expression.Field(null, manager), getter, name, isId),
 				Expression.Call(Expression.Field(null, manager), getter,
-					Expression.Call(typeof(string).GetMethod(nameof(string.Concat), new[] { typeof(string), typeof(string), typeof(string) }),
+					Expression.Call(typeof(string).GetMethod(nameof(string.Concat), [typeof(string), typeof(string), typeof(string)]),
 					name, Expression.Constant("_"), season),
 					isId
 				)
@@ -210,15 +233,14 @@ namespace HappyHomeDesigner.Integration
 		{
 			variantsOf = null;
 
-			var mg = manager.FieldType.GetMethod("GetAvailableTextureModels", new[] {typeof(string), typeof(string), typeof(Season)});
+			var mg = manager.FieldType.GetMethod("GetAvailableTextureModels", [ typeof(string), typeof(string), typeof(Season) ]);
 			if (!mg.ReturnType.TryGetGenericOf(0, out var modelType))
 				return false;
 
 			var seasonGetter = modelType.GetProperty("Season", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetMethod;
-
 			variantsOf = (source, season, list) => {
 				var tm = manager.GetValue(null);
-				IList models = mg.Invoke(tm, new object[] { prefix + source.ItemId, prefix + source.Name, season }) as IList;
+				IList models = mg.Invoke(tm, [prefix + source.ItemId, prefix + source.Name, season]) as IList;
 				for (int i = 0; i < models.Count; i++)
 				{
 					var m = models[i] as dynamic;
@@ -238,7 +260,9 @@ namespace HappyHomeDesigner.Integration
 						{
 							var furn = source.getOne() as T;
 							GetVariant(manualIndices[j], m, furn, seasonGetter);
-							list.Add(furn);
+
+							if (!IsVariationDisabled(furn.modData[KEY_NAME], manualIndices[j]))
+								list.Add(furn);
 						}
 					} else
 					{
@@ -247,7 +271,8 @@ namespace HappyHomeDesigner.Integration
 						{
 							var furn = source.getOne() as T;
 							GetVariant(j, m, furn, seasonGetter);
-							list.Add(furn);
+							if (!IsVariationDisabled(furn.modData[KEY_NAME], j))
+								list.Add(furn);
 						}
 					}
 				}
