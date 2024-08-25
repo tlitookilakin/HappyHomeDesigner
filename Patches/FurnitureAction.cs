@@ -4,7 +4,6 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
-using System.Reflection;
 using static HappyHomeDesigner.Framework.ModUtilities;
 
 namespace HappyHomeDesigner.Patches
@@ -16,11 +15,6 @@ namespace HappyHomeDesigner.Patches
 			harmony.TryPatch(
 				typeof(Furniture).GetMethod(nameof(Furniture.checkForAction)),
 				prefix: new(typeof(FurnitureAction), nameof(CheckAction))
-			);
-
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod("loadDescription", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public),
-				postfix: new(typeof(FurnitureAction), nameof(EditDescription))
 			);
 
 			harmony.TryPatch(
@@ -137,20 +131,6 @@ namespace HappyHomeDesigner.Patches
 
 			__result = true;
 			return false;
-		}
-
-		private static string EditDescription(string original, Furniture __instance)
-		{
-			if (ItemRegistry.GetDataOrErrorItem(__instance.ItemId).IsErrorItem)
-				return original;
-
-			return __instance.ItemId switch
-			{
-				AssetManager.CATALOGUE_ID => ModEntry.i18n.Get("furniture.Catalogue.desc"),
-				AssetManager.COLLECTORS_ID => ModEntry.i18n.Get("furniture.CollectorsCatalogue.desc"),
-				AssetManager.DELUXE_ID => ModEntry.i18n.Get("furniture.DeluxeCatalogue.desc"),
-				_ => original
-			};
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,9 +18,6 @@ namespace HappyHomeDesigner.Patches
 {
 	internal class AltTex
 	{
-		public static bool forceMenuDraw = false;
-		public static bool forcePreviewDraw = false;
-
 		internal static bool IsApplied = false;
 		internal static Assembly asm;
 
@@ -84,7 +82,7 @@ namespace HappyHomeDesigner.Patches
 		private static bool ObjectMenuPrefix(SObject __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, 
 			float transparency, float layerDepth, StackDrawType drawStackNumber, Color color)
 		{
-			if (!forceMenuDraw || !__instance.bigCraftable.Value)
+			if (!__instance.bigCraftable.Value || !Catalog.MenuVisible())
 				return true;
 
 			__instance.AdjustMenuDrawForRecipes(ref transparency, ref scaleSize);
@@ -244,7 +242,7 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.rotations)))
 				)
 				.InsertAndAdvance(
-					new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
+					new(OpCodes.Call, typeof(Catalog).GetMethod(nameof(Catalog.MenuVisible))),
 					new(OpCodes.Brtrue, skipRotation)
 				)
 				.MatchStartForward(
@@ -259,7 +257,7 @@ namespace HappyHomeDesigner.Patches
 				)
 				.InsertAndAdvance(
 					new(OpCodes.Ldc_I4_0),
-					new(OpCodes.Ldsfld, typeof(AltTex).GetField(nameof(forceMenuDraw))),
+					new(OpCodes.Call, typeof(Catalog).GetMethod(nameof(Catalog.MenuVisible))),
 					new(OpCodes.Brtrue, skipOffset),
 					new(OpCodes.Pop)
 				)
@@ -280,8 +278,10 @@ namespace HappyHomeDesigner.Patches
 		}
 
 		public static bool ShouldForceDrawObject(Furniture f)
-			=> forceMenuDraw && f.modData.ContainsKey("AlternativeTextureName") && 
-			f.modData.TryGetValue("AlternativeTextureOwner", out var owner) && owner is not "Stardew.Default";
+			=> Catalog.MenuVisible() && 
+			f.modData.ContainsKey("AlternativeTextureName") && 
+			f.modData.TryGetValue("AlternativeTextureOwner", out var owner) && 
+			owner is not "Stardew.Default";
 
 		public static void DrawReplace(SpriteBatch b, Texture2D tex, Vector2 pos, Rectangle? src, Color tint, 
 			float ang, Vector2 origin, float scale, SpriteEffects fx, float depth, Furniture f)
@@ -302,9 +302,9 @@ namespace HappyHomeDesigner.Patches
 			b.Draw(tex, pos, source, tint, ang, origin, scale, fx, depth);
 		}
 
-		private static bool SkipNameCaching(ref bool __result, StardewValley.Object __0)
+		private static bool SkipNameCaching(ref bool __result, SObject __0)
 		{
-			if (!forcePreviewDraw)
+			if (!Catalog.MenuVisible())
 				return true;
 
 			// don't ditch at name, so we can see it in previews
@@ -382,7 +382,7 @@ namespace HappyHomeDesigner.Patches
 
 		private static bool PreventRandomVariant(StardewValley.Object __0)
 		{
-			return __0 is not Furniture || !forcePreviewDraw;
+			return __0 is not Furniture || !Catalog.MenuVisible();
 		}
 
 		private class ItemDrawMetadata

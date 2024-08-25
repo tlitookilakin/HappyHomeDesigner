@@ -3,11 +3,9 @@ using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Characters;
 using StardewValley.Menus;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +66,12 @@ namespace HappyHomeDesigner.Menus
 		internal static bool HasAnyActive()
 		{
 			return ActiveMenu.GetActiveValues().Where(v => v.Value is not null).Any();
+		}
+
+		/// <returns>True if the menu is on screen</returns>
+		public static bool MenuVisible()
+		{
+			return ActiveMenu.Value != null;
 		}
 
 		internal static void UpdateGMCMButton()
@@ -139,8 +143,6 @@ namespace HappyHomeDesigner.Menus
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
 
 			Resize(Game1.uiViewport.ToRect());
-			AltTex.forcePreviewDraw = true;
-			AltTex.forceMenuDraw = true;
 
 			if (playSound)
 				Game1.playSound("bigSelect");
@@ -160,8 +162,6 @@ namespace HappyHomeDesigner.Menus
 		protected override void cleanupBeforeExit()
 		{
 			base.cleanupBeforeExit();
-			AltTex.forcePreviewDraw = false;
-			AltTex.forceMenuDraw = false;
 			Game1.onScreenMenus.Remove(this);
 			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null;
