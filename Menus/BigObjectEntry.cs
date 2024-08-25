@@ -16,10 +16,6 @@ namespace HappyHomeDesigner.Menus
 			base(Item, season, seasonName, favorites, "Craftable_"){}
 
 		/// <inheritdoc/>
-		public override bool CanPlace()
-			=> true;
-
-		/// <inheritdoc/>
 		public override SObject GetOne()
 			=> Item.getOne() as SObject;
 

@@ -44,31 +44,5 @@ namespace HappyHomeDesigner.Menus
 
 			return skins.Select(f => new FurnitureEntry(f) as VariantEntry<Furniture>).ToList();
 		}
-
-		/// <inheritdoc/>
-		public override bool CanPlace()
-		{
-			if (Item is BedFurniture bed)
-			{
-				var location = Game1.currentLocation;
-
-				if (!bed.CanModifyBed(Game1.player))
-				{
-					Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Bed_CantMoveOthersBeds"));
-					return false;
-				}
-
-				if (location is FarmHouse house)
-				{
-					if (house.upgradeLevel < (int)bed.bedType)
-					{
-						Game1.showRedMessage(Game1.content.LoadString("Strings\\UI:Bed_NeedsUpgrade"));
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
 	}
 }

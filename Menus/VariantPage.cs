@@ -288,9 +288,6 @@ namespace HappyHomeDesigner.Menus
 					return;
 				}
 
-				if (!entry.CanPlace())
-					return;
-
 				DeleteActiveItem(false, knownIDs);
 
 				Game1.player.TemporaryItem = entry.GetOne();

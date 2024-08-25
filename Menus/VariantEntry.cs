@@ -86,8 +86,5 @@ namespace HappyHomeDesigner.Menus
 
 		/// <returns>A new instance of the item or object this entry represents</returns>
 		public abstract T GetOne();
-
-		/// <summary>Determines whether or not an item can be spawned in a specific location</summary>
-		public abstract bool CanPlace();
 	}
 }
