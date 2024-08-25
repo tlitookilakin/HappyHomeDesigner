@@ -328,5 +328,11 @@ namespace HappyHomeDesigner.Menus
 
 			return true;
 		}
+
+		/// <inheritdoc/>
+		public override void DeleteActiveItem(bool playSound)
+		{
+			DeleteActiveItem(playSound, knownIDs);
+		}
 	}
 }

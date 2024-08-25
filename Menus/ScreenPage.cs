@@ -174,5 +174,8 @@ namespace HappyHomeDesigner.Menus
 			if (playSound)
 				Game1.playSound("trashcan");
 		}
+
+		/// <summary>Delete the held item if possible</summary>
+		public abstract void DeleteActiveItem(bool playSound);
 	}
 }

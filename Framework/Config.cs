@@ -52,6 +52,7 @@ namespace HappyHomeDesigner.Framework
 		}
 		private float magnifyScale;
 		public bool GMCMButton { get; set; }
+		public KeybindList QuickDelete { get; set; }
 
 		public Config()
 		{
@@ -71,6 +72,7 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
 			gmcm.QuickBind(man, this, nameof(PauseTime));
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
+			gmcm.QuickBind(man, this, nameof(QuickDelete));
 			gmcm.QuickBind(man, this, nameof(ClientMode), true);
 			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
 			gmcm.QuickBind(man, this, nameof(Magnify));
@@ -122,6 +124,7 @@ namespace HappyHomeDesigner.Framework
 			Magnify = false;
 			MagnifyScale = 2f;
 			GMCMButton = true;
+			QuickDelete = new(SButton.Delete);
 		}
 
 		private void Save()

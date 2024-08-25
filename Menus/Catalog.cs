@@ -323,6 +323,15 @@ namespace HappyHomeDesigner.Menus
 				return true;
 			}
 
+			if (!Toggled)
+				return false;
+
+			if (ModEntry.config.QuickDelete.JustPressed())
+			{
+				Pages[tab].DeleteActiveItem(true);
+				return true;
+			}
+
 			var binds = Game1.options.menuButton;
 			for (int i = 0; i < binds.Length; i++)
 			{

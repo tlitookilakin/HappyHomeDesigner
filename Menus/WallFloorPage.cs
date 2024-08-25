@@ -220,5 +220,19 @@ namespace HappyHomeDesigner.Menus
 
 			return false;
 		}
+
+		public override void DeleteActiveItem(bool playSound)
+		{
+			if (Game1.player.ActiveObject is not Wallpaper wall)
+				return;
+
+			if (Game1.player.ActiveObject == Game1.player.TemporaryItem)
+				Game1.player.TemporaryItem = null;
+			else
+				Game1.player.removeItemFromInventory(Game1.player.ActiveObject);
+
+			if (playSound)
+				Game1.playSound("trashcan");
+		}
 	}
 }
