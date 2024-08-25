@@ -1,6 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Patches;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -16,6 +15,7 @@ namespace HappyHomeDesigner.Menus
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
+		private static bool WasJustHovered = false;
 
 		/// <summary>Attempts to open the menu from an existing shop</summary>
 		/// <param name="existing">The shop to try and replace</param>
@@ -175,6 +175,8 @@ namespace HappyHomeDesigner.Menus
 
 		public override void performHoverAction(int x, int y)
 		{
+			WasJustHovered = true;
+
 			ToggleButton.tryHover(x, y);
 
 			if (!Toggled)
@@ -191,6 +193,14 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
+			int m_x = Game1.getMouseX();
+			int m_y = Game1.getMouseY();
+			if (WasJustHovered && !isWithinBounds(m_x, m_y))
+			{
+				performHoverAction(m_x, m_y);
+				WasJustHovered = false;
+			}
+
 			if (screenSize.X != Game1.uiViewport.Width || screenSize.Y != Game1.uiViewport.Height)
 				Resize(Game1.uiViewport.ToRect());
 
