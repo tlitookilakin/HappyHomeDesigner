@@ -65,13 +65,15 @@ namespace HappyHomeDesigner.Patches
 
 			if (where.Objects.TryGetValue(tile, out var obj) && obj.CanBeGrabbed && !obj.isDebrisOrForage())
 			{
-				// machine_input tag can check for machines requiring items
-				// won't catch things like crab pots or garden pots though...
-
 				if (
-					(obj is not Chest chest || CanPickupChest(chest)) &&
-					((obj.GetType() == typeof(SObject) && obj.HasContextTag("is_machine") && !obj.HasContextTag("machine_input")) ||
-					obj.heldObject.Value is null || obj is Sign || CanPickupChest(obj.heldObject.Value as Chest))
+					// unused chest OR empty OR a sign
+					(obj is Chest chest && CanPickupChest(chest)) || obj.heldObject.Value is null || obj is Sign ||
+
+					// OR a regular machine that does not require input
+					(obj.GetType() == typeof(SObject) && obj.HasContextTag("is_machine") && !obj.HasContextTag("machine_input")) ||
+
+					// OR only contains an unused chest
+					CanPickupChest(obj.heldObject.Value as Chest)
 				)
 				{
 					if (who.addItemToInventoryBool(obj.getOne(), true))
