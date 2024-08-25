@@ -1,5 +1,7 @@
 ﻿{
 	"Default": "ui",
 	"Maraluna.OvergrownFloweryInterface": "ui_overgrown",
-	"ManaKirel.VintageInterface2": "ui_vintage"
+	"ManaKirel.VintageInterface2": "ui_vintage",
+	"DaisyNiko.EarthyRecolour": "ui_earthy",
+	"ManaKirel.VMI": "ui_vintage_old"
 }
