@@ -4,14 +4,17 @@ using StardewValley.Objects;
 using StardewValley;
 using System.Reflection;
 using HappyHomeDesigner.Menus;
-using StardewValley.Extensions;
 using Microsoft.Xna.Framework;
 using SObject = StardewValley.Object;
+using Netcode;
+using System.Linq;
 
 namespace HappyHomeDesigner.Patches
 {
 	internal class Misc
 	{
+		const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
+
 		internal static void Apply(Harmony harmony)
 		{
 			harmony.TryPatch(
@@ -65,18 +68,9 @@ namespace HappyHomeDesigner.Patches
 
 			if (where.Objects.TryGetValue(tile, out var obj) && obj.CanBeGrabbed && !obj.isDebrisOrForage())
 			{
-				if (
-					// unused chest OR empty OR a sign
-					(obj is Chest chest && CanPickupChest(chest)) || obj.heldObject.Value is null || obj is Sign ||
-
-					// OR a regular machine that does not require input
-					(obj.GetType() == typeof(SObject) && obj.HasContextTag("is_machine") && !obj.HasContextTag("machine_input")) ||
-
-					// OR only contains an unused chest
-					CanPickupChest(obj.heldObject.Value as Chest)
-				)
+				if (TryPickupObject(obj, out var item))
 				{
-					if (who.addItemToInventoryBool(obj.getOne(), true))
+					if (who.addItemToInventoryBool(item, true))
 					{
 						Game1.playSound("coin");
 						obj.performRemoveAction();
@@ -90,7 +84,77 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
+		private static bool TryPickupObject(SObject obj, out SObject result)
+		{
+			result = null;
+			
+			if (obj is Chest chest)
+			{
+				if (chest.GetMutex().IsLocked())
+					return false;
+
+				var newchest = chest.getOne() as Chest;
+				if (chest.Items.Count > 0 || chest.heldObject.Value is not null)
+				{
+					var items = chest.Items.ToList();
+					chest.Items.Clear();
+					newchest.Items.AddRange(items);
+					Swap(chest.heldObject, newchest.heldObject);
+					newchest.modData[UNIQUE_ITEM_FLAG] = "T";
+				}
+				result = newchest;
+				return true;
+			}
+
+			if (obj is Sign sign)
+			{
+				var newSign = obj.getOne() as Sign;
+				Swap(sign.displayItem, newSign.displayItem);
+				return true;
+			}
+
+			if (obj is Mannequin mann)
+			{
+				if (mann.boots.Value != null || mann.pants.Value != null || mann.shirt.Value != null || mann.hat.Value != null)
+				{
+					var newMann = mann.getOne() as Mannequin;
+					Swap(mann.heldObject, newMann.heldObject);
+					Swap(mann.boots, newMann.boots);
+					Swap(mann.pants, newMann.pants);
+					Swap(mann.shirt, newMann.shirt);
+					Swap(mann.hat, newMann.hat);
+					result = newMann;
+					return true;
+				}
+			}
+
+			if (obj.heldObject.Value is SObject ho)
+			{
+				if (ho is Chest heldChest && heldChest.GetMutex().IsLocked())
+					return false;
+
+				if (obj.HasContextTag("is_machine") && obj.HasContextTag("machine_input") && !obj.readyForHarvest.Value)
+					return false;
+
+				result = obj.getOne() as SObject;
+				obj.heldObject.Value = null;
+				result.heldObject.Value = ho;
+				result.modData[UNIQUE_ITEM_FLAG] = "T";
+				return true;
+			}
+
+			result = obj.getOne() as SObject;
+			return true;
+		}
+
 		private static bool CanPickupChest(Chest chest)
 			=> chest != null && chest.isEmpty() && !chest.GetMutex().IsLocked();
+
+		private static void Swap<T>(NetRef<T> from, NetRef<T> to) where T : class, INetObject<INetSerializable>
+		{
+			T held = from.Value;
+			from.Value = null;
+			to.Value = held;
+		}
 	}
 }
