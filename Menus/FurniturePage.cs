@@ -53,7 +53,7 @@ namespace HappyHomeDesigner.Menus
 
 			foreach (var item in source)
 			{
-				if (item is Furniture furn)
+				if (item is Furniture furn && furn.Name != "ErrorItem")
 				{
 					var entry = new FurnitureEntry(furn, season, seasonName, favorites);
 					var type = furn.furniture_type.Value;

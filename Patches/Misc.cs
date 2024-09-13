@@ -8,6 +8,8 @@ using Microsoft.Xna.Framework;
 using SObject = StardewValley.Object;
 using Netcode;
 using System.Linq;
+using System;
+using StardewValley.ItemTypeDefinitions;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -35,6 +37,16 @@ namespace HappyHomeDesigner.Patches
 			harmony.TryPatch(
 				typeof(GameLocation).GetMethod(nameof(GameLocation.LowPriorityLeftClick)),
 				postfix: new(typeof(Misc), nameof(TryPickupCraftable))
+			);
+
+			harmony.TryPatch(
+				typeof(FurnitureDataDefinition).GetMethod(nameof(FurnitureDataDefinition.CreateItem)),
+				finalizer: new(typeof(Misc), nameof(ReplaceInvalidFurniture))
+			);
+
+			harmony.TryPatch(
+				typeof(Utility).GetMethod(nameof(Utility.SortAllFurnitures)),
+				prefix: new(typeof(Misc), nameof(SortErrorFurniture))
 			);
 		}
 
@@ -155,6 +167,30 @@ namespace HappyHomeDesigner.Patches
 			T held = from.Value;
 			from.Value = null;
 			to.Value = held;
+		}
+
+		private static Exception ReplaceInvalidFurniture(Exception __exception, ParsedItemData data, ref Item __result, FurnitureDataDefinition __instance)
+		{
+			if (__exception is null || data.IsErrorItem)
+				return null;
+
+			ModEntry.monitor.Log(
+				$"Furniture item {data.ItemId} is invalid! It could not be instantiated, and may cause crashes!\nThis is an issue with " +
+				$"the mod that adds that furniture! Report it to that mod, not to Happy Home Designer!\nError: {__exception.Message}",
+				StardewModdingAPI.LogLevel.Error
+			);
+			__result = __instance.CreateItem(__instance.GetErrorData(data.ItemId));
+			return null;
+		}
+
+		private static bool SortErrorFurniture(Furniture a, Furniture b, ref int __result)
+		{
+			if (a == null || a.Name == "ErrorItem" || b == null || b.Name == "ErrorItem")
+			{
+				__result = 0;
+				return false;
+			}
+			return true;
 		}
 	}
 }
