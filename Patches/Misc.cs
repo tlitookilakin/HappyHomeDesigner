@@ -174,9 +174,11 @@ namespace HappyHomeDesigner.Patches
 			if (__exception is null || data.IsErrorItem)
 				return null;
 
+			var modName = data.ItemId.TryGetModInfo(out var mod) ? mod.Manifest.Name : "the mod that adds that furniture";
+
 			ModEntry.monitor.Log(
 				$"Furniture item {data.ItemId} is invalid! It could not be instantiated, and may cause crashes!\nThis is an issue with " +
-				$"the mod that adds that furniture! Report it to that mod, not to Happy Home Designer!\nError: {__exception.Message}",
+				$"{modName}! Report it to that mod, not to Happy Home Designer!\nError: {__exception.Message}",
 				StardewModdingAPI.LogLevel.Error
 			);
 			__result = __instance.CreateItem(__instance.GetErrorData(data.ItemId));

@@ -279,5 +279,23 @@ namespace HappyHomeDesigner.Framework
 				(a.B / 255f) * (b.B / 255f),
 				(a.A / 255f) * (b.A / 255f)
 			);
+
+		public static bool TryGetModInfo(this string ID, out IModInfo info)
+		{
+			for (int i = 0; i < ID.Length; i++)
+			{
+				if (ID[i] == '_')
+				{
+					var id = ID[..i];
+					if (ModEntry.helper.ModRegistry.IsLoaded(id))
+					{
+						info = ModEntry.helper.ModRegistry.Get(id);
+						return true;
+					}
+				}
+			}
+			info = null;
+			return false;
+		}
 	}
 }
