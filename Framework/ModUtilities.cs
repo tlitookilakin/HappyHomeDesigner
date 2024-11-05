@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
+using HappyHomeDesigner.Menus;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -296,6 +297,35 @@ namespace HappyHomeDesigner.Framework
 			}
 			info = null;
 			return false;
+		}
+
+		public static int GetLength(this Point p)
+			=> Math.Abs(p.X) + Math.Abs(p.Y);
+
+		public static ClickableComponent? GetIntersecting(this IList<ClickableComponent> list, int x, int y)
+		{
+			for (int i = 0; i < list.Count; i++) {
+				if (list[i].containsPoint(x, y))
+					return list[i];
+			}
+			return list.Count > 0 ? list[0] : null;
+		}
+
+		public static ClickableComponent? GetNeighbor(this ClickableComponent? c, int direction, IEnumerable<ClickableComponent> clickables)
+		{
+			if (c is null)
+				return null;
+
+			int targetID = direction switch
+			{
+				Direction.LEFT => c.leftNeighborID,
+				Direction.RIGHT => c.rightNeighborID,
+				Direction.UP => c.upNeighborID,
+				Direction.DOWN => c.downNeighborID,
+				_ => int.MinValue
+			};
+
+			return clickables.FirstOrDefault(r => r.myID == targetID);
 		}
 	}
 }

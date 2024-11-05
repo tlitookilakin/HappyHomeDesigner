@@ -4,6 +4,7 @@ using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using HappyHomeDesigner.Framework;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -15,6 +16,8 @@ namespace HappyHomeDesigner.Menus
 
 		public readonly int CellWidth;
 		public readonly int CellHeight;
+
+		public ControlRegion Control { get; protected set; }
 
 		public int Offset => scrollBar.CellOffset;
 		public int Columns => scrollBar.Columns;
@@ -51,6 +54,41 @@ namespace HappyHomeDesigner.Menus
 			search.OnTextChanged += UpdateCount;
 
 			search_visible = showSearch;
+
+			Control = new() {
+
+			};
+		}
+
+		private bool HandleGridMovement(ref int mouseX, ref int mouseY, int direction, out ControlRegion? to, bool inside)
+		{
+			to = null;
+
+			int cx = Math.Clamp((mouseX - xPositionOnScreen) / CellWidth, -1, scrollBar.Columns);
+			int cy = Math.Clamp((mouseY - yPositionOnScreen) / CellHeight, -1, scrollBar.VisibleRows);
+
+			if (
+				(direction == Direction.RIGHT && mouseX > xPositionOnScreen + width) ||
+				(direction == Direction.LEFT && mouseX < xPositionOnScreen) ||
+				(direction == Direction.DOWN && mouseY > yPositionOnScreen + height) ||
+				(direction == Direction.UP && mouseY < yPositionOnScreen + height)
+			)
+				return false;
+
+			switch (direction)
+			{
+				case Direction.LEFT: cx--; break;
+				case Direction.UP: cy--; break;
+				case Direction.DOWN: cy++; break;
+				case Direction.RIGHT: cx++; break;
+			}
+
+			if (cx >= scrollBar.Columns || cx < 0 || cy >= scrollBar.VisibleRows || cy < 0)
+				return false;
+
+			mouseX = cx * CellWidth + xPositionOnScreen + CellWidth / 2;
+			mouseY = cy * CellHeight + yPositionOnScreen + CellHeight / 2;
+			return true;
 		}
 
 		public override void draw(SpriteBatch b)
@@ -111,6 +149,7 @@ namespace HappyHomeDesigner.Menus
 
 			search.X = xPositionOnScreen - BORDER_WIDTH;
 			search.Y = yPositionOnScreen + this.height + BORDER_WIDTH + MARGIN_BOTTOM + 8;
+			Control.Bounds = new(xPositionOnScreen, yPositionOnScreen, width, height);
 		}
 
 		public override bool isWithinBounds(int x, int y)
@@ -148,6 +187,73 @@ namespace HappyHomeDesigner.Menus
 		{
 			scrollBar.Rows = search.Filtered.Count / scrollBar.Columns + (search.Filtered.Count % scrollBar.Columns is not 0 ? 1 : 0);
 			DisplayChanged?.Invoke();
+		}
+
+		public bool TryApplyGridMovement(int direction, ref int x, ref int y, bool autoscroll)
+		{
+			int relX = x - xPositionOnScreen;
+			int relY = y - yPositionOnScreen;
+
+			if (direction is Direction.UP or Direction.DOWN && (relX < 0 || relX > width))
+				return false;
+
+			if (direction is Direction.LEFT or Direction.RIGHT && (relY < 0 || relY > height))
+				return false;
+
+			int cx = relX < 0 ? -1 : relX > width ? Columns : relX / CellWidth;
+			int cy = relY < 0 ? -1 : relY > height ? scrollBar.VisibleRows : relY / CellHeight;
+
+			switch (direction) {
+				case Direction.UP: cy--; break;
+				case Direction.RIGHT: cx++; break;
+				case Direction.DOWN: cy++; break;
+				case Direction.LEFT: cx--; break;
+			}
+
+			if (cx < 0)
+				return false;
+
+			if (cx >= Columns)
+			{
+				bool isNearTop = relY <= height / 2;
+
+				if (relX >= width)
+					if (isNearTop && direction is Direction.UP || !isNearTop && direction is Direction.DOWN)
+						return false;
+					else
+						scrollBar.SnapToButton(direction is Direction.UP, ref x, ref y);
+				else
+					scrollBar.SnapToButton(isNearTop, ref x, ref y);
+
+				return true;
+			}
+
+			if (autoscroll)
+			{
+				if (cy < 0)
+				{
+					cy = 0;
+					if (scrollBar.Offset is 0)
+						return false;
+					scrollBar.AdvanceRows(-1);
+				}
+				else if (cy >= scrollBar.VisibleRows)
+				{
+					cy = scrollBar.VisibleRows - 1;
+					int oldOffset = scrollBar.Offset;
+					scrollBar.AdvanceRows(1);
+					if (scrollBar.Offset == oldOffset)
+						return false;
+				}
+			}
+			else if (cy < 0 || cy >= scrollBar.VisibleRows)
+			{
+				return false;
+			}
+
+			x = xPositionOnScreen + CellWidth * cx + CellWidth / 2;
+			y = yPositionOnScreen + CellHeight * cy + CellHeight / 2;
+			return true;
 		}
 	}
 }

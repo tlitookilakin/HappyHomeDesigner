@@ -342,9 +342,31 @@ namespace HappyHomeDesigner.Menus
 				}
 			}
 
-			// TODO controller inputs
+			if (IsPressed) 
+			{
+				int dir = GetMovementKey(button);
+				if (dir < 0)
+					return Pages[tab].TryApplyButton(button, IsPressed);
+				applyMovementKey(dir);
+				return true;
+			}
 
 			return Pages[tab].TryApplyButton(button, IsPressed);
+		}
+
+		public override void applyMovementKey(int direction)
+		{
+			(int mouse_x, int mouse_y) = Game1.getMousePosition();
+			if (!Pages[tab].TryApplyMovement(direction, ref mouse_x, ref mouse_y))
+			{
+				// TODO
+			}
+		}
+
+		private static int GetMovementKey(SButton button)
+		{
+			// TODO
+			return 0;
 		}
 	}
 }

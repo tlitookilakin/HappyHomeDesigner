@@ -15,8 +15,19 @@ namespace HappyHomeDesigner.Menus
 		internal const int FILTER_HEIGHT = 42;
 		internal const int FILTER_SCALE = 3;
 
+		protected List<ControlRegion> controlRegions = [];
+		public ControlRegion RootControl { get; protected init; }
+
 		protected int filter_count;
 		protected int current_filter;
+
+		public ScreenPage()
+		{
+			RootControl = new ControlRegionGrouped(controlRegions);
+			controlRegions.Add(new(){
+				Handler = HandleFliterSnap
+			});
+		}
 
 		/// <returns>The tab representing this page</returns>
 		public abstract ClickableTextureComponent GetTab();
@@ -160,6 +171,89 @@ namespace HappyHomeDesigner.Menus
 		/// <summary>Do something when a keyboard, mouse, or controller button is pressed or released</summary>
 		/// <returns>True if it was handled and should be suppressed, otherwise false.</returns>
 		public abstract bool TryApplyButton(SButton button, bool IsPressed);
+
+		/// <summary>Handles gamepad directional input</summary>
+		/// <param name="direction">0: Up, 1: Right, 2: Down, 3: Left</param>
+		/// <param name="x">Mouse X</param>
+		/// <param name="y">Mouse Y</param>
+		/// <returns>True if the movement was applied, false if the container should handle it.</returns>
+		public virtual bool TryApplyMovement(int direction, ref int x, ref int y)
+		{
+			foreach (var widget in allClickableComponents)
+			{
+				if (widget.containsPoint(x, y))
+				{
+					int id = direction switch
+					{
+						Direction.UP => widget.upNeighborID,
+						Direction.RIGHT => widget.rightNeighborID,
+						Direction.DOWN => widget.downNeighborID,
+						Direction.LEFT => widget.leftNeighborID,
+						_ => 0
+					};
+
+					if (getComponentWithID(id) is ClickableComponent target)
+					{
+						(x, y) = target.bounds.Center;
+						return true;
+					}
+					break;
+				}
+			}
+
+			if ((direction is Direction.UP or Direction.DOWN && x - xPositionOnScreen < FILTER_WIDTH) ||
+				direction is Direction.LEFT && y > yPositionOnScreen && y - yPositionOnScreen < height)
+			{
+				SnapToNearestFilter(ref x, ref y);
+				return true;
+			}
+
+			return false;
+		}
+
+		protected void SnapToNearestFilter(ref int y, ref int x)
+		{
+			int relY = y - yPositionOnScreen;
+			x = xPositionOnScreen + FILTER_WIDTH / 2;
+
+			if (relY < 0)
+			{
+				y = yPositionOnScreen + FILTER_HEIGHT / 2;
+			}
+			else
+			{
+				int which = relY / (FILTER_HEIGHT - FILTER_SCALE);
+
+				if (which >= filter_count)
+					which = filter_count - 1;
+
+				y = which * (FILTER_HEIGHT - FILTER_SCALE) + FILTER_HEIGHT / 2;
+			}
+		}
+
+		private bool HandleFliterSnap(ref int x, ref int y, int direction, out ControlRegion? toRegion, bool inside)
+		{
+			toRegion = null;
+
+			if (direction == Direction.LEFT && (inside || x < xPositionOnScreen))
+				return false;
+
+			if (direction == Direction.RIGHT && (inside || x > xPositionOnScreen + FILTER_WIDTH))
+				return false;
+
+			int which = MathHelper.Clamp((y - yPositionOnScreen) / (FILTER_HEIGHT - FILTER_SCALE), -1, filter_count);
+			if (direction == Direction.UP)
+				which--;
+			else if (direction == Direction.DOWN)
+				which++;
+
+			if (which < 0 || which >= filter_count)
+				return false;
+
+			x = xPositionOnScreen + FILTER_WIDTH / 2;
+			y = yPositionOnScreen + FILTER_HEIGHT * which + FILTER_HEIGHT / 2;
+			return true;
+		}
 
 		protected void DeleteActiveItem(bool playSound, ICollection<string> whitelist)
 		{

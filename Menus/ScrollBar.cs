@@ -159,5 +159,13 @@ namespace HappyHomeDesigner.Menus
 				new Rectangle(source.X, source.Y + source.Height - buffer, source.Width, buffer),
 				color);
 		}
+
+		public void SnapToButton(bool top, ref int x, ref int y)
+		{
+			if (top)
+				(x, y) = UpArrow.bounds.Center;
+			else
+				(x, y) = DownArrow.bounds.Center;
+		}
 	}
 }

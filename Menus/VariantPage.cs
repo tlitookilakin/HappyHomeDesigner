@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -31,7 +32,7 @@ namespace HappyHomeDesigner.Menus
 		protected int iconRow;
 		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
 		protected readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
-		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
+		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true) { myID = 10 };
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		internal static HashSet<string> knownIDs = new();
@@ -333,6 +334,27 @@ namespace HappyHomeDesigner.Menus
 		public override void DeleteActiveItem(bool playSound)
 		{
 			DeleteActiveItem(playSound, knownIDs);
+		}
+
+		/// <inheritdoc/>
+		public override bool TryApplyMovement(int direction, ref int x, ref int y)
+		{
+			if (x > width)
+			{
+				if (VariantPanel.TryApplyGridMovement(direction, ref x, ref y, true))
+					return true;
+
+				if (direction is not Direction.LEFT)
+					return false;
+			}
+
+			if (MainPanel.TryApplyGridMovement(direction, ref x, ref y, true))
+				return true;
+
+			if (direction is Direction.RIGHT && VariantPanel.TryApplyGridMovement(direction, ref x, ref y, true))
+				return true;
+
+			return base.TryApplyMovement(direction, ref x, ref y);
 		}
 	}
 }
