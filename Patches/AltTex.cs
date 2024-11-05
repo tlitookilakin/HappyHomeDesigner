@@ -110,6 +110,7 @@ namespace HappyHomeDesigner.Patches
 				var flag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 				LocalBuilder xOffset;
 				Range a, b;
+				Label jumpTarget;
 
 				il
 					// find second return
@@ -135,20 +136,19 @@ namespace HappyHomeDesigner.Patches
 					.MatchStartForward(
 						new(OpCodes.Ldarg_0),
 						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.bigCraftable))),
-						new(OpCodes.Call, typeof(NetBool).GetMethod("op_Implicit"))
+						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<bool, NetBool>.Value))!.GetMethod)
 					);
 					int start = il.Pos;
 				il
 					.MatchStartForward(
 						new(OpCodes.Ldarg_0),
 						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.readyForHarvest))),
-						new(OpCodes.Call, typeof(NetBool).GetMethod("op_Implicit"))
+						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<bool, NetBool>.Value))!.GetMethod)
 					);
 				il
 					.MatchEndForward(
 						new CodeMatch(OpCodes.Brfalse_S)
-					)
-					.Advance(1);
+					).Advance(1);
 					a = start..(il.Pos - 1);
 				il
 					// add our draw call
@@ -178,13 +178,12 @@ namespace HappyHomeDesigner.Patches
 						new CodeMatch(OpCodes.Br)
 					);
 					start = il.Pos + 1;
+					jumpTarget = (Label)il.Operand;
 				il
 					.MatchStartForward(
-						new(OpCodes.Ldc_I4_0),
-						new(OpCodes.Stloc_S),
-						new(OpCodes.Br_S)
+						new CodeMatch(OpCodes.Callvirt, typeof(Item).GetMethod(nameof(Item.DrawMenuIcons)))
 					);
-					b = start..(il.Pos - 1);
+					b = start..il.Pos;
 
 				il
 					.RemoveInstructionsInRange(b.Start.Value, b.End.Value)

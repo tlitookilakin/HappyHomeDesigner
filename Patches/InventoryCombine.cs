@@ -28,6 +28,15 @@ namespace HappyHomeDesigner.Patches
 			var slot = gen.DeclareLocal(typeof(Item));
 			var held = gen.DeclareLocal(typeof(Item));
 
+			LocalBuilder ret;
+
+			// find return point
+			il.End()
+			.MatchStartBackwards(new CodeMatch(OpCodes.Ret))
+			.MatchStartBackwards(new CodeMatch(i => i.operand is LocalBuilder));
+			ret = (LocalBuilder)il.Operand;
+			il.Start();
+
 			il.MatchStartForward(
 				new CodeMatch(OpCodes.Callvirt, typeof(Tool).GetMethod(nameof(Tool.attach)))
 			).MatchStartForward(
@@ -40,10 +49,7 @@ namespace HappyHomeDesigner.Patches
 			var leaveTarget = il.Instruction.operand;
 
 			il.MatchEndBackwards(
-				new(OpCodes.Ldarg_0),
-				new(OpCodes.Ldfld, typeof(InventoryMenu).GetField(nameof(InventoryMenu.actualInventory))),
-				new(OpCodes.Ldloc_1),
-				new(OpCodes.Callvirt, typeof(IList<Item>).GetMethod("get_Item")),
+				new(OpCodes.Ldloc_2),
 				new(OpCodes.Brfalse)
 			);
 
@@ -55,10 +61,7 @@ namespace HappyHomeDesigner.Patches
 			.InsertAndAdvance(
 
 				// slot = actualInventory[i];
-				new(OpCodes.Ldarg_0),
-				new(OpCodes.Ldfld, typeof(InventoryMenu).GetField(nameof(InventoryMenu.actualInventory))),
-				new(OpCodes.Ldloc_1),
-				new(OpCodes.Callvirt, typeof(IList<Item>).GetMethod("get_Item")),
+				new(OpCodes.Ldloc_2),
 				new(OpCodes.Stloc, slot),
 
 				// held = toAddTo;
@@ -81,7 +84,7 @@ namespace HappyHomeDesigner.Patches
 
 				// return held;
 				new(OpCodes.Ldloc, held),
-				new(OpCodes.Stloc_3),
+				new(OpCodes.Stloc_S, ret),
 				new(OpCodes.Leave, leaveTarget)
 			);
 
