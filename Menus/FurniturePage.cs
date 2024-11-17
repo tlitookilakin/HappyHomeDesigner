@@ -75,7 +75,7 @@ namespace HappyHomeDesigner.Menus
 		public override IReadOnlyList<IGridItem> ApplyFilter()
 		{
 			return	// all items
-					(current_filter is 0) ? entries :
+					(current_filter <= 0) ? entries :
 					// categories
 					(current_filter <= Filters.Length) ? Filters[current_filter - 1] :
 					// favorites

@@ -50,7 +50,7 @@ namespace HappyHomeDesigner.Framework
 				knownIDs is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 
-		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
+		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly? assembly)
 		{
 			assembly = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name == name).FirstOrDefault();
 			return assembly is not null;
@@ -152,22 +152,22 @@ namespace HappyHomeDesigner.Framework
 
 			if (type == typeof(bool))
 				gmcm.AddBoolOption(manifest,
-				prop.GetMethod.ToDelegate<Func<bool>>(config),
-				prop.SetMethod.ToDelegate<Action<bool>>(config),
+				prop.GetMethod!.ToDelegate<Func<bool>>(config),
+				prop.SetMethod!.ToDelegate<Action<bool>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc));
 
 			else if (type == typeof(KeybindList))
 				gmcm.AddKeybindList(manifest,
-				prop.GetMethod.ToDelegate<Func<KeybindList>>(config),
-				prop.SetMethod.ToDelegate<Action<KeybindList>>(config),
+				prop.GetMethod!.ToDelegate<Func<KeybindList>>(config),
+				prop.SetMethod!.ToDelegate<Action<KeybindList>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc));
 
 			else if (type == typeof(string))
 				gmcm.AddTextOption(manifest,
-				prop.GetMethod.ToDelegate<Func<string>>(config),
-				prop.SetMethod.ToDelegate<Action<string>>(config),
+				prop.GetMethod!.ToDelegate<Func<string>>(config),
+				prop.SetMethod!.ToDelegate<Action<string>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc),
 				allowedValues, formatValue);
@@ -196,7 +196,7 @@ namespace HappyHomeDesigner.Framework
 			return matcher.IsValid;
 		}
 
-		public static void Log(this ITranslationHelper helper, string key, object args = null, LogLevel level = LogLevel.Debug)
+		public static void Log(this ITranslationHelper helper, string key, object? args = null, LogLevel level = LogLevel.Debug)
 		{
 			ModEntry.monitor.Log(helper.Get(key, args), level);
 		}
@@ -257,9 +257,9 @@ namespace HappyHomeDesigner.Framework
 			return output;
 		}
 
-		public static bool TryPatch(this Harmony harmony, MethodInfo method, HarmonyMethod prefix = null, 
-			HarmonyMethod postfix = null, HarmonyMethod transpiler = null, HarmonyMethod finalizer = null, 
-			[CallerMemberName] string source = null)
+		public static bool TryPatch(this Harmony harmony, MethodInfo? method, HarmonyMethod? prefix = null, 
+			HarmonyMethod? postfix = null, HarmonyMethod? transpiler = null, HarmonyMethod? finalizer = null, 
+			[CallerMemberName] string? source = null)
 		{
 			try
 			{
