@@ -332,7 +332,7 @@ namespace HappyHomeDesigner.Menus
 				return true;
 			}
 
-			if (ModEntry.config.CloseWithKey && Game1.activeClickableMenu is null)
+			if (ModEntry.config.CloseWithKey && Game1.activeClickableMenu is null && IsPressed)
 			{
 				var binds = Game1.options.menuButton;
 				for (int i = 0; i < binds.Length; i++)
