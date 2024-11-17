@@ -60,6 +60,7 @@ namespace HappyHomeDesigner.Patches
 					var items = oldChest.Items.ToList();
 					oldChest.Items.Clear();
 					chest.Items.AddRange(items);
+					chest.playerChoiceColor.Value = oldChest.playerChoiceColor.Value;
 				}
 				else if (placed is Sign sign && __instance is Sign oldSign)
 				{
@@ -100,6 +101,10 @@ namespace HappyHomeDesigner.Patches
 						Game1.playSound("coin");
 						obj.performRemoveAction();
 						where.Objects.Remove(tile);
+
+						int slot = who.getIndexOfInventoryItem(item);
+						if (slot is >= 0 and <= 12)
+							who.CurrentToolIndex = slot;
 
 						return true;
 					}
