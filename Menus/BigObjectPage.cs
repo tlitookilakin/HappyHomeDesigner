@@ -6,7 +6,7 @@ using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO placement at range?
+	// TODO: add control to bottom buttons
 	internal class BigObjectPage : VariantPage<BigObjectEntry, SObject>
 	{
 		public BigObjectPage(IEnumerable<ISalable> existing) : 

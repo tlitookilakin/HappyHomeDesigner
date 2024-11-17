@@ -8,7 +8,7 @@ namespace HappyHomeDesigner.Framework
 {
 	public class ControlRegionGrouped : ControlRegion
 	{
-		public IList<ControlRegion> Regions
+		public IReadOnlyList<ControlRegion> Regions
 		{
 			get => regions;
 			set
@@ -17,9 +17,9 @@ namespace HappyHomeDesigner.Framework
 				RecalculateBounds();
 			}
 		}
-		private IList<ControlRegion> regions;
+		private IReadOnlyList<ControlRegion> regions;
 
-		public ControlRegionGrouped(IList<ControlRegion> regions)
+		public ControlRegionGrouped(IReadOnlyList<ControlRegion> regions)
 		{
 			this.regions = regions;
 			RecalculateBounds();

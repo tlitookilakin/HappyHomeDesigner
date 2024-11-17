@@ -10,6 +10,7 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO: add control to bottom buttons
 	internal class ItemPage : ScreenPage
 	{
 		private readonly List<ItemEntry> entries = new();
@@ -104,11 +105,9 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override bool TryApplyButton(SButton button, bool IsPressed)
+		public override bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
 		{
-			// TODO controller support
-
-			return false;
+			return Panel.TryApplyButton(button, IsPressed, pointer);
 		}
 
 		public override void DeleteActiveItem(bool playSound)

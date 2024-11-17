@@ -1,9 +1,7 @@
 ﻿using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
 using StardewValley.Menus;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace HappyHomeDesigner.Framework
@@ -18,7 +16,7 @@ namespace HappyHomeDesigner.Framework
 		public ControlRegion? Top;
 		public ControlRegion? Bottom;
 		public MovementHandler? Handler;
-		public List<ClickableComponent>? clickables;
+		public IReadOnlyList<ClickableComponent>? clickables;
 
 		public bool TryApplyMovement(ref int mouseX, ref int mouseY, int direction, out ControlRegion? toRegion)
 		{

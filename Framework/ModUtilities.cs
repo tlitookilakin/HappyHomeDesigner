@@ -302,7 +302,7 @@ namespace HappyHomeDesigner.Framework
 		public static int GetLength(this Point p)
 			=> Math.Abs(p.X) + Math.Abs(p.Y);
 
-		public static ClickableComponent? GetIntersecting(this IList<ClickableComponent> list, int x, int y)
+		public static ClickableComponent? GetIntersecting(this IReadOnlyList<ClickableComponent> list, int x, int y)
 		{
 			for (int i = 0; i < list.Count; i++) {
 				if (list[i].containsPoint(x, y))
@@ -326,6 +326,11 @@ namespace HappyHomeDesigner.Framework
 			};
 
 			return clickables.FirstOrDefault(r => r.myID == targetID);
+		}
+
+		public static bool UsingGamepad(this Options o)
+		{
+			return o.gamepadControls && o.snappyMenus;
 		}
 	}
 }

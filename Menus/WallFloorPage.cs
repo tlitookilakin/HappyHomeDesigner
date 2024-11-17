@@ -11,6 +11,7 @@ using System.Diagnostics;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO: add control to bottom buttons
 	internal class WallFloorPage : ScreenPage
 	{
 		private const string KeyWallFav = "tlitookilakin.HappyHomeDesigner/WallpaperFavorites";
@@ -214,16 +215,14 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override bool TryApplyButton(SButton button, bool IsPressed)
+		public override bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
 		{
-			// TODO add controller support
-
-			return false;
+			return ActivePanel.TryApplyButton(button, IsPressed, pointer);
 		}
 
 		public override void DeleteActiveItem(bool playSound)
 		{
-			if (Game1.player.ActiveObject is not Wallpaper wall)
+			if (Game1.player.ActiveObject is not Wallpaper)
 				return;
 
 			if (Game1.player.ActiveObject == Game1.player.TemporaryItem)

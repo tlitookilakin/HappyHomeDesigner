@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO: add control to bottom buttons
 	internal class FurniturePage : VariantPage<FurnitureEntry, Furniture>
 	{
 		private const int FURNITURE_MAX = 18;

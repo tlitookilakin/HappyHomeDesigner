@@ -20,14 +20,14 @@ namespace HappyHomeDesigner.Menus
 	{
 		private readonly string KeyFavs;
 
-		protected readonly List<T> entries = new();
+		protected readonly List<T> entries = [];
 		protected IReadOnlyList<VariantEntry<TE>> variants = [];
-		protected readonly List<T> Favorites = new();
+		protected readonly List<T> Favorites = [];
 		private bool showVariants = false;
 		private int variantIndex = -1;
-		private T variantItem;
-		protected TE hovered;
-		protected TE hovered_variant;
+		private T? variantItem;
+		protected TE? hovered;
+		protected TE? hovered_variant;
 
 		protected int iconRow;
 		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
@@ -79,6 +79,7 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.Items = variants;
 
 			preservedFavorites = [.. favorites];
+			controlRegions.Add(MainPanel.Control);
 		}
 
 		/// <summary>Initial setup. Happens after favorites are loaded and before items are processed.</summary>
@@ -179,11 +180,11 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.performHoverAction(x, y);
 
 			hovered = MainPanel.TrySelect(x, y, out int index) ?
-				(MainPanel.FilteredItems[index] as T).Item :
+				((T)MainPanel.FilteredItems[index]).Item :
 				null;
 
 			hovered_variant = VariantPanel.TrySelect(x, y, out index) ?
-				(VariantPanel.FilteredItems[index] as T).Item :
+				((T)VariantPanel.FilteredItems[index]).Item :
 				null;
 		}
 
@@ -254,7 +255,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (panel.TrySelect(mx, my, out int index))
 			{
-				var entry = panel.FilteredItems[index] as T;
+				var entry = (T)panel.FilteredItems[index];
 
 				if (allowVariants)
 				{
@@ -313,48 +314,15 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override bool TryApplyButton(SButton button, bool IsPressed)
+		public override bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
 		{
-			// TODO controller movement
-
-			switch (button)
-			{
-				case SButton.Delete:
-					if (IsPressed)
-						DeleteActiveItem(true, knownIDs);
-					break;
-				default:
-					return false;
-			}
-
-			return true;
+			return MainPanel.TryApplyButton(button, IsPressed, pointer);
 		}
 
 		/// <inheritdoc/>
 		public override void DeleteActiveItem(bool playSound)
 		{
 			DeleteActiveItem(playSound, knownIDs);
-		}
-
-		/// <inheritdoc/>
-		public override bool TryApplyMovement(int direction, ref int x, ref int y)
-		{
-			if (x > width)
-			{
-				if (VariantPanel.TryApplyGridMovement(direction, ref x, ref y, true))
-					return true;
-
-				if (direction is not Direction.LEFT)
-					return false;
-			}
-
-			if (MainPanel.TryApplyGridMovement(direction, ref x, ref y, true))
-				return true;
-
-			if (direction is Direction.RIGHT && VariantPanel.TryApplyGridMovement(direction, ref x, ref y, true))
-				return true;
-
-			return base.TryApplyMovement(direction, ref x, ref y);
 		}
 	}
 }

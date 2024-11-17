@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Framework;
+using StardewModdingAPI;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO add controller support
 	public class GridPanel : IClickableMenu
 	{
 		public const int BORDER_WIDTH = 16;
@@ -24,7 +24,7 @@ namespace HappyHomeDesigner.Menus
 		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
 		public IReadOnlyList<IGridItem> FilteredItems => search.Filtered;
 
-		public event Action DisplayChanged;
+		public event Action? DisplayChanged;
 		public ScrollBar scrollBar = new();
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
@@ -44,7 +44,7 @@ namespace HappyHomeDesigner.Menus
 				scrollBar.Reset();
 			}
 		}
-		private IReadOnlyList<IGridItem> items;
+		private IReadOnlyList<IGridItem> items = [];
 
 		public GridPanel(int cellWidth, int cellHeight, bool showSearch)
 		{
@@ -56,7 +56,7 @@ namespace HappyHomeDesigner.Menus
 			search_visible = showSearch;
 
 			Control = new() {
-
+				Handler = HandleGridMovement
 			};
 		}
 
@@ -189,70 +189,30 @@ namespace HappyHomeDesigner.Menus
 			DisplayChanged?.Invoke();
 		}
 
-		public bool TryApplyGridMovement(int direction, ref int x, ref int y, bool autoscroll)
+		public bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
 		{
-			int relX = x - xPositionOnScreen;
-			int relY = y - yPositionOnScreen;
-
-			if (direction is Direction.UP or Direction.DOWN && (relX < 0 || relX > width))
+			if (!IsPressed)
 				return false;
 
-			if (direction is Direction.LEFT or Direction.RIGHT && (relY < 0 || relY > height))
-				return false;
-
-			int cx = relX < 0 ? -1 : relX > width ? Columns : relX / CellWidth;
-			int cy = relY < 0 ? -1 : relY > height ? scrollBar.VisibleRows : relY / CellHeight;
-
-			switch (direction) {
-				case Direction.UP: cy--; break;
-				case Direction.RIGHT: cx++; break;
-				case Direction.DOWN: cy++; break;
-				case Direction.LEFT: cx--; break;
-			}
-
-			if (cx < 0)
-				return false;
-
-			if (cx >= Columns)
+			switch (button)
 			{
-				bool isNearTop = relY <= height / 2;
-
-				if (relX >= width)
-					if (isNearTop && direction is Direction.UP || !isNearTop && direction is Direction.DOWN)
-						return false;
-					else
-						scrollBar.SnapToButton(direction is Direction.UP, ref x, ref y);
-				else
-					scrollBar.SnapToButton(isNearTop, ref x, ref y);
-
-				return true;
+				case SButton.ControllerY:
+					if (TrySelect((int)pointer.X, (int)pointer.Y, out int index))
+						FilteredItems[index].ToggleFavorite(true);
+					break;
+				case SButton.LeftTrigger:
+					scrollBar.AdvanceRows(-5);
+					break;
+				case SButton.RightTrigger:
+					scrollBar.AdvanceRows(5);
+					break;
+				case SButton.ControllerBack:
+					search.SelectMe();
+					break;
+				default:
+					return false;
 			}
 
-			if (autoscroll)
-			{
-				if (cy < 0)
-				{
-					cy = 0;
-					if (scrollBar.Offset is 0)
-						return false;
-					scrollBar.AdvanceRows(-1);
-				}
-				else if (cy >= scrollBar.VisibleRows)
-				{
-					cy = scrollBar.VisibleRows - 1;
-					int oldOffset = scrollBar.Offset;
-					scrollBar.AdvanceRows(1);
-					if (scrollBar.Offset == oldOffset)
-						return false;
-				}
-			}
-			else if (cy < 0 || cy >= scrollBar.VisibleRows)
-			{
-				return false;
-			}
-
-			x = xPositionOnScreen + CellWidth * cx + CellWidth / 2;
-			y = yPositionOnScreen + CellHeight * cy + CellHeight / 2;
 			return true;
 		}
 	}
