@@ -69,5 +69,9 @@
 	"config.GMCMButton.desc": "Whether or not to display the config button in the catalogue menu.",
 	"ui.EmptyCatalogue.text": "This catalogue contains no items!",
 	"config.QuickDelete.name": "Delete Held Item",
-	"config.QuickDelete.desc": "While the catalogue is open, pressing this key will delete the held item if possible."
+	"config.QuickDelete.desc": "While the catalogue is open, pressing this key will delete the held item if possible.",
+	"config.controls.name": "Controls",
+	"config.controls.desc": "Key bindings & input options.",
+	"config.PickupCraftables.name": "Pickup Craftables",
+	"config.PickupCraftables.desc": "Allow instant pickup/move of craftables."
 }

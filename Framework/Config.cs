@@ -53,6 +53,7 @@ namespace HappyHomeDesigner.Framework
 		private float magnifyScale;
 		public bool GMCMButton { get; set; }
 		public KeybindList QuickDelete { get; set; }
+		public bool PickupCraftables { get; set; }
 
 		public Config()
 		{
@@ -67,24 +68,20 @@ namespace HappyHomeDesigner.Framework
 
 			gmcm.AddImage(man, () => logo, logo.Bounds, 2);
 
-			gmcm.QuickBind(man, this, nameof(GiveModifier));
-			gmcm.QuickBind(man, this, nameof(FavoriteModifier));
 			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
 			gmcm.QuickBind(man, this, nameof(PauseTime));
-			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
 			gmcm.QuickBind(man, this, nameof(QuickDelete));
 			gmcm.QuickBind(man, this, nameof(ClientMode), true);
 			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
 			gmcm.QuickBind(man, this, nameof(Magnify));
+			gmcm.QuickBind(man, this, nameof(PickupCraftables));
 
 			gmcm.QuickPage(man, "tweaks");
 			gmcm.QuickBind(man, this, nameof(UiSkin),
 				allowedValues: skins,
 				formatValue: s => ModEntry.i18n.Get($"skin.{s}")
 			);
-			gmcm.QuickBind(man, this, nameof(CloseWithKey));
 			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
-			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
 			gmcm.QuickBind(man, this, nameof(LargeVariants));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
@@ -97,6 +94,14 @@ namespace HappyHomeDesigner.Framework
 				() => ModEntry.i18n.Get("config.MagnifyScale.desc"),
 				1f, 5f, .1f
 			);
+
+			gmcm.QuickPage(man, "controls");
+			gmcm.QuickBind(man, this, nameof(GiveModifier));
+			gmcm.QuickBind(man, this, nameof(FavoriteModifier));
+			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
+			gmcm.QuickBind(man, this, nameof(CloseWithKey));
+			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
+
 			gmcm.QuickPage(man, "cheats");
 			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
 			gmcm.QuickBind(man, this, nameof(OpenMenu));
@@ -125,6 +130,7 @@ namespace HappyHomeDesigner.Framework
 			MagnifyScale = 2f;
 			GMCMButton = true;
 			QuickDelete = new(SButton.Delete);
+			PickupCraftables = true;
 		}
 
 		private void Save()
