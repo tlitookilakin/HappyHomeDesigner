@@ -47,6 +47,9 @@ namespace HappyHomeDesigner.Patches
 			if (!who.IsLocalPlayer)
 				return;
 
+			if (Catalog.MenuVisible())
+				return;
+
 			var catalogues = 
 				ModUtilities.CatalogType.Collector | 
 				ModUtilities.CatalogType.Furniture | 

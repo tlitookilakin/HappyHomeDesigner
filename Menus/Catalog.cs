@@ -108,7 +108,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<ScreenPage> Pages = new();
 		private readonly List<ClickableTextureComponent> Tabs = new();
 		private readonly ClickableTextureComponent CloseButton;
-		private ClickableTextureComponent SettingsButton;
+		private ClickableTextureComponent? SettingsButton;
 		private readonly ClickableTextureComponent ToggleButton;
 		private int tab = 0;
 		private bool Toggled = true;
@@ -164,7 +164,7 @@ namespace HappyHomeDesigner.Menus
 			base.cleanupBeforeExit();
 			Game1.onScreenMenus.Remove(this);
 			Game1.player.TemporaryItem = null;
-			ActiveMenu.Value = null;
+			ActiveMenu.Value = null!;
 			Game1.isTimePaused = false;
 			for (int i = 0;i < Pages.Count; i++)
 				Pages[i].Exit();
@@ -332,13 +332,16 @@ namespace HappyHomeDesigner.Menus
 				return true;
 			}
 
-			var binds = Game1.options.menuButton;
-			for (int i = 0; i < binds.Length; i++)
+			if (ModEntry.config.CloseWithKey && Game1.activeClickableMenu is null)
 			{
-				if ((int)binds[i].key == (int)button)
+				var binds = Game1.options.menuButton;
+				for (int i = 0; i < binds.Length; i++)
 				{
-					exitThisMenu();
-					return true;
+					if ((int)binds[i].key == (int)button)
+					{
+						exitThisMenu();
+						return true;
+					}
 				}
 			}
 
