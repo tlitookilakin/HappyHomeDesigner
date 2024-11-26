@@ -314,9 +314,9 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
+		public override bool TryApplyButton(SButton button, bool IsPressed)
 		{
-			return MainPanel.TryApplyButton(button, IsPressed, pointer);
+			return MainPanel.TryApplyButton(button, IsPressed);
 		}
 
 		/// <inheritdoc/>

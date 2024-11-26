@@ -5,6 +5,7 @@ using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using System;
 
@@ -20,6 +21,9 @@ namespace HappyHomeDesigner
 		internal static Config config;
 		internal static ITranslationHelper i18n;
 
+		private static readonly PerScreen<int> LeftTriggerTime = new();
+		private static readonly PerScreen<int> RightTriggerTime = new();
+
 		public override void Entry(IModHelper helper)
 		{
 			monitor = Monitor;
@@ -33,18 +37,57 @@ namespace HappyHomeDesigner
 			helper.Events.Input.ButtonReleased += OnButtonReleased;
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
+			helper.Events.GameLoop.UpdateTicked += ProcessAnalogInput;
 
 			AssetManager.Init(Helper);
 			InventoryWatcher.Init(Helper);
 		}
 
-		private void OnWarp(object sender, WarpedEventArgs e)
+		private void ProcessAnalogInput(object? sender, UpdateTickedEventArgs e)
+		{
+			if (Catalog.ActiveMenu.Value is not Catalog catalog)
+				return;
+
+			var triggers = Game1.input.GetGamePadState().Triggers;
+
+			if (triggers.Left >= .2f && triggers.Right < .2f)
+			{
+				RightTriggerTime.Value = 0;
+				int time = ++LeftTriggerTime.Value;
+				var amount = triggers.Left.Map(.2f, 1.0f, 25f, 5f);
+
+				if (time >= amount)
+				{
+					LeftTriggerTime.Value = 0;
+					catalog.receiveScrollWheelAction(-1);
+				}
+			}
+			else if (triggers.Right >= .2f)
+			{
+				LeftTriggerTime.Value = 0;
+				int time = ++RightTriggerTime.Value;
+				var amount = triggers.Right.Map(.2f, 1.0f, 25f, 5f);
+
+				if (time >= amount)
+				{
+					RightTriggerTime.Value = 0;
+					catalog.receiveScrollWheelAction(1);
+				}
+			}
+			else
+			{
+				LeftTriggerTime.Value = 0;
+				RightTriggerTime.Value = 0;
+			}
+		}
+
+		private void OnWarp(object? sender, WarpedEventArgs e)
 		{
 			if (Catalog.ActiveMenu.Value is Catalog catalog)
 				catalog.exitThisMenuNoSound();
 		}
 
-		private void OnMouseScroll(object sender, MouseWheelScrolledEventArgs e)
+		private void OnMouseScroll(object? sender, MouseWheelScrolledEventArgs e)
 		{
 			if (e.Delta is not 0 && Catalog.ActiveMenu.Value is Catalog catalog)
 			{
@@ -57,19 +100,19 @@ namespace HappyHomeDesigner
 			}
 		}
 
-		private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
+		private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
 		{
 			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, true))
 				e.Button.Suppress();
 		}
 
-		private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)
+		private void OnButtonReleased(object? sender, ButtonReleasedEventArgs e)
 		{
 			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, false))
 				e.Button.Suppress();
 		}
 
-		private void Launched(object sender, GameLaunchedEventArgs e)
+		private void Launched(object? sender, GameLaunchedEventArgs e)
 		{
 			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
 			{

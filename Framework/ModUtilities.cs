@@ -330,7 +330,15 @@ namespace HappyHomeDesigner.Framework
 
 		public static bool UsingGamepad(this Options o)
 		{
+#if DEBUG
+			return o.SnappyMenus;
+#else
 			return o.gamepadControls && o.snappyMenus;
+#endif
 		}
+
+		/// <summary>Maps a float from an input range to an output range</summary>
+		public static float Map(this float value, float fromMin, float fromMax, float toMin, float toMax)
+			=> (float)Math.Clamp((value - fromMin) / (fromMax - fromMin), 0.0, 1.0) * (toMax - toMin) + toMin;
 	}
 }

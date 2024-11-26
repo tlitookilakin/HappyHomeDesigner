@@ -170,7 +170,7 @@ namespace HappyHomeDesigner.Menus
 
 		/// <summary>Do something when a keyboard, mouse, or controller button is pressed or released</summary>
 		/// <returns>True if it was handled and should be suppressed, otherwise false.</returns>
-		public abstract bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer);
+		public abstract bool TryApplyButton(SButton button, bool IsPressed);
 
 		private bool HandleFliterSnap(ref int x, ref int y, int direction, out ControlRegion? toRegion, bool inside)
 		{

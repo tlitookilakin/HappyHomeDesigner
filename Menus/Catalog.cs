@@ -11,6 +11,7 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO fix controller input
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
@@ -105,8 +106,8 @@ namespace HappyHomeDesigner.Menus
 
 		public readonly string Type;
 
-		private readonly List<ScreenPage> Pages = new();
-		private readonly List<ClickableTextureComponent> Tabs = new();
+		private readonly List<ScreenPage> Pages = [];
+		private readonly List<ClickableTextureComponent> Tabs = [];
 		private readonly ClickableTextureComponent CloseButton;
 		private ClickableTextureComponent? SettingsButton;
 		private readonly ClickableTextureComponent ToggleButton;
@@ -116,7 +117,6 @@ namespace HappyHomeDesigner.Menus
 		private readonly ControlRegionGrouped RootControl;
 		private readonly ControlRegion TopControl;
 		private readonly ControlRegion BodyControl;
-		private Vector2 PointerLocation;
 
 		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
@@ -127,12 +127,11 @@ namespace HappyHomeDesigner.Menus
 			Pages.Add(new BigObjectPage(items));
 			Pages.Add(new ItemPage(items));
 
-			if (Pages.Count is not 1)
-				for (int i = Pages.Count - 1; i >= 0; i--)
-					if (Pages[i].Count() is 0)
-						Pages.RemoveAt(i);
-					else
-						Tabs.Add(Pages[i].GetTab());
+			for (int i = Pages.Count - 1; i >= 0; i--)
+				if (Pages[i].Count() is 0 && (i != 0 || Pages.Count != 0))
+					Pages.RemoveAt(i);
+				else
+					Tabs.Add(Pages[i].GetTab());
 
 			if (Tabs.Count is 1)
 				Tabs.Clear();
@@ -156,7 +155,8 @@ namespace HappyHomeDesigner.Menus
 
 			Resize(Game1.uiViewport.ToRect());
 
-			PointerLocation = CloseButton.bounds.Center.ToVector2();
+			if (Game1.options.UsingGamepad())
+				Game1.setMousePosition(CloseButton.bounds.Center);
 
 			if (playSound)
 				Game1.playSound("bigSelect");
@@ -245,14 +245,6 @@ namespace HappyHomeDesigner.Menus
 				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
 
 			Pages[tab].DrawTooltip(b);
-		}
-
-		private void DrawCursor(SpriteBatch b)
-		{
-			if (!Game1.options.UsingGamepad())
-				return;
-
-			b.Draw(Game1.mouseCursors, PointerLocation, new(0, 0, 16, 16), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, 0f);
 		}
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -383,16 +375,18 @@ namespace HappyHomeDesigner.Menus
 			{
 				switch (button)
 				{
+					/*
 					case SButton.ControllerX:
 						receiveLeftClick((int)PointerLocation.X, (int)PointerLocation.Y, true);
 						return true;
+					*/
 
 					case SButton.LeftShoulder:
-						tab = (tab - 1) % Tabs.Count;
+						tab = (tab - 1 + Pages.Count) % Pages.Count;
 						return true;
 
 					case SButton.RightShoulder:
-						tab = (tab + 1) % Tabs.Count;
+						tab = (tab + 1) % Pages.Count;
 						return true;
 
 					case SButton.ControllerB:
@@ -410,18 +404,13 @@ namespace HappyHomeDesigner.Menus
 
 				int dir = GetMovementKey(button);
 				if (dir < 0)
-					return Pages[tab].TryApplyButton(button, IsPressed, PointerLocation);
+					return Pages[tab].TryApplyButton(button, IsPressed);
 				else
 					applyMovementKey(dir);
 				return true;
 			}
 
-			return Pages[tab].TryApplyButton(button, IsPressed, PointerLocation);
-		}
-
-		public void Focus(Rectangle rect)
-		{
-			PointerLocation = rect.Center.ToVector2();
+			return Pages[tab].TryApplyButton(button, IsPressed);
 		}
 
 		public override void applyMovementKey(int direction)
@@ -429,22 +418,16 @@ namespace HappyHomeDesigner.Menus
 			if (!Game1.options.UsingGamepad())
 				return;
 
-			if (direction > 3)
-			{
-				receiveLeftClick((int)PointerLocation.X, (int)PointerLocation.Y, true);
-				return;
-			}
-
 			(int mouse_x, int mouse_y) = Game1.getMousePosition();
+
 			ControlRegion? ctrl = RootControl;
 			while (ctrl != null && !ctrl.TryApplyMovement(ref mouse_x, ref mouse_y, direction, out ctrl));
-			PointerLocation = new(mouse_x, mouse_y);
+			Game1.setMousePosition(mouse_x, mouse_y);
 		}
 
 		private bool BodyMovement(ref int mouseX, ref int mouseY, int direction, out ControlRegion? toRegion, bool isInside)
 		{
-			toRegion = Pages[tab].RootControl;
-			return false;
+			return Pages[tab].RootControl.TryApplyMovement(ref mouseX, ref mouseY, direction, out toRegion);
 		}
 
 		private static int GetMovementKey(SButton button)
@@ -455,6 +438,12 @@ namespace HappyHomeDesigner.Menus
 				SButton.DPadRight => Direction.RIGHT,
 				SButton.DPadLeft => Direction.LEFT,
 				SButton.DPadDown => Direction.DOWN,
+#if DEBUG
+				SButton.Up => Direction.UP,
+				SButton.Down => Direction.DOWN,
+				SButton.Right => Direction.RIGHT,
+				SButton.Left => Direction.LEFT,
+#endif
 				_ => -1
 			};
 		}

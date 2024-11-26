@@ -189,7 +189,7 @@ namespace HappyHomeDesigner.Menus
 			DisplayChanged?.Invoke();
 		}
 
-		public bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
+		public bool TryApplyButton(SButton button, bool IsPressed)
 		{
 			if (!IsPressed)
 				return false;
@@ -197,14 +197,9 @@ namespace HappyHomeDesigner.Menus
 			switch (button)
 			{
 				case SButton.ControllerY:
-					if (TrySelect((int)pointer.X, (int)pointer.Y, out int index))
+					(int mx, int my) = Game1.getMousePosition();
+					if (TrySelect(mx, my, out int index))
 						FilteredItems[index].ToggleFavorite(true);
-					break;
-				case SButton.LeftTrigger:
-					scrollBar.AdvanceRows(-5);
-					break;
-				case SButton.RightTrigger:
-					scrollBar.AdvanceRows(5);
 					break;
 				case SButton.ControllerBack:
 					search.SelectMe();

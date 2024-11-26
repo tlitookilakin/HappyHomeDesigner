@@ -215,9 +215,9 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override bool TryApplyButton(SButton button, bool IsPressed, Vector2 pointer)
+		public override bool TryApplyButton(SButton button, bool IsPressed)
 		{
-			return ActivePanel.TryApplyButton(button, IsPressed, pointer);
+			return ActivePanel.TryApplyButton(button, IsPressed);
 		}
 
 		public override void DeleteActiveItem(bool playSound)
