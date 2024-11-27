@@ -27,6 +27,8 @@ namespace HappyHomeDesigner.Menus
 		/// <returns>The number of items this page contains</returns>
 		public abstract int Count();
 
+		protected ClickableTextureComponent InventoryButton = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(16, 48, 16, 16), 4f, true);
+
 		public virtual void Resize(Rectangle region)
 		{
 			width = region.Width;
@@ -154,6 +156,24 @@ namespace HappyHomeDesigner.Menus
 				y += FILTER_HEIGHT - FILTER_SCALE;
 				sx += 10;
 				i++;
+			}
+		}
+
+		public override void draw(SpriteBatch b)
+		{
+			InventoryButton.draw(b);
+		}
+
+		/// <inheritdoc/>
+		public override void receiveLeftClick(int x, int y, bool playSound = true)
+		{
+			base.receiveLeftClick(x, y, playSound);
+			if (InventoryButton.containsPoint(x, y))
+			{
+				var menu = Catalog.ActiveMenu.Value;
+				menu.InventoryOpen = !menu.InventoryOpen;
+				if (playSound)
+					Game1.playSound(menu.InventoryOpen ? "bigSelect" : "bigDeSelect");
 			}
 		}
 

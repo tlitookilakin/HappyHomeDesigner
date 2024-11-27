@@ -31,7 +31,7 @@ namespace HappyHomeDesigner.Menus
 		protected int iconRow;
 		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
 		protected readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
-		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
+		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		internal static HashSet<string> knownIDs = new();
@@ -112,8 +112,8 @@ namespace HappyHomeDesigner.Menus
 
 			base.draw(b);
 			DrawFilters(b, iconRow, 1, xPositionOnScreen, yPositionOnScreen);
-			MainPanel.draw(b);
 			TrashSlot.draw(b);
+			MainPanel.draw(b);
 
 			if (variantIndex is >= 0)
 			{
@@ -167,7 +167,11 @@ namespace HappyHomeDesigner.Menus
 				yPositionOnScreen + top_margin
 			);
 			TrashSlot.setPosition(
-				MainPanel.xPositionOnScreen + MainPanel.width - 48 + GridPanel.BORDER_WIDTH,
+				MainPanel.xPositionOnScreen + MainPanel.width - 64 + GridPanel.BORDER_WIDTH,
+				MainPanel.yPositionOnScreen + MainPanel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
+			);
+			InventoryButton.setPosition(
+				MainPanel.xPositionOnScreen + MainPanel.width - 128 + GridPanel.BORDER_WIDTH - GridPanel.MARGIN_BOTTOM,
 				MainPanel.yPositionOnScreen + MainPanel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
 			);
 		}

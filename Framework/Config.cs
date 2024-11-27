@@ -54,6 +54,7 @@ namespace HappyHomeDesigner.Framework
 		public bool GMCMButton { get; set; }
 		public KeybindList QuickDelete { get; set; }
 		public bool PickupCraftables { get; set; }
+		public bool ExpandSearch { get; set; }
 
 		public Config()
 		{
@@ -94,6 +95,7 @@ namespace HappyHomeDesigner.Framework
 				() => ModEntry.i18n.Get("config.MagnifyScale.desc"),
 				1f, 5f, .1f
 			);
+			gmcm.QuickBind(man, this, nameof(ExpandSearch));
 
 			gmcm.QuickPage(man, "controls");
 			gmcm.QuickBind(man, this, nameof(GiveModifier));
@@ -131,6 +133,7 @@ namespace HappyHomeDesigner.Framework
 			GMCMButton = true;
 			QuickDelete = new(SButton.Delete);
 			PickupCraftables = true;
+			ExpandSearch = true;
 		}
 
 		private void Save()

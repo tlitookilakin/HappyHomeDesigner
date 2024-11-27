@@ -97,7 +97,7 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.Click(x, y);
 		}
 
-		public void Resize(int width, int height, int x, int y)
+		public void Resize(int width, int height, int x, int y, int search_right_offset = (64 + 4) * 2 - BORDER_WIDTH)
 		{
 			this.width = width / CellWidth * CellWidth;
 			this.height = Math.Max(height / CellHeight * CellHeight, CellHeight);
@@ -111,6 +111,8 @@ namespace HappyHomeDesigner.Menus
 
 			search.X = xPositionOnScreen - BORDER_WIDTH;
 			search.Y = yPositionOnScreen + this.height + BORDER_WIDTH + MARGIN_BOTTOM + 8;
+			search.SmallWidth = this.width - search_right_offset;
+			search.FullWidth = this.width + BORDER_WIDTH + 8;
 		}
 
 		public override bool isWithinBounds(int x, int y)

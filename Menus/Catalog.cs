@@ -151,6 +151,12 @@ namespace HappyHomeDesigner.Menus
 				Game1.playSound("bigSelect");
 		}
 
+		public bool InventoryOpen
+		{
+			get => PlayerInventory.Visible;
+			set => PlayerInventory.Visible = value;
+		}
+
 		private void UpdateGMCMButton(bool enabled)
 		{
 			if (!IGMCM.Installed)
@@ -340,9 +346,6 @@ namespace HappyHomeDesigner.Menus
 
 		private bool TryApplyButtonImpl(SButton button, bool IsPressed)
 		{
-			if (IsPressed && button == SButton.Home)
-				PlayerInventory.Visible = !PlayerInventory.Visible;
-
 			if (ModEntry.config.ToggleShortcut.JustPressed())
 			{
 				Toggle(true);

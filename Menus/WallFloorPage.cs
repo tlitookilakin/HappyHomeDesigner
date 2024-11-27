@@ -109,8 +109,9 @@ namespace HappyHomeDesigner.Menus
 		{
 			ActivePanel.DrawShadow(b);
 			DrawFilters(b, 16, 2, xPositionOnScreen, yPositionOnScreen);
-			ActivePanel.draw(b);
+			base.draw(b);
 			undoRedo.Draw(b);
+			ActivePanel.draw(b);
 		}
 
 		public override void performHoverAction(int x, int y)
@@ -123,8 +124,10 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			WallPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
-			FloorsPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
+			int button_width = 128 + 64 - 8;
+
+			WallPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen, button_width);
+			FloorsPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen, button_width);
 			MoveButtons();
 		}
 
@@ -134,7 +137,12 @@ namespace HappyHomeDesigner.Menus
 			undoRedo.bounds = new(
 				ActivePanel.width - 128 + ActivePanel.xPositionOnScreen, 
 				ActivePanel.height + ActivePanel.yPositionOnScreen + GridPanel.MARGIN_BOTTOM,
-				128 + (GridPanel.BORDER_WIDTH * 2), 64 + (GridPanel.BORDER_WIDTH * 2));
+				128 + (GridPanel.BORDER_WIDTH * 2), 64 + (GridPanel.BORDER_WIDTH * 2)
+			);
+			InventoryButton.setPosition(
+				undoRedo.bounds.X - 64 + 8,
+				undoRedo.bounds.Y + GridPanel.BORDER_WIDTH
+			);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -144,6 +152,8 @@ namespace HappyHomeDesigner.Menus
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
+			base.receiveLeftClick(x, y, playSound);
+
 			if (!ActivePanel.isWithinBounds(x, y) && TrySelectFilter(x, y, playSound))
 			{
 				ActivePanel = (current_filter & 1) is not 0 ? FloorsPanel : WallPanel;

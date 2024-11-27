@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
@@ -28,6 +29,9 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
+		public int FullWidth = 0;
+		public int SmallWidth = 0;
+
 		private string[] source_map;
 		private IReadOnlyList<IGridItem> source;
 		private IReadOnlyList<string> filtered_map;
@@ -43,8 +47,11 @@ namespace HappyHomeDesigner.Menus
 
 		public void Reset()
 		{
+			if (Text == string.Empty)
+				return;
+
 			Text = string.Empty;
-			Filter(true);
+			TextChanged();
 		}
 
 		public void Refresh()
@@ -90,18 +97,26 @@ namespace HappyHomeDesigner.Menus
 			if (Selected)
 			{
 				if (iconOpacity is not 0f)
+				{
 					iconOpacity = MathF.Max(0f, iconOpacity - .07f);
+					if (ModEntry.config.ExpandSearch)
+						Width = (int)Utility.Lerp(SmallWidth, FullWidth, 1f - iconOpacity);
+				}
 			} else
 			{
 				if (iconOpacity is not 1f)
+				{
 					iconOpacity = MathF.Min(1f, iconOpacity += .07f);
+					if (ModEntry.config.ExpandSearch)
+						Width = (int)Utility.Lerp(SmallWidth, FullWidth, 1f - iconOpacity);
+				}
 			}
 
 			if (drawShadow)
-				IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X - 4, Y - 4, Width + 9, Height + 12, Color.Black * .4f, 1f, false);
+				IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X - 4, Y - 4, Width + 8, Height + 16, Color.Black * .4f, 1f, false);
 
 			//outline
-			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 8, Width + 9, Height + 12, Color.White, 1f, false);
+			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 8, Width + 8, Height + 16, Color.White, 1f, false);
 
 			// box
 			DrawInputNoFX(b);

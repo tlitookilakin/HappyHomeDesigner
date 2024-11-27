@@ -16,7 +16,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly HashSet<string> knownIDs = new();
 		private readonly GridPanel Panel = new(80, 80, true);
 		private readonly ClickableTextureComponent TrashSlot
-			= new(new(0, 0, 48, 48), Catalog.MenuTexture, new(32, 48, 16, 16), 3f, true);
+			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
 		public ItemPage(IEnumerable<ISalable> source)
 		{
@@ -45,8 +45,9 @@ namespace HappyHomeDesigner.Menus
 		public override void draw(SpriteBatch b)
 		{
 			Panel.DrawShadow(b);
-			Panel.draw(b);
 			TrashSlot.draw(b);
+			base.draw(b);
+			Panel.draw(b);
 		}
 
 		public override void performHoverAction(int x, int y)
@@ -61,7 +62,11 @@ namespace HappyHomeDesigner.Menus
 
 			Panel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			TrashSlot.setPosition(
-				Panel.xPositionOnScreen + Panel.width - 48 + GridPanel.BORDER_WIDTH,
+				Panel.xPositionOnScreen + Panel.width - 64 + GridPanel.BORDER_WIDTH,
+				Panel.yPositionOnScreen + Panel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
+			);
+			InventoryButton.setPosition(
+				Panel.xPositionOnScreen + Panel.width - 128 + GridPanel.BORDER_WIDTH - GridPanel.MARGIN_BOTTOM,
 				Panel.yPositionOnScreen + Panel.height + GridPanel.BORDER_WIDTH + GridPanel.MARGIN_BOTTOM
 			);
 		}
@@ -73,6 +78,7 @@ namespace HappyHomeDesigner.Menus
 
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
+			base.receiveLeftClick(x, y, playSound);
 			if (Panel.TrySelect(x, y, out int index))
 			{
 				var item = Panel.Items[index] as ItemEntry;

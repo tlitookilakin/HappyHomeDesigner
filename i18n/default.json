@@ -73,5 +73,7 @@
 	"config.controls.name": "Controls",
 	"config.controls.desc": "Key bindings & input options.",
 	"config.PickupCraftables.name": "Pickup Craftables",
-	"config.PickupCraftables.desc": "Allow instant pickup/move of craftables."
+	"config.PickupCraftables.desc": "Allow instant pickup/move of craftables.",
+	"config.ExpandSearch.name": "Expanding Search",
+	"config.ExpandSearch.desc": "Whether or not the search bar should expand to full width when hovered."
 }
