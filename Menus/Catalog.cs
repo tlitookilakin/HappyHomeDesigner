@@ -6,11 +6,14 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
+	// TODO filter temp item deletion
+	// TODO pass on rightclick
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
@@ -113,7 +116,7 @@ namespace HappyHomeDesigner.Menus
 		private int tab = 0;
 		private bool Toggled = true;
 		private Point screenSize;
-
+		private InventoryWrapper PlayerInventory = new();
 
 		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
@@ -182,6 +185,8 @@ namespace HappyHomeDesigner.Menus
 			if (!Toggled)
 				return;
 
+			PlayerInventory.performHoverAction(x, y);
+
 			Pages[tab].performHoverAction(x, y);
 		}
 
@@ -222,6 +227,8 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < Tabs.Count; i++)
 				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
 
+			PlayerInventory.draw(b);
+
 			Pages[tab].DrawTooltip(b);
 		}
 
@@ -234,6 +241,12 @@ namespace HappyHomeDesigner.Menus
 
 			if (!Toggled)
 				return;
+
+			if (PlayerInventory.isWithinBounds(x, y))
+			{
+				PlayerInventory.receiveLeftClick(x, y);
+				return;
+			}
 
 			Pages[tab].receiveLeftClick(x, y, playSound);
 			for (int i = 0; i < Tabs.Count; i++)
@@ -260,6 +273,9 @@ namespace HappyHomeDesigner.Menus
 
 		public override bool isWithinBounds(int x, int y)
 		{
+			if (PlayerInventory.Visible && PlayerInventory.isWithinBounds(x, y))
+				return true;
+
 			if (ToggleButton.containsPoint(x, y))
 				return true;
 
@@ -296,6 +312,13 @@ namespace HappyHomeDesigner.Menus
 
 			CloseButton.bounds.Location = new(40, 52);
 			ToggleButton.bounds.Location = new(16, bounds.Height - 64);
+
+			var currentTab = Pages[tab];
+
+			PlayerInventory.movePosition(
+				Math.Max(currentTab.width + currentTab.xPositionOnScreen + 48 + 3 + 3, (bounds.Width - PlayerInventory.width) / 2) - PlayerInventory.xPositionOnScreen, 
+				(ToggleButton.bounds.Bottom - PlayerInventory.height) - PlayerInventory.yPositionOnScreen
+			);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -317,6 +340,9 @@ namespace HappyHomeDesigner.Menus
 
 		private bool TryApplyButtonImpl(SButton button, bool IsPressed)
 		{
+			if (IsPressed && button == SButton.Home)
+				PlayerInventory.Visible = !PlayerInventory.Visible;
+
 			if (ModEntry.config.ToggleShortcut.JustPressed())
 			{
 				Toggle(true);
