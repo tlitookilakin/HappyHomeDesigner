@@ -17,6 +17,7 @@ namespace HappyHomeDesigner.Patches
 	{
 		public const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
 		private static Action<Item, Item>? getOneFrom;
+		private static readonly AccessTools.FieldRef<Chest, int> currentFrame = AccessTools.FieldRefAccess<Chest, int>("currentLidFrame");
 
 		internal static void Apply(Harmony harmony)
 		{
@@ -190,6 +191,9 @@ namespace HappyHomeDesigner.Patches
 				}
 
 				newchest.playerChoiceColor.Value = chest.playerChoiceColor.Value;
+				currentFrame(newchest) = currentFrame(chest);
+				newchest.startingLidFrame.Value = chest.startingLidFrame.Value;
+				newchest.playerChest.Value = chest.playerChest.Value;
 				result = newchest;
 				return true;
 			}
