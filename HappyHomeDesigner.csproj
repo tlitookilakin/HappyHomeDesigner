@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>2.2.0</Version>
+		<Version>2.3.0</Version>
 		<Authors>tlitookilakin</Authors>
 		<Name>Happy Home Designer</Name>
 		<UniqueID>tlitookilakin.HappyHomeDesigner</UniqueID>
