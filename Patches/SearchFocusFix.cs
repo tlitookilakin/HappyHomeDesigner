@@ -36,7 +36,7 @@ namespace HappyHomeDesigner.Patches
 			GamePadState padState = Game1.input.GetGamePadState();
 
 			if (Game1.input.GetMouseState().RightButton is ButtonState.Pressed)
-				(Game1.keyboardDispatcher.Subscriber as SearchBox).Reset();
+				(Game1.keyboardDispatcher.Subscriber as SearchBox)?.Reset();
 
 			if (keyState.IsKeyDown(Keys.Escape) || padState.IsButtonDown(Buttons.B) || padState.IsButtonDown(Buttons.Back))
 			{

@@ -12,8 +12,6 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO filter temp item deletion
-	// TODO pass on rightclick
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
@@ -156,6 +154,16 @@ namespace HappyHomeDesigner.Menus
 			get => PlayerInventory.Visible;
 			set => PlayerInventory.Visible = value;
 		}
+
+		public bool HideActiveObject
+		{
+			get
+			{
+				(int mx, int my) = Game1.getMousePosition(true);
+				return PlayerInventory.Visible && PlayerInventory.isWithinBounds(mx, my);
+			}
+		}
+			
 
 		private void UpdateGMCMButton(bool enabled)
 		{
@@ -342,6 +350,12 @@ namespace HappyHomeDesigner.Menus
 
 			if (playSound)
 				Game1.playSound("shwip");
+		}
+
+		public override void receiveRightClick(int x, int y, bool playSound = true)
+		{
+			PlayerInventory.receiveRightClick(x, y, playSound);
+			Pages[tab].receiveRightClick(x, y, playSound);
 		}
 
 		private bool TryApplyButtonImpl(SButton button, bool IsPressed)

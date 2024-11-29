@@ -1,4 +1,6 @@
 ﻿using HappyHomeDesigner.Integration;
+using HappyHomeDesigner.Menus;
+using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,6 +11,7 @@ using StardewValley;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
+using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -46,6 +49,8 @@ namespace HappyHomeDesigner.Framework
 		{
 			return
 				item is not null && item is not Tool && item.canBeTrashed() && 
+				(item is not StorageFurniture storage || storage.heldItems.Count == 0) &&
+				!item.modData.ContainsKey(CraftablePlacement.UNIQUE_ITEM_FLAG) &&
 				knownIDs is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 

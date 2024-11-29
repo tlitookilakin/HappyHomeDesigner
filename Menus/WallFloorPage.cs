@@ -150,6 +150,11 @@ namespace HappyHomeDesigner.Menus
 			ActivePanel.receiveScrollWheelAction(direction);
 		}
 
+		public override void receiveRightClick(int x, int y, bool playSound = true)
+		{
+			ActivePanel.receiveRightClick(x, y, playSound);
+		}
+
 		public override void receiveLeftClick(int x, int y, bool playSound = true)
 		{
 			base.receiveLeftClick(x, y, playSound);

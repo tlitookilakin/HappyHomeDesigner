@@ -121,5 +121,10 @@ namespace HappyHomeDesigner.Menus
 		{
 			DeleteActiveItem(playSound, knownIDs);
 		}
+
+		public override void receiveRightClick(int x, int y, bool playSound = true)
+		{
+			Panel.receiveRightClick(x, y, playSound);
+		}
 	}
 }

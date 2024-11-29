@@ -6,6 +6,10 @@ using System.Reflection;
 using HappyHomeDesigner.Menus;
 using System;
 using StardewValley.ItemTypeDefinitions;
+using StardewValley.Menus;
+using System.Collections.Generic;
+using System.Reflection.Emit;
+using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -37,7 +41,61 @@ namespace HappyHomeDesigner.Patches
 				typeof(Utility).GetMethod(nameof(Utility.SortAllFurnitures)),
 				prefix: new(typeof(Misc), nameof(SortErrorFurniture))
 			);
+
+			harmony.TryPatch(
+				typeof(Toolbar).GetMethod(nameof(Toolbar.draw), BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public),
+				prefix: new(typeof(Misc), nameof(SkipToolbar))
+			);
+
+			harmony.TryPatch(
+				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveLeftClick)),
+				prefix: new(typeof(Misc), nameof(SkipToolbar))
+			);
+
+			harmony.TryPatch(
+				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveRightClick)),
+				prefix: new(typeof(Misc), nameof(SkipToolbar))
+			);
+
+			harmony.TryPatch(
+				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveRightClick)),
+				prefix: new(typeof(Misc), nameof(SkipToolbar))
+			);
+
+			harmony.TryPatch(
+				typeof(Game1).GetMethod(nameof(Game1.drawMouseCursor)),
+				transpiler: new(typeof(Misc), nameof(DisableHeldItemDraw))
+			);
 		}
+
+		private static IEnumerable<CodeInstruction> DisableHeldItemDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
+		{
+			var il = new CodeMatcher(source, gen);
+			Label? jumpTarget = null;
+
+			il
+				.MatchStartForward(
+					new(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.currentLocation))!.GetMethod),
+					new(OpCodes.Callvirt, typeof(SObject).GetMethod(nameof(SObject.drawPlacementBounds)))
+				);
+
+			il.MatchEndBackwards(
+				new CodeMatch(c => c.Branches(out jumpTarget))
+			);
+				il.Advance(1)
+				.InsertAndAdvance(
+					new(OpCodes.Call, typeof(Misc).GetMethod(nameof(ShouldSkipItemDraw))),
+					new(OpCodes.Brtrue, jumpTarget)
+				);
+
+			return il.InstructionEnumeration();
+		}
+
+		public static bool ShouldSkipItemDraw()
+			=> Catalog.ActiveMenu.Value is Catalog c && c.HideActiveObject;
+
+		private static bool SkipToolbar(Toolbar __instance)
+			=> !(Catalog.ActiveMenu.Value is Catalog c && c.InventoryOpen);
 
 		private static string EditDescription(string original, Furniture __instance)
 		{
@@ -54,7 +112,8 @@ namespace HappyHomeDesigner.Patches
 		}
 
 		private static bool SetFreePlace(bool free_place_allowed)
-			=> free_place_allowed || Catalog.MenuVisible();
+			=> (Catalog.ActiveMenu.Value is not Catalog c) ? 
+			free_place_allowed : !c.HideActiveObject;
 
 		private static Exception? ReplaceInvalidFurniture(Exception __exception, ParsedItemData data, ref Item __result, FurnitureDataDefinition __instance)
 		{

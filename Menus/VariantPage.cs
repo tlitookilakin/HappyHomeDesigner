@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using HappyHomeDesigner.Patches;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -294,10 +295,31 @@ namespace HappyHomeDesigner.Menus
 
 				DeleteActiveItem(false, knownIDs);
 
-				Game1.player.TemporaryItem = entry.GetOne();
-				if (playSound)
-					Game1.playSound("stoneStep");
+				var allowSet = true;
+				if (Game1.player.TemporaryItem is Item current)
+				{
+					current.onDetachedFromParent();
+					if (!Game1.player.addItemToInventoryBool(current))
+					{
+						if (current.modData.ContainsKey(CraftablePlacement.UNIQUE_ITEM_FLAG))
+							allowSet = false;
+						else
+							Game1.createItemDebris(current, Game1.player.Position, -1);
+					}
+				}
+
+				if (allowSet)
+				{
+					Game1.player.TemporaryItem = entry.GetOne();
+					if (playSound)
+						Game1.playSound("stoneStep");
+				}
 			}
+		}
+
+		public override void receiveRightClick(int x, int y, bool playSound = true)
+		{
+			MainPanel.receiveRightClick(x, y, playSound);
 		}
 
 		public override bool isWithinBounds(int x, int y)

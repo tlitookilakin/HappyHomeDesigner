@@ -15,7 +15,7 @@ namespace HappyHomeDesigner.Patches
 {
 	internal static class CraftablePlacement
 	{
-		const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
+		public const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
 		private static Action<Item, Item>? getOneFrom;
 
 		internal static void Apply(Harmony harmony)

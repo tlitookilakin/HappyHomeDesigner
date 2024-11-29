@@ -29,8 +29,26 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
-		public int FullWidth = 0;
-		public int SmallWidth = 0;
+		public int FullWidth
+		{
+			get => fullWidth;
+			set
+			{
+				fullWidth = value;
+				if (iconOpacity == 0f)
+					Width = fullWidth;
+			}
+		}
+		public int SmallWidth
+		{
+			get => smallWidth;
+			set
+			{
+				smallWidth = value;
+				if (iconOpacity == 1f)
+					Width = smallWidth;
+			}
+		}
 
 		private string[] source_map;
 		private IReadOnlyList<IGridItem> source;
@@ -38,6 +56,8 @@ namespace HappyHomeDesigner.Menus
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
 		private float iconOpacity = 1f;
+		private int fullWidth = 0;
+		private int smallWidth = 0;
 
 		public SearchBox(Texture2D textBoxTexture, Texture2D caretTexture, SpriteFont font, Color textColor) 
 			: base(textBoxTexture, caretTexture, font, textColor)

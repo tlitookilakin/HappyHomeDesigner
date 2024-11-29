@@ -5,7 +5,6 @@ using StardewValley.Menus;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO hide toolbar while visible
 	public class InventoryWrapper : InventoryMenu
 	{
 		public const int BORDER_WIDTH = 16;
@@ -33,10 +32,10 @@ namespace HappyHomeDesigner.Menus
 
 				if (isInside)
 				{
-					if (Game1.player.TemporaryItem is Item held && Game1.player.CursorSlotItem is null)
+					if (Game1.player.TemporaryItem is Item held && Game1.player.CursorSlotItem is null && held.isPlaceable())
 					{
 						held?.onDetachedFromParent();
-						Game1.player.TemporaryItem = null;
+						Game1.player.ActiveItem = null;
 						Game1.player.CursorSlotItem = held;
 					}
 				}
@@ -46,7 +45,7 @@ namespace HappyHomeDesigner.Menus
 					hovered = null;
 					hoverText = null;
 
-					if (Game1.player.CursorSlotItem is Item held)
+					if (Game1.player.CursorSlotItem is Item held && held.isPlaceable())
 					{
 						held?.onDetachedFromParent();
 						Game1.player.CursorSlotItem = null;
@@ -66,6 +65,8 @@ namespace HappyHomeDesigner.Menus
 
 			if (Game1.player.CursorSlotItem is Item grabbed)
 				grabbed.drawInMenu(b, new(mx + 16, my + 16), 1f);
+			else if (Game1.player.ActiveItem is Item active && isInside)
+				active.drawInMenu(b, new(mx + 16, my + 16), 1f);
 
 			if (hoverText != null)
 			{
@@ -88,17 +89,35 @@ namespace HappyHomeDesigner.Menus
 			setHeldItem(rightClick(x, y, takeHeldItem()));
 		}
 
+		public override bool isWithinBounds(int x, int y)
+		{
+			return
+				x >= xPositionOnScreen - BORDER_WIDTH &&
+				x <= xPositionOnScreen + width + BORDER_WIDTH &&
+				y >= yPositionOnScreen - BORDER_WIDTH * 3 - 4 &&
+				y <= yPositionOnScreen + height + BORDER_WIDTH * 2 + 8;
+		}
+
 		private void setHeldItem(Item held)
 		{
-			held?.onDetachedFromParent();
 			Game1.player.CursorSlotItem = held;
 		}
 
-		private Item takeHeldItem()
+		private static Item? takeHeldItem()
 		{
-			Item cursorSlotItem = Game1.player.CursorSlotItem;
-			Game1.player.CursorSlotItem = null;
-			return cursorSlotItem;
+			if (Game1.player.CursorSlotItem is Item cursorItem)
+			{
+				cursorItem?.onDetachedFromParent();
+				Game1.player.CursorSlotItem = null;
+				return cursorItem;
+			}
+			if (Game1.player.ActiveItem is Item activeItem)
+			{
+				activeItem.onDetachedFromParent();
+				Game1.player.ActiveItem = null;
+				return activeItem;
+			}
+			return null;
 		}
 	}
 }
