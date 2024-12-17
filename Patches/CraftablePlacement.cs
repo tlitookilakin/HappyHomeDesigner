@@ -16,7 +16,6 @@ namespace HappyHomeDesigner.Patches
 	internal static class CraftablePlacement
 	{
 		public const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
-		private static Action<Item, Item>? getOneFrom;
 		private static readonly AccessTools.FieldRef<Chest, int> currentFrame = AccessTools.FieldRefAccess<Chest, int>("currentLidFrame");
 
 		internal static void Apply(Harmony harmony)
@@ -31,11 +30,6 @@ namespace HappyHomeDesigner.Patches
 				typeof(SObject).GetMethod(nameof(SObject.placementAction)),
 				postfix: new(typeof(CraftablePlacement), nameof(UpdateIfNeeded))
 			);
-
-			if (typeof(Item).GetMethod("GetOneCopyFrom", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public) is MethodInfo info)
-				getOneFrom = info.CreateDelegate<Action<Item, Item>>();
-			else
-				ModEntry.monitor.Log("Failed to reflect GetOneCopyFrom", StardewModdingAPI.LogLevel.Error);
 		}
 
 		private static void UpdateIfNeeded(bool __result, GameLocation location, int x, int y, Farmer who, SObject __instance)
@@ -135,7 +129,7 @@ namespace HappyHomeDesigner.Patches
 				return null;
 			}
 
-			getOneFrom!(newItem, item);
+			newItem.CopyFieldsFrom(item);
 			Swap(item.heldObject, newItem.heldObject);
 			newItem.modData[UNIQUE_ITEM_FLAG] = "T";
 			newItem.ItemId = item.ItemId;
