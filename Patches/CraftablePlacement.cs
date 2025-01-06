@@ -8,7 +8,6 @@ using StardewValley.Objects;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
@@ -30,9 +29,22 @@ namespace HappyHomeDesigner.Patches
 				typeof(SObject).GetMethod(nameof(SObject.placementAction)),
 				postfix: new(typeof(CraftablePlacement), nameof(UpdateIfNeeded))
 			);
+
+			harmony.TryPatch(
+				typeof(Item).GetMethod(nameof(Item.canStackWith)),
+				postfix: new(typeof(CraftablePlacement), nameof(DisableSpecialStacking))
+			);
 		}
 
-		private static void UpdateIfNeeded(bool __result, GameLocation location, int x, int y, Farmer who, SObject __instance)
+		private static bool DisableSpecialStacking(bool ret, Item __instance, ISalable other)
+		{
+			if (__instance.modData.ContainsKey(UNIQUE_ITEM_FLAG) || other is not Item other_item || other_item.modData.ContainsKey(UNIQUE_ITEM_FLAG))
+				return false;
+
+			return ret;
+		}
+
+		private static void UpdateIfNeeded(bool __result, GameLocation location, int x, int y, SObject __instance)
 		{
 			if (!__result || !__instance.modData.ContainsKey(UNIQUE_ITEM_FLAG))
 				return;
@@ -235,9 +247,7 @@ namespace HappyHomeDesigner.Patches
 
 		private static void Swap<T>(NetRef<T> from, NetRef<T> to) where T : class, INetObject<INetSerializable>
 		{
-			T held = from.Value;
-			from.Value = null!;
-			to.Value = held;
+			(to.Value, from.Value) = (from.Value, to.Value);
 		}
 	}
 }
