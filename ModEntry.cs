@@ -10,6 +10,9 @@ using System;
 
 namespace HappyHomeDesigner
 {
+	// TODO add blueprint book item
+	// TODO add blueprint book UI
+
 	public class ModEntry : Mod
 	{
 		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";

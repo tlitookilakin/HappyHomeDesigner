@@ -11,13 +11,16 @@ using StardewValley;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
+using StardewValley.Mods;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using static StardewValley.Menus.CharacterCustomization;
 
 namespace HappyHomeDesigner.Framework
 {
@@ -301,6 +304,34 @@ namespace HappyHomeDesigner.Framework
 			}
 			info = null;
 			return false;
+		}
+
+		public static string SanitizeFilename(this string fname)
+		{
+			while (fname.EndsWith('.'))
+				fname = fname[..^1];
+
+			return fname.ReplaceAll(' ', Path.GetInvalidFileNameChars());
+		}
+
+		public static string ReplaceAll(this string s, char r, params char[] chars)
+		{
+			return string.Create(s.Length, (chars, s, r), static (o, s) => {
+				for (int i = 0; i < o.Length; i++)
+					o[i] = Array.IndexOf(s.chars, s.s[i]) == -1 ?
+						s.s[i] : s.r;
+			});
+		}
+
+		public static void SetFrom(this ModDataDictionary dict, IDictionary<string, string> source)
+		{
+			foreach (var pair in source)
+				dict[pair.Key] = pair.Value;
+		}
+
+		public static Dictionary<string, string> Get(this ModDataDictionary dict)
+		{
+			return new Dictionary<string, string>(dict.Pairs);
 		}
 	}
 }
