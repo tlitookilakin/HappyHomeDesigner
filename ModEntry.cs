@@ -64,6 +64,11 @@ namespace HappyHomeDesigner
 		{
 			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, true))
 				e.Button.Suppress();
+
+			#if DEBUG
+			if (e.Button is SButton.Home && Game1.currentLocation is GameLocation where)
+				Game1.activeClickableMenu = new BlueprintMenu(where);
+			#endif
 		}
 
 		private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)

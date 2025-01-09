@@ -308,18 +308,19 @@ namespace HappyHomeDesigner.Framework
 
 		public static string SanitizeFilename(this string fname)
 		{
-			while (fname.EndsWith('.'))
-				fname = fname[..^1];
-
-			return fname.ReplaceAll(' ', Path.GetInvalidFileNameChars());
-		}
-
-		public static string ReplaceAll(this string s, char r, params char[] chars)
-		{
-			return string.Create(s.Length, (chars, s, r), static (o, s) => {
-				for (int i = 0; i < o.Length; i++)
-					o[i] = Array.IndexOf(s.chars, s.s[i]) == -1 ?
-						s.s[i] : s.r;
+			return string.Create(fname.Length, fname, static (o, s) =>
+			{
+				for (int i = 0; i < o.Length; i++) {
+					char c = s[i];
+					o[i] = c switch
+					{
+						>= '0' and <= '9' => c,
+						>= 'a' and <= 'z' => c,
+						>= 'A' and <= 'Z' => c,
+						'.' or '_' or '-' => c,
+						_ => '_'
+					};
+				}
 			});
 		}
 

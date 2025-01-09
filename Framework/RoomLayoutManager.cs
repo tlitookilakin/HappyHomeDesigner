@@ -6,11 +6,11 @@ namespace HappyHomeDesigner.Framework
 {
 	public static class RoomLayoutManager
 	{
-		public const string PATH = ModEntry.MOD_ID + "/Layouts/";
+		public const string PATH = "Layouts";
 
 		public static List<RoomLayoutData> GetLayoutsFor(GameLocation where)
 		{
-			var index = ModEntry.helper.Data.ReadGlobalData<IList<string>>($"{PATH}/{where.Name}/_INDEX");
+			var index = ModEntry.helper.Data.ReadGlobalData<IList<string>>($"{PATH}..{where.Name}.._INDEX");
 			if (index is null)
 				return [];
 
@@ -18,7 +18,7 @@ namespace HappyHomeDesigner.Framework
 
 			foreach (var name in index)
 			{
-				var entry = ModEntry.helper.Data.ReadGlobalData<RoomLayoutData>($"{PATH}/{where.Name}/{name}");
+				var entry = ModEntry.helper.Data.ReadGlobalData<RoomLayoutData>($"{PATH}..{where.Name}..{name}");
 				if (entry is null)
 					continue;
 
@@ -30,9 +30,9 @@ namespace HappyHomeDesigner.Framework
 
 		public static void SaveLayoutsFor(GameLocation where, IList<RoomLayoutData> data)
 		{
-			ModEntry.helper.Data.WriteGlobalData($"{PATH}/{where.Name}/_INDEX", data.Select(static e => e.ID));
+			ModEntry.helper.Data.WriteGlobalData($"{PATH}..{where.Name}.._INDEX", data.Select(static e => e.ID));
 			foreach (var item in data)
-				ModEntry.helper.Data.WriteGlobalData($"{PATH}/{where.Name}/{item.ID}", item);
+				ModEntry.helper.Data.WriteGlobalData($"{PATH}..{where.Name}..{item.ID}", item);
 		}
 	}
 }
