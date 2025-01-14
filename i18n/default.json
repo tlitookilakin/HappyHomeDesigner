@@ -75,5 +75,7 @@
 	"config.PickupCraftables.name": "Pickup Craftables",
 	"config.PickupCraftables.desc": "Allow instant pickup/move of craftables.",
 	"config.ExpandSearch.name": "Expanding Search",
-	"config.ExpandSearch.desc": "Whether or not the search bar should expand to full width when hovered."
+	"config.ExpandSearch.desc": "Whether or not the search bar should expand to full width when hovered.",
+	"logging.cnpcp.noload": "Custom NPC Paintings integration failed! Could not find assembly.",
+	"logging.cnpcp.notype": "Custom NPC Paintings integration failed! Could not find menu type."
 }

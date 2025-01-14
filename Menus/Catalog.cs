@@ -109,7 +109,8 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<ScreenPage> Pages = new();
 		private readonly List<ClickableTextureComponent> Tabs = new();
 		private readonly ClickableTextureComponent CloseButton;
-		private ClickableTextureComponent? SettingsButton;
+		private ClickableTextureComponent SettingsButton;
+		private ClickableTextureComponent CNPButton;
 		private readonly ClickableTextureComponent ToggleButton;
 		private int tab = 0;
 		private bool Toggled = true;
@@ -142,6 +143,8 @@ namespace HappyHomeDesigner.Menus
 
 			if (IGMCM.Installed && ModEntry.config.GMCMButton)
 				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
+
+			CNPButton = CustomNPCPaintings.GetButton();
 
 			Resize(Game1.uiViewport.ToRect());
 
@@ -283,6 +286,9 @@ namespace HappyHomeDesigner.Menus
 				if (playSound)
 					Game1.playSound("bigSelect");
 			}
+
+			if (CNPButton is not null && CNPButton.containsPoint(x, y))
+				CustomNPCPaintings.ShowMenu();
 		}
 
 		public override bool isWithinBounds(int x, int y)
@@ -322,6 +328,13 @@ namespace HappyHomeDesigner.Menus
 				tabComp.setPosition(tabX, tabY);
 				tabX += tabComp.bounds.Width;
 			}
+
+			if (CNPButton is not null)
+			{
+				CNPButton.setPosition(tabX, tabY);
+				tabX += CNPButton.bounds.Width;
+			}
+
 			SettingsButton?.setPosition(tabX + 8, tabY + 8);
 
 			CloseButton.bounds.Location = new(40, 52);

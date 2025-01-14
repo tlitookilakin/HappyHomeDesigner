@@ -89,6 +89,7 @@ namespace HappyHomeDesigner
 			Patch(new(ModManifest.UniqueID));
 
 			AlternativeTextures.Init(Helper);
+			CustomNPCPaintings.Init();
 		}
 
 		private static void Patch(Harmony harmony)
