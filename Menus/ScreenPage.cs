@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -17,6 +18,7 @@ namespace HappyHomeDesigner.Menus
 
 		protected int filter_count;
 		protected int current_filter;
+		public List<SpaceTab> custom_tabs;
 
 		/// <returns>The tab representing this page</returns>
 		public abstract ClickableTextureComponent GetTab();
@@ -99,11 +101,13 @@ namespace HappyHomeDesigner.Menus
 		/// <param name="ribbonCount">How many of the filters should use the ribbon (favorites) background</param>
 		public void DrawFilters(SpriteBatch batch, int textureRow, int ribbonCount, int x, int y)
 		{
-			int sx = 0;
+			bool use_custom = custom_tabs is not null;
 
+			int sx = 0;
+			int fcount = use_custom ? custom_tabs.Count + ribbonCount : filter_count;
 			int i = 0;
 			var shadow = Color.Black * .4f;
-			while(i < filter_count - ribbonCount)
+			while(i < fcount - ribbonCount)
 			{
 				int nx = i == current_filter ? x - 16 : x;
 
@@ -120,16 +124,28 @@ namespace HappyHomeDesigner.Menus
 					Color.White);
 
 				// icon
-				batch.Draw(
-					Catalog.MenuTexture,
-					new Rectangle(nx + (i == current_filter ? 6 * FILTER_SCALE : 3 * FILTER_SCALE), y + 3 * FILTER_SCALE, 30, 24), 
-					new Rectangle(sx, textureRow, 10, 8), 
-					Color.White);
+				if (use_custom)
+				{
+					var t = custom_tabs[i];
+					batch.Draw(t.texture,
+						new Rectangle(nx + (i == current_filter ? 6 * FILTER_SCALE : 3 * FILTER_SCALE), y + 3 * FILTER_SCALE, 30, 24),
+						t.IconRect, Color.White
+					);
+				}
+				else
+				{
+					batch.Draw(
+						Catalog.MenuTexture,
+						new Rectangle(nx + (i == current_filter ? 6 * FILTER_SCALE : 3 * FILTER_SCALE), y + 3 * FILTER_SCALE, 30, 24),
+						new Rectangle(sx, textureRow, 10, 8),
+						Color.White);
+				}
 
 				y += FILTER_HEIGHT - FILTER_SCALE;
 				sx += 10;
 				i++;
 			}
+			sx = (filter_count - ribbonCount) * 10;
 			while(i < filter_count)
 			{
 				int nx = i == current_filter ? x - 16 : x;

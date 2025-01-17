@@ -90,6 +90,7 @@ namespace HappyHomeDesigner
 
 			AlternativeTextures.Init(Helper);
 			CustomNPCPaintings.Init();
+			Spacecore.Init();
 		}
 
 		private static void Patch(Harmony harmony)

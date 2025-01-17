@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Patches;
+using HappyHomeDesigner.Integration;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -28,6 +29,7 @@ namespace HappyHomeDesigner.Menus
 		private T variantItem;
 		protected TE hovered;
 		protected TE hovered_variant;
+		protected List<T>[] CustomFilters;
 
 		protected int iconRow;
 		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
@@ -58,6 +60,11 @@ namespace HappyHomeDesigner.Menus
 
 			Init();
 
+			var fcount = custom_tabs != null ? filter_count - 2 : custom_tabs.Count + 1;
+			CustomFilters = new List<T>[fcount];
+			for (int i = 0; i < fcount; i++)
+				CustomFilters[i] = [];
+
 			var timer = Stopwatch.StartNew();
 
 			foreach (var item in GetItemsFrom(existing, favorites))
@@ -79,6 +86,21 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.Items = variants;
 
 			preservedFavorites = [.. favorites];
+		}
+
+		public bool TrySetCustomFilter(T entry)
+		{
+			if (custom_tabs is null)
+				return false;
+
+            for (int i = 0; i < custom_tabs.Count; i++)
+            {
+				var tab = custom_tabs[i];
+				if (tab.FilterCondition is "TRUE" || GameStateQuery.CheckConditions(tab.FilterCondition, inputItem: entry.Item))
+					CustomFilters[i].Add(entry);
+			}
+
+			return true;
 		}
 
 		/// <summary>Initial setup. Happens after favorites are loaded and before items are processed.</summary>
@@ -359,6 +381,14 @@ namespace HappyHomeDesigner.Menus
 		public override void DeleteActiveItem(bool playSound)
 		{
 			DeleteActiveItem(playSound, knownIDs);
+		}
+
+		public IReadOnlyList<IGridItem> ApplyFilterCustom()
+		{
+			if (custom_tabs is null)
+				return ApplyFilter();
+
+			return current_filter < CustomFilters.Length ? CustomFilters[current_filter] : Favorites;
 		}
 	}
 }
