@@ -1,27 +1,16 @@
 ﻿using HappyHomeDesigner.Framework;
-using HarmonyLib;
 using StardewValley;
 
 namespace HappyHomeDesigner.Patches
 {
 	internal class ItemReceive
 	{
-		public static void Apply(Harmony harmony)
+		public static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Farmer).GetMethod(nameof(Farmer.GetItemReceiveBehavior)),
-				postfix: new(typeof(ItemReceive), nameof(ChangeItemReceiveBehavior))
-			);
-
-			harmony.TryPatch(
-				typeof(Farmer).GetMethod(nameof(Farmer.OnItemReceived)),
-				postfix: new(typeof(ItemReceive), nameof(ReceiveItem))
-			);
-
-			harmony.TryPatch(
-				typeof(Item).GetMethod(nameof(Item.checkForSpecialItemHoldUpMeessage)),
-				postfix: new(typeof(ItemReceive), nameof(AddHoldUpMessage))
-			);
+			helper
+				.With<Farmer>(nameof(Farmer.GetItemReceiveBehavior)).Postfix(ChangeItemReceiveBehavior)
+				.With(nameof(Farmer.OnItemReceived)).Postfix(ReceiveItem)
+				.With<Item>(nameof(Item.checkForSpecialItemHoldUpMeessage)).Postfix(AddHoldUpMessage);
 		}
 
 		private static void ReceiveItem(Farmer __instance, Item item)

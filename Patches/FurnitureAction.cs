@@ -1,6 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Menus;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
@@ -10,17 +9,11 @@ namespace HappyHomeDesigner.Patches
 {
 	internal class FurnitureAction
 	{
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.checkForAction)),
-				prefix: new(typeof(FurnitureAction), nameof(CheckAction))
-			);
-
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.performObjectDropInAction)),
-				prefix: new(typeof(FurnitureAction), nameof(ApplyFairyDust))
-			);
+			helper
+				.With<Furniture>(nameof(Furniture.checkForAction)).Prefix(CheckAction)
+				.With(nameof(Furniture.performObjectDropInAction)).Prefix(ApplyFairyDust);
 		}
 
 		private static bool ApplyFairyDust(Furniture __instance, Item dropInItem, bool probe, 

@@ -8,7 +8,6 @@ using StardewValley;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
@@ -22,20 +21,12 @@ namespace HappyHomeDesigner.Patches
 		private const float DISCRIMINATOR = PIXEL_DEPTH / 10f;
 		private static readonly ConditionalWeakTable<Item, FrameData> frameData = new();
 
-		public static void Apply(Harmony harmony)
+		public static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Tool).GetMethod(nameof(Tool.DoFunction)),
-				postfix: new(typeof(HandCatalogue), nameof(OpenIfCatalogue))
-			);
-			harmony.TryPatch(
-				typeof(Tool).GetMethod(nameof(Tool.drawInMenu), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly),
-				postfix: new(typeof(HandCatalogue), nameof(DrawInMenu))
-			);
-			harmony.TryPatch(
-				typeof(GameLocation).GetMethod(nameof(GameLocation.checkAction)),
-				transpiler: new(typeof(HandCatalogue), nameof(InjectAddCatalogue))
-			);
+			helper
+				.With<Tool>(nameof(Tool.DoFunction)).Postfix(OpenIfCatalogue)
+				.With(nameof(Tool.drawInMenu)).Postfix(DrawInMenu)
+				.With<GameLocation>(nameof(GameLocation.checkAction)).Transpiler(InjectAddCatalogue);
 		}
 
 		private static void OpenIfCatalogue(Tool __instance, Farmer who)

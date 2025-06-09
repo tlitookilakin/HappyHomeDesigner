@@ -10,25 +10,13 @@ namespace HappyHomeDesigner.Patches
 		public static bool suppress_reduce = false;
 		private static Furniture heldGhostItem = null;
 
-		public static void Apply(Harmony harmony)
+		public static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Farmer).GetMethod(nameof(Farmer.removeItemFromInventory)), 
-				prefix: new(typeof(ItemCloneFix), nameof(RemoveTempItem))
-			);
-			harmony.TryPatch(
-				typeof(Farmer).GetMethod(nameof(Farmer.reduceActiveItemByOne)), 
-				prefix: new(typeof(ItemCloneFix), nameof(CheckReduceItem))
-			);
-			harmony.TryPatch(
-				typeof(Utility).GetMethod(nameof(Utility.tryToPlaceItem)), 
-				postfix: new(typeof(ItemCloneFix), nameof(AfterTryPlace)),
-				prefix: new(typeof(ItemCloneFix), nameof(BeforeTryPlace))
-			);
-			harmony.TryPatch(
-				typeof(Farmer).GetProperty(nameof(Farmer.ActiveObject)).SetMethod,
-				prefix: new(typeof(ItemCloneFix), nameof(ReplaceGhostItem))
-			);
+			helper
+				.With<Farmer>(nameof(Farmer.removeItemFromInventory)).Prefix(RemoveTempItem)
+				.With(nameof(Farmer.reduceActiveItemByOne)).Prefix(CheckReduceItem)
+				.WithProperty(nameof(Farmer.ActiveObject), false).Prefix(ReplaceGhostItem)
+				.With<Utility>(nameof(Utility.tryToPlaceItem)).Prefix(BeforeTryPlace).Postfix(AfterTryPlace);
 		}
 
 		[HarmonyBefore("thimadera.StackEverythingRedux")]

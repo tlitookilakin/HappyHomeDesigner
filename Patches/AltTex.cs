@@ -25,11 +25,12 @@ namespace HappyHomeDesigner.Patches
 
 		private static readonly ItemDrawMetadata impl_drawData = new();
 
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out asm))
 				return;
 
+			var harmony = helper.Patcher;
 			var min_version = new Version(MINIMUM_VERSION);
 			var current_version = asm.GetName().Version;
 

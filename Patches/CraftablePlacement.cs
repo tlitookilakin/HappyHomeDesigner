@@ -17,23 +17,12 @@ namespace HappyHomeDesigner.Patches
 		public const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
 		private static readonly AccessTools.FieldRef<Chest, int> currentFrame = AccessTools.FieldRefAccess<Chest, int>("currentLidFrame");
 
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
-
-			harmony.TryPatch(
-				typeof(GameLocation).GetMethod(nameof(GameLocation.LowPriorityLeftClick)),
-				postfix: new(typeof(CraftablePlacement), nameof(TryPickupCraftable))
-			);
-
-			harmony.TryPatch(
-				typeof(SObject).GetMethod(nameof(SObject.placementAction)),
-				postfix: new(typeof(CraftablePlacement), nameof(UpdateIfNeeded))
-			);
-
-			harmony.TryPatch(
-				typeof(Item).GetMethod(nameof(Item.canStackWith)),
-				postfix: new(typeof(CraftablePlacement), nameof(DisableSpecialStacking))
-			);
+			helper
+				.With<GameLocation>(nameof(GameLocation.LowPriorityLeftClick)).Postfix(TryPickupCraftable)
+				.With<SObject>(nameof(SObject.placementAction)).Postfix(UpdateIfNeeded)
+				.With<Item>(nameof(Item.canStackWith)).Postfix(DisableSpecialStacking);
 		}
 
 		private static bool DisableSpecialStacking(bool ret, Item __instance, ISalable other)

@@ -86,14 +86,14 @@ namespace HappyHomeDesigner
 				config.Register(IGMCM.API, ModManifest);
 			}
 
-			Patch(new(ModManifest.UniqueID));
+			Patch(new(new(ModManifest.UniqueID), Monitor));
 
 			AlternativeTextures.Init(Helper);
 			CustomNPCPaintings.Init();
 			Spacecore.Init();
 		}
 
-		private static void Patch(Harmony harmony)
+		private static void Patch(HarmonyHelper harmony)
 		{
 			ReplaceShop.Apply(harmony);
 			ItemCloneFix.Apply(harmony);

@@ -2,7 +2,6 @@
 using HarmonyLib;
 using StardewValley.Objects;
 using StardewValley;
-using System.Reflection;
 using HappyHomeDesigner.Menus;
 using System;
 using StardewValley.ItemTypeDefinitions;
@@ -15,57 +14,18 @@ namespace HappyHomeDesigner.Patches
 {
 	internal class Misc
 	{
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod("loadDescription", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public),
-				postfix: new(typeof(Misc), nameof(EditDescription))
-			);
-
-			harmony.TryPatch(
-				typeof(Utility).GetMethod(nameof(Utility.isWithinTileWithLeeway)),
-				postfix: new(typeof(Misc), nameof(SetFreePlace))
-			);
-
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.IsCloseEnoughToFarmer)),
-				postfix: new(typeof(Misc), nameof(SetFreePlace))
-			);
-
-			harmony.TryPatch(
-				typeof(FurnitureDataDefinition).GetMethod(nameof(FurnitureDataDefinition.CreateItem)),
-				finalizer: new(typeof(Misc), nameof(ReplaceInvalidFurniture))
-			);
-
-			harmony.TryPatch(
-				typeof(Utility).GetMethod(nameof(Utility.SortAllFurnitures)),
-				prefix: new(typeof(Misc), nameof(SortErrorFurniture))
-			);
-
-			harmony.TryPatch(
-				typeof(Toolbar).GetMethod(nameof(Toolbar.draw), BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public),
-				prefix: new(typeof(Misc), nameof(SkipToolbar))
-			);
-
-			harmony.TryPatch(
-				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveLeftClick)),
-				prefix: new(typeof(Misc), nameof(SkipToolbar))
-			);
-
-			harmony.TryPatch(
-				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveRightClick)),
-				prefix: new(typeof(Misc), nameof(SkipToolbar))
-			);
-
-			harmony.TryPatch(
-				typeof(Toolbar).GetMethod(nameof(Toolbar.receiveRightClick)),
-				prefix: new(typeof(Misc), nameof(SkipToolbar))
-			);
-
-			harmony.TryPatch(
-				typeof(Game1).GetMethod(nameof(Game1.drawMouseCursor)),
-				transpiler: new(typeof(Misc), nameof(DisableHeldItemDraw))
-			);
+			helper
+				.With<Furniture>("loadDescription").Postfix(EditDescription)
+				.With(nameof(Furniture.IsCloseEnoughToFarmer)).Postfix(SetFreePlace)
+				.With<Utility>(nameof(Utility.isWithinTileWithLeeway)).Postfix(SetFreePlace)
+				.With(nameof(Utility.SortAllFurnitures)).Prefix(SortErrorFurniture)
+				.With<FurnitureDataDefinition>(nameof(FurnitureDataDefinition.CreateItem)).Finalizer(ReplaceInvalidFurniture)
+				.With<Toolbar>(nameof(Toolbar.draw)).Prefix(SkipToolbar)
+				.With(nameof(Toolbar.receiveLeftClick)).Prefix(SkipToolbar)
+				.With(nameof(Toolbar.receiveRightClick)).Prefix(SkipToolbar)
+				.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
 		}
 
 		private static IEnumerable<CodeInstruction> DisableHeldItemDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)

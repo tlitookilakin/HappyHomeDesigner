@@ -19,25 +19,17 @@ namespace HappyHomeDesigner.Patches
 		private const float PIXEL_DEPTH = 1f / 10_000f;
 		private const float DISCRIMINATOR = PIXEL_DEPTH / 10f;
 
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
 			drawPosition = AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
 			getScaleSize = typeof(Furniture)
-				.GetMethod("getScaleSize", BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic)
+				.GetMethod("getScaleSize", BindingFlags.Instance | HarmonyHelper.AnyDeclared)
 				.CreateDelegate<Func<Furniture, float>>();
 
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.draw), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly),
-				postfix: new(typeof(CatalogFX), nameof(DrawPatch))
-			);
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.drawAtNonTileSpot)),
-				postfix: new(typeof(CatalogFX), nameof(DrawOnSpot))
-			);
-			harmony.TryPatch(
-				typeof(Furniture).GetMethod(nameof(Furniture.drawInMenu), BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly),
-				postfix: new(typeof(CatalogFX), nameof(DrawMenu))
-			);
+			helper
+				.With<Furniture>(nameof(Furniture.draw)).Postfix(DrawPatch)
+				.With(nameof(Furniture.drawAtNonTileSpot)).Postfix(DrawOnSpot)
+				.With(nameof(Furniture.drawInMenu)).Postfix(DrawMenu);
 		}
 
 		private static void DrawPatch(Furniture __instance, SpriteBatch spriteBatch, int x, int y, float alpha)

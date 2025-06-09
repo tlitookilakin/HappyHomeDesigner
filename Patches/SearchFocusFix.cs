@@ -1,25 +1,17 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Menus;
-using HarmonyLib;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
-using System.Reflection;
 
 namespace HappyHomeDesigner.Patches
 {
 	internal class SearchFocusFix
 	{
-		public static void Apply(Harmony harmony)
+		public static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(Game1).GetProperty(nameof(Game1.IsChatting)).GetMethod,
-				postfix: new(typeof(SearchFocusFix), nameof(IsActive))
-			);
-
-			harmony.TryPatch(
-				typeof(Game1).GetMethod("UpdateChatBox", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
-				prefix: new(typeof(SearchFocusFix), nameof(SkipChat))
-			);
+			helper
+				.WithProperty<Game1>(nameof(Game1.IsChatting), true).Postfix(IsActive)
+				.With("UpdateChatBox").Prefix(SkipChat);
 		}
 
 		public static bool IsActive(bool chatActive)

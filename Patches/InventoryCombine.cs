@@ -14,12 +14,9 @@ namespace HappyHomeDesigner.Patches
 			("(F)" + AssetManager.CATALOGUE_ID, "(F)" + AssetManager.COLLECTORS_ID, "(F)" + AssetManager.DELUXE_ID)
 		];
 
-		public static void Apply(Harmony harmony)
+		public static void Apply(HarmonyHelper helper)
 		{
-			harmony.TryPatch(
-				typeof(InventoryMenu).GetMethod(nameof(InventoryMenu.rightClick)),
-				transpiler: new(typeof(InventoryCombine), nameof(InsertCombineCheck))
-			);
+			helper.With<InventoryMenu>(nameof(InventoryMenu.rightClick)).Transpiler(InsertCombineCheck);
 		}
 
 		private static IEnumerable<CodeInstruction> InsertCombineCheck(IEnumerable<CodeInstruction> source, ILGenerator gen)

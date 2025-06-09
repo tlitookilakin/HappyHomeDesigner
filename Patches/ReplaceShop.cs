@@ -5,23 +5,15 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 
 namespace HappyHomeDesigner.Patches
 {
 	internal class ReplaceShop
 	{
-		internal static void Apply(Harmony harmony)
+		internal static void Apply(HarmonyHelper helper)
 		{
-			var patch = new HarmonyMethod(typeof(ReplaceShop), nameof(PatchOpenShop));
-			var targets = typeof(Utility).GetMethods(
-				BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Static
-			).Where(m => m.Name is nameof(Utility.TryOpenShopMenu));
-
-			foreach (var method in targets)
-				harmony.TryPatch(method, transpiler: patch);
+			helper.WithAll<Utility>(nameof(Utility.TryOpenShopMenu)).Transpiler(PatchOpenShop);
 		}
 
 		public static IEnumerable<CodeInstruction> PatchOpenShop(IEnumerable<CodeInstruction> src, ILGenerator gen)
