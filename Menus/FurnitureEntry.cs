@@ -1,6 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
 using StardewValley;
-using StardewValley.Locations;
 using StardewValley.Objects;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +36,7 @@ namespace HappyHomeDesigner.Menus
 		public override IReadOnlyList<VariantEntry<Furniture>> GetVariants()
 		{
 			if (!HasVariants)
-				return new[] { new FurnitureEntry(Item) };
+				return [new FurnitureEntry(Item)];
 
 			List<Furniture> skins = [Item];
 			AlternativeTextures.VariantsOfFurniture(Item, season, skins);

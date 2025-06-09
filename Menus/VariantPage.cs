@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Patches;
-using HappyHomeDesigner.Integration;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -93,8 +92,8 @@ namespace HappyHomeDesigner.Menus
 			if (custom_tabs is null)
 				return false;
 
-            for (int i = 0; i < custom_tabs.Count; i++)
-            {
+			for (int i = 0; i < custom_tabs.Count; i++)
+			{
 				var tab = custom_tabs[i];
 				if (tab.FilterCondition is "TRUE" || GameStateQuery.CheckConditions(tab.FilterCondition, inputItem: entry.Item))
 					CustomFilters[i].Add(entry);

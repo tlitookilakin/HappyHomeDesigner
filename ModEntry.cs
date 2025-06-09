@@ -105,10 +105,7 @@ namespace HappyHomeDesigner
 			CatalogFX.Apply(harmony);
 			Misc.Apply(harmony);
 			CraftablePlacement.Apply(harmony);
-
 			AltTex.Apply(harmony);
-			// TODO rewrite patches when dga comes back
-			//DGA.Apply(harmony);
 		}
 	}
 }

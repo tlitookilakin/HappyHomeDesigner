@@ -16,10 +16,10 @@ namespace HappyHomeDesigner.Menus
 		private const string KeyWallFav = "tlitookilakin.HappyHomeDesigner/WallpaperFavorites";
 		private const string KeyFloorFav = "tlitookilakin.HappyHomeDesigner/FlooringFavorites";
 
-		private readonly List<WallEntry> walls = new();
-		private readonly List<WallEntry> floors = new();
-		private readonly List<WallEntry> favoriteWalls = new();
-		private readonly List<WallEntry> favoriteFloors = new();
+		private readonly List<WallEntry> walls = [];
+		private readonly List<WallEntry> floors = [];
+		private readonly List<WallEntry> favoriteWalls = [];
+		private readonly List<WallEntry> favoriteFloors = [];
 		private readonly string[] preservedWallFavorites;
 		private readonly string[] preservedFloorFavorites;
 

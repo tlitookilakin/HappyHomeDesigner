@@ -94,7 +94,7 @@ namespace HappyHomeDesigner.Patches
 		public static bool ShouldSkipItemDraw()
 			=> Catalog.ActiveMenu.Value is Catalog c && c.HideActiveObject;
 
-		private static bool SkipToolbar(Toolbar __instance)
+		private static bool SkipToolbar()
 			=> !(Catalog.ActiveMenu.Value is Catalog c && c.InventoryOpen);
 
 		private static string EditDescription(string original, Furniture __instance)

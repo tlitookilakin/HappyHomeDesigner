@@ -106,16 +106,16 @@ namespace HappyHomeDesigner.Menus
 
 		public readonly string Type;
 
-		private readonly List<ScreenPage> Pages = new();
-		private readonly List<ClickableTextureComponent> Tabs = new();
+		private readonly List<ScreenPage> Pages = [];
+		private readonly List<ClickableTextureComponent> Tabs = [];
 		private readonly ClickableTextureComponent CloseButton;
 		private ClickableTextureComponent SettingsButton;
-		private ClickableTextureComponent CNPButton;
+		private readonly ClickableTextureComponent CNPButton;
 		private readonly ClickableTextureComponent ToggleButton;
 		private int tab = 0;
 		private bool Toggled = true;
 		private Point screenSize;
-		private InventoryWrapper PlayerInventory = new();
+		private readonly InventoryWrapper PlayerInventory = new();
 
 		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
@@ -166,7 +166,6 @@ namespace HappyHomeDesigner.Menus
 				return PlayerInventory.Visible && PlayerInventory.isWithinBounds(mx, my);
 			}
 		}
-			
 
 		private void UpdateGMCMButton(bool enabled)
 		{

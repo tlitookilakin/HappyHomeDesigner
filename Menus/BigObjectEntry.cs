@@ -23,9 +23,9 @@ namespace HappyHomeDesigner.Menus
 		public override IReadOnlyList<VariantEntry<SObject>> GetVariants()
 		{
 			if (!HasVariants)
-				return new[] { new BigObjectEntry(Item) };
+				return [new BigObjectEntry(Item)];
 
-			List<SObject> skins = new() { Item };
+			List<SObject> skins = [Item];
 			AlternativeTextures.VariantsOfCraftable(Item, season, skins);
 
 			return skins.Select(f => new BigObjectEntry(f) as VariantEntry<SObject>).ToList();

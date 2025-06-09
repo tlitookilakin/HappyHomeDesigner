@@ -12,7 +12,7 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
 
 		private bool wasInside = false;
-		private Item? hovered = null;
+		private Item hovered = null;
 
 		public InventoryWrapper() : base(0, 0, true)
 		{

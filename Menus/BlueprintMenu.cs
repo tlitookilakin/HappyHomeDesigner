@@ -15,7 +15,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly GameLocation location;
 		private readonly IList<RoomLayoutData> layouts;
 		private readonly IList<HoverComponent> hoverComponents;
-		private HoverComponent AddButton;
+		private readonly HoverComponent AddButton;
 
 		public BlueprintMenu(GameLocation location) : base()
 		{

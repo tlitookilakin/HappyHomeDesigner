@@ -125,13 +125,13 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
-		private static SObject? CreateClone(SObject item)
+		private static SObject CreateClone(SObject item)
 		{
 			var type = item.GetType();
-			SObject? newItem;
+			SObject newItem;
 			try
 			{
-				newItem = (SObject?)Activator.CreateInstance(type, true);
+				newItem = (SObject)Activator.CreateInstance(type, true);
 				if (newItem is null)
 					return null;
 			}

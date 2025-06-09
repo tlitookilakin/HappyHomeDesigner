@@ -12,8 +12,8 @@ namespace HappyHomeDesigner.Menus
 {
 	internal class ItemPage : ScreenPage
 	{
-		private readonly List<ItemEntry> entries = new();
-		private readonly HashSet<string> knownIDs = new();
+		private readonly List<ItemEntry> entries = [];
+		private readonly HashSet<string> knownIDs = [];
 		private readonly GridPanel Panel = new(80, 80, true);
 		private readonly ClickableTextureComponent TrashSlot
 			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
