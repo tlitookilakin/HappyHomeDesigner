@@ -77,5 +77,20 @@
 	"config.ExpandSearch.name": "Expanding Search",
 	"config.ExpandSearch.desc": "Whether or not the search bar should expand to full width when hovered.",
 	"logging.cnpcp.noload": "Custom NPC Paintings integration failed! Could not find assembly.",
-	"logging.cnpcp.notype": "Custom NPC Paintings integration failed! Could not find menu type."
+	"logging.cnpcp.notype": "Custom NPC Paintings integration failed! Could not find menu type.",
+	"ui.blueprint.add": "Create",
+	"ui.blueprint.clear": "Clear furniture",
+	"ui.blueprint.copy": "Copy to clipboard",
+	"ui.blueprint.paste": "Create from clipboard",
+	"ui.blueprint.apply": "Apply layout",
+	"ui.blueprint.save": "Update layout",
+	"ui.blueprint.delete": "Delete layout",
+	"ui.blueprint.added": "Created layout!",
+	"ui.blueprint.applied": "Applied layout!",
+	"ui.blueprint.deleted": "Deleted layout!",
+	"ui.blueprint.saved": "Updated layout!",
+	"ui.blueprint.cleared": "Cleared furniture!",
+	"ui.blueprint.copied": "Copied to clipboard!",
+	"ui.blueprint.pasted": "Created from clipboard!",
+	"ui.blueprint.name": "Blueprint name"
 }

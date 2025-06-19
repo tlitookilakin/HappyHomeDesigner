@@ -38,7 +38,6 @@ namespace HappyHomeDesigner.Framework
 				f.modData.CopyFrom(modData);
 				if (held != null)
 					f.heldObject.Value = held.Create();
-
 				return f;
 			}
 		}

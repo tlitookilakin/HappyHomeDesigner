@@ -1,5 +1,5 @@
-﻿using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Menus;
+﻿using BmFont;
+using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -8,6 +8,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.BellsAndWhistles;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
@@ -16,16 +17,19 @@ using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using static StardewValley.Menus.CharacterCustomization;
+using System.Text.RegularExpressions;
 
 namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
+		private static readonly Func<char, bool, Rectangle> SpriteTextSourceRect
+			= typeof(SpriteText).GetMethod("getSourceRectForChar", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+			.CreateDelegate<Func<char, bool, Rectangle>>();
+
 		[Flags]
 		public enum CatalogType {None = 0, Furniture = 1, Wallpaper = 2, Collector = 4};
 
@@ -324,15 +328,169 @@ namespace HappyHomeDesigner.Framework
 			});
 		}
 
-		public static void SetFrom(this ModDataDictionary dict, IDictionary<string, string> source)
-		{
-			foreach (var pair in source)
-				dict[pair.Key] = pair.Value;
-		}
-
 		public static Dictionary<string, string> Get(this ModDataDictionary dict)
 		{
 			return new Dictionary<string, string>(dict.Pairs);
+		}
+
+		public static void tryHover(this ClickableTextureComponent c, int x, int y, ref string hoverText)
+		{
+			if (c.containsPoint(x, y))
+				hoverText = c.hoverText;
+		}
+
+		public static void DrawStringOffset(this SpriteBatch batch, string text, int x, int y, int width, Color color, Vector2[] offsets, bool center)
+		{
+			List<string> lines = [];
+
+			if (LocalizedContentManager.CurrentLanguageCode is
+				LocalizedContentManager.LanguageCode.zh or
+				LocalizedContentManager.LanguageCode.ja or
+				LocalizedContentManager.LanguageCode.th
+			)
+			{
+				string cum = "";
+
+				foreach (var match in (IList<Match>)Game1.asianSpacingRegex.Matches(text))
+				{
+					var s = match.Value;
+					if (SpriteText.getWidthOfString(cum + s) > width)
+					{
+						lines.Add(cum);
+						cum = s;
+					}
+					else
+					{
+						cum += ' ' + s;
+					}
+				}
+				if (lines[^1] != cum)
+					lines.Add(cum);
+			}
+			else
+			{
+				int last = 0;
+				string cum = "";
+
+				for (int i = 0; i <= text.Length; i++)
+				{
+					if (i == text.Length || text[i] is ' ' or '^')
+					{
+						if (last < i)
+						{
+							var s = text[last..i];
+							if ((i < text.Length && text[i] is '^') || SpriteText.getWidthOfString(cum + s) > width)
+							{
+								lines.Add(cum);
+								cum = s;
+							}
+							else
+							{
+								if (cum.Length is 0)
+									cum = s;
+								else
+									cum += ' ' + s;
+							}
+						}
+
+						if (i == text.Length)
+							lines.Add(cum);
+
+						last = i + 1;
+					}
+				}
+			}
+
+			int c = 0;
+			int lineHeight = (int)(18f * SpriteText.FontPixelZoom);
+			y -= (lineHeight * lines.Count) / 2;
+			foreach (var line in lines)
+			{
+				DrawStringOffsetLine(batch, line, x, y, width, color, offsets, center, c);
+				c += line.Length;
+				y += lineHeight;
+			}
+		}
+
+		private static void DrawStringOffsetLine(SpriteBatch batch, string text, int x, int y, int width, Color color, Vector2[] offsets, bool center, int index)
+		{
+			var w = SpriteText.getWidthOfString(text);
+			if (center)
+				x -= w / 2;
+
+
+			// mostly copied from SpriteText, with some simplification
+			Vector2 pos = new(x, y);
+
+			if (SpriteText.FontPixelZoom < 4f && 
+				LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.ko && 
+				LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.zh
+			)
+				pos.Y += (int)((4f - SpriteText.FontPixelZoom) * 4f);
+
+			if (LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.ko)
+				pos.Y -= 8;
+			else if (LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.zh)
+				pos.Y += 4;
+
+			int accum = 0;
+
+			for (int i = 0; i < text.Length; i++)
+			{
+				var c = text[i];
+
+				if (
+					LocalizedContentManager.CurrentLanguageLatin || SpriteText.forceEnglishFont ||
+					(LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.ru && !Game1.options.useAlternateFont)
+				)
+				{
+					float tempzoom = SpriteText.fontPixelZoom;
+					if (SpriteText.forceEnglishFont)
+						SpriteText.fontPixelZoom = 3f;
+
+					accum = 0;
+					bool upper = char.IsUpper(c) || c is 'ß';
+					Vector2 spriteFontOffset = new(0f, -1 + (upper ? (-3) : 0));
+					if (c is 'Ç')
+						spriteFontOffset.Y += 2f;
+
+					Rectangle srcRect = SpriteTextSourceRect(c, false);
+					batch.Draw(
+						SpriteText.coloredTexture, 
+						pos + spriteFontOffset * SpriteText.FontPixelZoom + offsets[(i + index) % offsets.Length], 
+						srcRect, color, 0f, Vector2.Zero, SpriteText.FontPixelZoom, SpriteEffects.None, 0f
+					);
+
+					if (i < text.Length - 1)
+						pos.X += 8f * SpriteText.FontPixelZoom + accum + SpriteText.getWidthOffsetForChar(text[i + 1]) * SpriteText.FontPixelZoom;
+
+					SpriteText.fontPixelZoom = tempzoom;
+					continue;
+				}
+
+				if (SpriteText.characterMap.TryGetValue(c, out var fc))
+				{
+					Rectangle sourcerect = new(fc.X, fc.Y, fc.Width, fc.Height);
+					Texture2D _texture = SpriteText.fontPages[fc.Page];
+					if (SpriteText.positionOfNextSpace(text, i, (int)pos.X, accum) >= x + width - 4)
+					{
+						pos.Y += (SpriteText.FontFile.Common.LineHeight + 2) * SpriteText.FontPixelZoom;
+						accum = 0;
+						pos.X = x;
+					}
+					Vector2 position2 = new(pos.X + fc.XOffset * SpriteText.FontPixelZoom, pos.Y + fc.YOffset * SpriteText.FontPixelZoom);
+					position2 += offsets[(i + index) % offsets.Length];
+					if (LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.ru)
+					{
+						Vector2 offset = new Vector2(-1f, 1f) * SpriteText.FontPixelZoom;
+						batch.Draw(_texture, position2 + offset, sourcerect, color * SpriteText.shadowAlpha, 0f, Vector2.Zero, SpriteText.FontPixelZoom, SpriteEffects.None, 0f);
+						batch.Draw(_texture, position2 + new Vector2(0f, offset.Y), sourcerect, color * SpriteText.shadowAlpha, 0f, Vector2.Zero, SpriteText.FontPixelZoom, SpriteEffects.None, 0f);
+						batch.Draw(_texture, position2 + new Vector2(offset.X, 0f), sourcerect, color * SpriteText.shadowAlpha, 0f, Vector2.Zero, SpriteText.FontPixelZoom, SpriteEffects.None, 0f);
+					}
+					batch.Draw(_texture, position2, sourcerect, color, 0f, Vector2.Zero, SpriteText.FontPixelZoom, SpriteEffects.None, 0f);
+					pos.X += fc.XAdvance * SpriteText.FontPixelZoom;
+				}
+			}
 		}
 	}
 }

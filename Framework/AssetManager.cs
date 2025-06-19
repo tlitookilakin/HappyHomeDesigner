@@ -28,7 +28,6 @@ namespace HappyHomeDesigner.Framework
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
 		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
-		public const string BLUEPRINT_TEXTURES = "Mods/" + MOD_ID + "/BlueprintUI";
 
 		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
@@ -45,10 +44,6 @@ namespace HappyHomeDesigner.Framework
 		public static Texture2D BookSpriteSheet
 			=> bookSprite ??= gameContent.Load<Texture2D>("LooseSprites/Book_Animation");
 		private static Texture2D bookSprite;
-
-		public static Texture2D BlueprintUI
-			=> blueprintUI ??= gameContent.Load<Texture2D>(BLUEPRINT_TEXTURES);
-		private static Texture2D blueprintUI;
 
 		public static void Init(IModHelper helper)
 		{
@@ -103,9 +98,6 @@ namespace HappyHomeDesigner.Framework
 
 			else if (name.IsEquivalentTo("Data/Shops"))
 				e.Edit(TagShops, AssetEditPriority.Default);
-
-			else if (name.IsEquivalentTo(BLUEPRINT_TEXTURES))
-				e.LoadFromModFile<Texture2D>("assets/bp.png", AssetLoadPriority.Low);
 
 			else if (!ModEntry.config.ClientMode)
 			{

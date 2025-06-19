@@ -59,7 +59,7 @@ namespace HappyHomeDesigner.Menus
 
 			Init();
 
-			var fcount = custom_tabs != null ? filter_count - 2 : custom_tabs.Count + 1;
+			var fcount = custom_tabs is null ? filter_count - 2 : custom_tabs.Count + 1;
 			CustomFilters = new List<T>[fcount];
 			for (int i = 0; i < fcount; i++)
 				CustomFilters[i] = [];

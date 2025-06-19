@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace HappyHomeDesigner.Menus
 {
-	public class SearchBox : TextBox
+	public class SearchBox : BlankTextBox
 	{
 		private static readonly ConditionalWeakTable<IReadOnlyList<IGridItem>, string[]> mapCache = new();
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
@@ -59,8 +59,8 @@ namespace HappyHomeDesigner.Menus
 		private int fullWidth = 0;
 		private int smallWidth = 0;
 
-		public SearchBox(Texture2D textBoxTexture, Texture2D caretTexture, SpriteFont font, Color textColor) 
-			: base(textBoxTexture, caretTexture, font, textColor)
+		public SearchBox(Texture2D caretTexture, SpriteFont font, Color textColor) 
+			: base(caretTexture, font, textColor)
 		{
 			LastValue = Text;
 		}
@@ -139,37 +139,11 @@ namespace HappyHomeDesigner.Menus
 			IClickableMenu.drawTextureBox(b, Game1.menuTexture, FrameSource, X, Y - 8, Width + 8, Height + 16, Color.White, 1f, false);
 
 			// box
-			DrawInputNoFX(b);
+			base.Draw(b);
 			//base.Draw(b, false);
 
 			// icon
 			b.Draw(Catalog.MenuTexture, new Vector2(X + Width - 40, Y + 8), Spyglass, Color.White * iconOpacity, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0f);
-		}
-
-		private void DrawInputNoFX(SpriteBatch b, bool shadow = true)
-		{
-			bool caretVisible = Game1.currentGameTime.TotalGameTime.TotalMilliseconds % 1000.0 >= 500.0;
-			bool isEmpty = string.IsNullOrEmpty(Text);
-			var toDraw = isEmpty ? TitleText ?? "" : Text;
-			var alpha = isEmpty ? .5f : 1f;
-			var size = _font.MeasureString(toDraw);
-
-			while (size.X > Width)
-			{
-				toDraw = toDraw[1..];
-				size = _font.MeasureString(toDraw);
-			}
-
-			if (isEmpty)
-				size = default;
-
-			if (caretVisible && Selected)
-				b.Draw(Game1.staminaRect, new Rectangle(X + 16 + (int)size.X + 2, Y + 8, 4, 32), _textColor);
-
-			if (shadow && !isEmpty)
-				Utility.drawTextWithShadow(b, toDraw, _font, new Vector2(X + 16, Y + ((_textBoxTexture != null) ? 12 : 8)), _textColor);
-			else
-				b.DrawString(_font, toDraw, new Vector2(X + 16, Y + ((_textBoxTexture != null) ? 12 : 8)), _textColor * alpha, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.99f);
 		}
 
 		private void Filter(bool refresh, string search = null)

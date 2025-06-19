@@ -26,8 +26,7 @@ namespace HappyHomeDesigner.Menus
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
 		private readonly SearchBox search = 
-			new(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null, Game1.smallFont, Game1.textColor) 
-			{ TitleText = ModEntry.i18n.Get("ui.search.name")};
+			new(null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.search.name")};
 		private readonly bool search_visible;
 
 		public IReadOnlyList<IGridItem> Items
