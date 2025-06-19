@@ -1,5 +1,6 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
+using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -12,7 +13,7 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
-	public class Catalog : IClickableMenu
+    public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;

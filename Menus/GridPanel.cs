@@ -4,11 +4,12 @@ using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using HappyHomeDesigner.Widgets;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO add controller support
-	public class GridPanel : IClickableMenu
+    // TODO add controller support
+    public class GridPanel : IClickableMenu
 	{
 		public const int BORDER_WIDTH = 16;
 		public const int MARGIN_BOTTOM = 8;

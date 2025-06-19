@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -9,7 +10,7 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-	public class BlueprintMenu : IClickableMenu
+    public class BlueprintMenu : IClickableMenu
 	{
 		internal static readonly Color BLUE_TINT = new(0xD6FAFFFF);
 

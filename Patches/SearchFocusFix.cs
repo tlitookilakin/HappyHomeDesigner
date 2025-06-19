@@ -1,11 +1,11 @@
 ﻿using HappyHomeDesigner.Framework;
-using HappyHomeDesigner.Menus;
+using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
 
 namespace HappyHomeDesigner.Patches
 {
-	internal class SearchFocusFix
+    internal class SearchFocusFix
 	{
 		public static void Apply(HarmonyHelper helper)
 		{
