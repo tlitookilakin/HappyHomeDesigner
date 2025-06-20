@@ -46,6 +46,9 @@ namespace HappyHomeDesigner.Widgets
         }
         private int visibleRows = 0;
 
+        public Range VisibleRange
+            => CellOffset..(CellOffset + VisibleRows * Columns);
+
         /// <summary>Number of rows to offset by</summary>
         public int Offset { get; private set; }
 

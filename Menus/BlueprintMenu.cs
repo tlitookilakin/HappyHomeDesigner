@@ -2,7 +2,7 @@
 using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using StardewValley;
 using StardewValley.Menus;
 using System;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-    public class BlueprintMenu : IClickableMenu
+	public class BlueprintMenu : IClickableMenu
 	{
 		internal static readonly Color BLUE_TINT = new(0xD6FAFFFF);
 
@@ -21,12 +21,38 @@ namespace HappyHomeDesigner.Menus
 		private readonly ClickableTextureComponent AddButton;
 		private readonly List<ClickableTextureComponent> BottomButtons;
 		private readonly List<ClickableTextureComponent> TopButtons;
+		private readonly List<BlueprintEntry> Entries = [];
 		private readonly ScrollBar Scroll = new();
 		private readonly TextBox NameBox;
+
+		public int Selected
+		{
+			get => selectedIndex;
+			set
+			{
+				if (value >= layouts.Count || value < -1)
+					value = -1;
+
+				if (value == selectedIndex)
+					return;
+
+				if (selectedIndex < 0 != value < 0)
+				{
+					bool selected = value >= 0;
+					foreach (var c in TopButtons)
+						c.visible = selected;
+
+					BottomButtons[2].visible = selected;
+				}
+				selectedIndex = value;
+			}
+		}
 
 		private string hoverText;
 		private string overText;
 		private int overTicks;
+		private int selectedIndex;
+		private ListSlice<RoomLayoutData> visibleLayouts;
 
 		private const int MAIN_WIDTH = 350;
 		private const int PADDING = 8;
@@ -37,13 +63,14 @@ namespace HappyHomeDesigner.Menus
 		{
 			this.location = location;
 			layouts = RoomLayoutManager.GetLayoutsFor(location);
+			visibleLayouts = new(layouts, ..);
 
 			NameBox = new BlankTextBox(null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.blueprint.name") };
 			AddButton = new("add", new(150, 0, 56, 64), null, ModEntry.i18n.Get("ui.blueprint.add"), uiTexture, new(17, 80, 14, 17), 4f, false);
 			BottomButtons = [
 				new("clear", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.clear"), uiTexture, new(80, 80, 16, 16), 4f, true),
-				new("copy", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.copy"), uiTexture, new(96, 80, 16, 16), 4f, true),
-				new("paste", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.paste"), uiTexture, new(112, 80, 16, 16), 4f, true)
+				new("paste", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.paste"), uiTexture, new(112, 80, 16, 16), 4f, true),
+				new("copy", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.copy"), uiTexture, new(96, 80, 16, 16), 4f, true)
 			];
 			TopButtons = [
 				new("apply", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.apply"), uiTexture, new(32, 80, 16, 16), 4f, true),
@@ -52,6 +79,7 @@ namespace HappyHomeDesigner.Menus
 			];
 			allClickableComponents = [AddButton, .. BottomButtons, ..TopButtons];
 
+			Selected = -1;
 			Resize(Game1.uiViewport.ToRect());
 		}
 
@@ -66,8 +94,10 @@ namespace HappyHomeDesigner.Menus
 			width = MAIN_WIDTH + LEFT + PADDING + MARGIN * 2;
 			height = bounds.Height - MARGIN * 2;
 
+			AdjustSlotCount(ref height, BlueprintEntry.HEIGHT);
+
 			xPositionOnScreen = MARGIN;
-			yPositionOnScreen = MARGIN;
+			yPositionOnScreen = bounds.Height / 2 - height / 2;
 
 			int x = xPositionOnScreen + MAIN_WIDTH + PADDING + LEFT;
 			int y = yPositionOnScreen;
@@ -94,6 +124,28 @@ namespace HappyHomeDesigner.Menus
 			NameBox.Height = 24;
 
 			Scroll.Resize(height - (24 + PADDING), xPositionOnScreen, yPositionOnScreen + (24 + PADDING));
+
+			y = yPositionOnScreen + 64;
+			for (int i = 0; i < Entries.Count; i++)
+			{
+				Entries[i].bounds = new(xPositionOnScreen + LEFT + PADDING + 4, y, MAIN_WIDTH - PADDING * 3, BlueprintEntry.HEIGHT);
+				y += BlueprintEntry.HEIGHT;
+			}
+		}
+
+		private void AdjustSlotCount(ref int height, int slotHeight)
+		{
+			var h = height - PADDING - 68;
+			var count = h / slotHeight;
+			height = count * slotHeight + PADDING + 68;
+
+			if (Entries.Count > count)
+				Entries.RemoveRange(count, Entries.Count - count);
+			else if (Entries.Count < count)
+				for (int i = Entries.Count; i < count; i++)
+					Entries.Add(new(visibleLayouts, i, MAIN_WIDTH - PADDING * 3));
+
+			Scroll.VisibleRows = count;
 		}
 
 		public override void performHoverAction(int x, int y)
@@ -124,6 +176,16 @@ namespace HappyHomeDesigner.Menus
 				if (c.containsPoint(x, y))
 					HandleButton(c.name, playSound);
 
+			foreach (var e in Entries)
+			{
+				if (e.containsPoint(x, y))
+				{
+					Selected = e.Index + Scroll.Offset;
+					if (Selected >= layouts.Count)
+						Selected = -1;
+				}
+			}
+
 			Scroll.Click(x, y);
 		}
 
@@ -143,8 +205,9 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
-			drawTextureBox(b, xPositionOnScreen + LEFT, yPositionOnScreen + 4, MAIN_WIDTH, height - 4, Color.White);
+			visibleLayouts.Range = Scroll.VisibleRange;
 
+			drawTextureBox(b, xPositionOnScreen + LEFT, yPositionOnScreen + 4, MAIN_WIDTH, height - 4, Color.White);
 			Scroll.Draw(b);
 
 			foreach (var c in TopButtons)
@@ -152,6 +215,9 @@ namespace HappyHomeDesigner.Menus
 
 			foreach (var c in BottomButtons)
 				c.draw(b);
+
+			foreach (var e in Entries)
+				e.Draw(b, Selected - Scroll.Offset);
 
 			DrawOverlay(b);
 
@@ -222,36 +288,86 @@ namespace HappyHomeDesigner.Menus
 
 		public void Add(bool playSound)
 		{
+			var name = NameBox.Text.Trim();
+			if (name.Length is 0)
+				return;
+
+			NameBox.Text = "";
+
+			layouts.Add(RoomLayoutData.CreateFrom(location, name));
+			Selected = layouts.Count - 1;
+			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.added"));
 		}
 
 		public void Apply(bool playSound)
 		{
+			if (Selected < 0)
+				return;
+
+			if (!layouts[Selected].TryApply(location))
+				return;
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.applied"));
 		}
 
 		public void Delete(bool playSound)
 		{
+			if (Selected < 0)
+				return;
+
+			layouts.RemoveAt(Selected);
+			Selected = -1;
+			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.deleted"));
 		}
 
 		public void Update(bool playSound)
 		{
+			if (Selected < 0)
+				return;
+
+			layouts[Selected] = RoomLayoutData.CreateFrom(location, layouts[Selected].Name, layouts[Selected].FarmerName);
+			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.saved"));
 		}
 
 		public void Clear(bool playSound)
 		{
+			RoomLayoutData.Clear(location);
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.cleared"));
 		}
 
 		public void Copy(bool playSound)
 		{
+			if (Selected < 0)
+				return;
+
+			var s = JsonConvert.SerializeObject(layouts[Selected]);
+			if (!DesktopClipboard.SetText(s))
+				return;
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.copied"));
 		}
 
 		public void Paste(bool playSound)
 		{
+			string s = "";
+			if (!DesktopClipboard.GetText(ref s))
+				return;
+
+			var data = JsonConvert.DeserializeObject<RoomLayoutData>(s);
+			if (data is null)
+				return;
+
+			layouts.Add(data);
+			Selected = layouts.Count - 1;
+			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.pasted"));
 		}
 	}

@@ -2,10 +2,12 @@
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+using System;
 using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Framework
 {
+	// TODO: add global inv for item dumping
 	public class RoomLayoutData
 	{
 		public string Name { get; set; }
@@ -14,13 +16,20 @@ namespace HappyHomeDesigner.Framework
 		public Dictionary<Vector2, FurnitureItem> Furniture { get; set; } = new();
 		public Dictionary<string, string> Walls { get; set; }
 		public Dictionary<string, string> Floors { get; set; }
+		public string Date { get; set; } = "";
+		public string FarmerName { get; set; } = "";
 
 		public record class FurnitureItem(string id, Dictionary<string, string> modData, int rotation, FurnitureItem held)
 		{
 			public bool CanPlace(GameLocation where, Vector2 tile)
 			{
 				var placer = ItemRegistry.Create<Furniture>(id);
-				return placer.canBePlacedHere(where, tile);
+				var valid = placer.canBePlacedHere(
+					where, tile, 
+					CollisionMask.Buildings | CollisionMask.Farmers | CollisionMask.Furniture | 
+					CollisionMask.Objects | CollisionMask.TerrainFeatures | CollisionMask.LocationSpecific
+				);
+				return valid;
 			}
 
 			public void Place(GameLocation where, Vector2 tile)
@@ -84,7 +93,7 @@ namespace HappyHomeDesigner.Framework
 				if (furn.heldObject.Value is Chest)
 					preserve.Add(furn);
 
-				if (furn.heldObject.Value is not StardewValley.Objects.Furniture)
+				if (furn.heldObject.Value is not StardewValley.Objects.Furniture && furn.heldObject.Value is not null)
 					Game1.createItemDebris(furn.heldObject.Value, furn.TileLocation * 64f, -1, where);
 			}
 
@@ -94,13 +103,18 @@ namespace HappyHomeDesigner.Framework
 				where.furniture.Add(furn);
 		}
 
-		public static RoomLayoutData CreateFrom(GameLocation location, string name)
+		public static RoomLayoutData CreateFrom(GameLocation location, string name, string oldAuthor = null)
 		{
+			var now = DateTime.Now.Date;
 			var data = new RoomLayoutData()
 			{
 				Name = name,
 				ID = name.SanitizeFilename(),
-				Location = location.Name
+				Location = location.Name,
+				FarmerName = 
+					oldAuthor is not string auth ? Game1.player.Name :
+					auth.Contains(Game1.player.Name) ? auth : auth + ", " + Game1.player.Name,
+				Date = $"{now.Day}/{now.Month}/{now.Year}"
 			};
 
 			foreach (var furn in location.furniture)
@@ -124,7 +138,7 @@ namespace HappyHomeDesigner.Framework
 
 		private static FurnitureItem CreateFrom(Furniture furn)
 		{
-			return new(furn.ItemId, furn.modData.Get(), furn.currentRotation.Value, furn.heldObject.Value is Furniture held ? CreateFrom(held) : null);
+			return new(furn.QualifiedItemId, furn.modData.Get(), furn.currentRotation.Value, furn.heldObject.Value is Furniture held ? CreateFrom(held) : null);
 		}
 	}
 }

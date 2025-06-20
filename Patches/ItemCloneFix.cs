@@ -5,6 +5,7 @@ using StardewValley.Objects;
 
 namespace HappyHomeDesigner.Patches
 {
+	// TODO add continuous placement
 	internal class ItemCloneFix
 	{
 		public static bool suppress_reduce = false;

@@ -335,7 +335,7 @@ namespace HappyHomeDesigner.Framework
 
 		public static void tryHover(this ClickableTextureComponent c, int x, int y, ref string hoverText)
 		{
-			if (c.containsPoint(x, y))
+			if (c.visible && c.containsPoint(x, y))
 				hoverText = c.hoverText;
 		}
 

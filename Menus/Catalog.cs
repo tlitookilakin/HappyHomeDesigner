@@ -13,7 +13,8 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
-    public class Catalog : IClickableMenu
+	// TODO globalize favorites
+	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
