@@ -8,8 +8,8 @@ using HappyHomeDesigner.Widgets;
 
 namespace HappyHomeDesigner.Menus
 {
-    // TODO add controller support
-    public class GridPanel : IClickableMenu
+	// TODO add controller support
+	public class GridPanel : IClickableMenu
 	{
 		public const int BORDER_WIDTH = 16;
 		public const int MARGIN_BOTTOM = 8;
@@ -113,6 +113,7 @@ namespace HappyHomeDesigner.Menus
 			search.Y = yPositionOnScreen + this.height + BORDER_WIDTH + MARGIN_BOTTOM + 8;
 			search.SmallWidth = this.width - search_right_offset;
 			search.FullWidth = this.width + BORDER_WIDTH + 8;
+			search.Height = 48;
 		}
 
 		public override bool isWithinBounds(int x, int y)

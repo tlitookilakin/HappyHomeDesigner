@@ -31,36 +31,53 @@ namespace HappyHomeDesigner.Patches
 
 		private static void OpenIfCatalogue(Tool __instance, Farmer who)
 		{
-			if (__instance.QualifiedItemId != "(T)" + AssetManager.PORTABLE_ID)
-				return;
-
 			if (!who.IsLocalPlayer)
 				return;
 
-			if (Catalog.MenuVisible())
+			if (__instance.QualifiedItemId == "(T)" + AssetManager.PORTABLE_ID)
+			{
+
+				if (Catalog.MenuVisible())
+					return;
+
+				var catalogues =
+					ModUtilities.CatalogType.Collector |
+					ModUtilities.CatalogType.Furniture |
+					ModUtilities.CatalogType.Wallpaper;
+
+				Catalog.ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
 				return;
+			}
 
-			var catalogues = 
-				ModUtilities.CatalogType.Collector | 
-				ModUtilities.CatalogType.Furniture | 
-				ModUtilities.CatalogType.Wallpaper;
-
-			Catalog.ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
+			if (__instance.QualifiedItemId == "(T)" + AssetManager.BLUEPRINT_ID)
+			{
+				Game1.activeClickableMenu = new BlueprintMenu(Game1.currentLocation);
+				return;
+			}
 		}
 
 		private static void DrawInMenu(Tool __instance, SpriteBatch spriteBatch, Vector2 location, 
 			float scaleSize, float transparency, float layerDepth, Color color)
 		{
-			if (__instance.QualifiedItemId != "(T)" + AssetManager.PORTABLE_ID)
+			if (
+				__instance.QualifiedItemId != "(T)" + AssetManager.PORTABLE_ID &&
+				__instance.QualifiedItemId != "(T)" + AssetManager.BLUEPRINT_ID)
 				return;
 
-			var data = ItemRegistry.GetDataOrErrorItem("(T)" + AssetManager.PORTABLE_ID);
+			var data = ItemRegistry.GetDataOrErrorItem(__instance.QualifiedItemId);
 			var source = data.GetSourceRect();
 			source.X = source.Right;
 
+			Color tint = __instance.QualifiedItemId switch
+			{
+				"(T)" + AssetManager.PORTABLE_ID => Utility.GetPrismaticColor(5),
+				"(T)" + AssetManager.BLUEPRINT_ID => Utility.Get2PhaseColor(Color.Turquoise, Color.RoyalBlue),
+				_ => Color.White
+			};
+
 			spriteBatch.Draw(
 				data.GetTexture(), location + menuOffset, source, 
-				color.Mult(Utility.GetPrismaticColor(5)) * transparency, 
+				color.Mult(tint) * transparency, 
 				0f, menuOrigin, scaleSize * 4f, SpriteEffects.None, layerDepth
 			);
 		}

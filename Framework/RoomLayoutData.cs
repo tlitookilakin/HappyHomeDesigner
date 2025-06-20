@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Menus;
+using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -7,7 +8,6 @@ using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Framework
 {
-	// TODO: add global inv for item dumping
 	public class RoomLayoutData
 	{
 		public string Name { get; set; }
@@ -60,7 +60,7 @@ namespace HappyHomeDesigner.Framework
 
 			foreach ((var tile, var furn) in Furniture)
 				if (!furn.CanPlace(where, tile))
-					return false;
+					continue;
 
 			foreach ((var tile, var furn) in Furniture)
 				furn.Place(where, tile);
@@ -81,22 +81,33 @@ namespace HappyHomeDesigner.Framework
 
 		public static void Clear(GameLocation where)
 		{
+			var inv = Game1.player.team.GetOrCreateGlobalInventory(BlueprintMenu.DROPBOX_ID);
+
 			var preserve = new List<Furniture>();
 			foreach (var furn in where.furniture)
 			{
-				if (furn is StorageFurniture storage && storage.heldItems.Count != 0)
-					preserve.Add(furn);
+				if (furn is StorageFurniture storage)
+					foreach (var item in storage.heldItems)
+						inv.Add(item);
 
 				if (!furn.AllowLocalRemoval)
 					preserve.Add(furn);
 
-				if (furn.heldObject.Value is Chest)
-					preserve.Add(furn);
+				if (furn.heldObject.Value is not StardewValley.Object obj)
+					continue;
 
-				if (furn.heldObject.Value is not StardewValley.Objects.Furniture && furn.heldObject.Value is not null)
-					Game1.createItemDebris(furn.heldObject.Value, furn.TileLocation * 64f, -1, where);
+				if (obj is Chest chest)
+					foreach (var item in chest.Items)
+						inv.Add(item);
+
+				if (obj.QualifiedItemId == "(O)" + AssetManager.PORTABLE_ID)
+					inv.Add(ItemRegistry.Create("(T)" + AssetManager.PORTABLE_ID));
+
+				else if (obj is not StardewValley.Objects.Furniture)
+					inv.Add(furn.heldObject.Value);
 			}
 
+			inv.RemoveEmptySlots();
 			where.furniture.Clear();
 
 			foreach (var furn in preserve)

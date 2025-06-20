@@ -2,7 +2,6 @@
 using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;
-using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -10,9 +9,6 @@ using System;
 
 namespace HappyHomeDesigner
 {
-	// TODO add blueprint book item
-	// TODO add blueprint book UI
-
 	public class ModEntry : Mod
 	{
 		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";
@@ -64,11 +60,6 @@ namespace HappyHomeDesigner
 		{
 			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, true))
 				e.Button.Suppress();
-
-			#if DEBUG
-			if (e.Button is SButton.Home && Game1.currentLocation is GameLocation where)
-				Game1.activeClickableMenu = new BlueprintMenu(where);
-			#endif
 		}
 
 		private void OnButtonReleased(object sender, ButtonReleasedEventArgs e)

@@ -12,8 +12,6 @@ namespace HappyHomeDesigner.Menus
 {
 	public class BlueprintMenu : IClickableMenu
 	{
-		internal static readonly Color BLUE_TINT = new(0xD6FAFFFF);
-
 		private readonly GameLocation location;
 		private readonly IList<RoomLayoutData> layouts;
 		private readonly Texture2D uiTexture = Game1.content.Load<Texture2D>(AssetManager.UI_PATH);
@@ -21,9 +19,13 @@ namespace HappyHomeDesigner.Menus
 		private readonly ClickableTextureComponent AddButton;
 		private readonly List<ClickableTextureComponent> BottomButtons;
 		private readonly List<ClickableTextureComponent> TopButtons;
+		private readonly List<ClickableTextureComponent> RightButtons;
+		private readonly List<ClickableTextureComponent> AllButtons;
 		private readonly List<BlueprintEntry> Entries = [];
 		private readonly ScrollBar Scroll = new();
 		private readonly TextBox NameBox;
+
+		public const string DROPBOX_ID = ModEntry.MOD_ID + "_BPDropbox";
 
 		public int Selected
 		{
@@ -42,7 +44,7 @@ namespace HappyHomeDesigner.Menus
 					foreach (var c in TopButtons)
 						c.visible = selected;
 
-					BottomButtons[2].visible = selected;
+					BottomButtons[1].visible = selected;
 				}
 				selectedIndex = value;
 			}
@@ -59,16 +61,17 @@ namespace HappyHomeDesigner.Menus
 		private const int LEFT = 32;
 		private const int MARGIN = 32;
 
+		// TODO add image stuff
 		public BlueprintMenu(GameLocation location) : base()
 		{
 			this.location = location;
 			layouts = RoomLayoutManager.GetLayoutsFor(location);
 			visibleLayouts = new(layouts, ..);
+			initializeUpperRightCloseButton();
 
 			NameBox = new BlankTextBox(null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.blueprint.name") };
 			AddButton = new("add", new(150, 0, 56, 64), null, ModEntry.i18n.Get("ui.blueprint.add"), uiTexture, new(17, 80, 14, 17), 4f, false);
 			BottomButtons = [
-				new("clear", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.clear"), uiTexture, new(80, 80, 16, 16), 4f, true),
 				new("paste", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.paste"), uiTexture, new(112, 80, 16, 16), 4f, true),
 				new("copy", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.copy"), uiTexture, new(96, 80, 16, 16), 4f, true)
 			];
@@ -77,7 +80,15 @@ namespace HappyHomeDesigner.Menus
 				new("save", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.save"), uiTexture, new(64, 80, 16, 16), 4f, true),
 				new("delete", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.delete"), uiTexture, new(48, 80, 16, 16), 4f, true)
 			];
-			allClickableComponents = [AddButton, .. BottomButtons, ..TopButtons];
+			RightButtons = [
+				new("clear", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.clear"), uiTexture, new(80, 80, 16, 16), 4f, true),
+				new("dropbox", new(150, 0, 64, 64), null, ModEntry.i18n.Get("ui.blueprint.dropbox"), uiTexture, new(16, 48, 16, 16), 4f, true)
+			];
+			// loadimage 32, 97, 16, 16
+			// saveimage 16, 97, 16, 16
+
+			AllButtons = [.. BottomButtons, .. TopButtons, .. RightButtons];
+			allClickableComponents = [upperRightCloseButton, AddButton, .. AllButtons];
 
 			Selected = -1;
 			Resize(Game1.uiViewport.ToRect());
@@ -118,6 +129,17 @@ namespace HappyHomeDesigner.Menus
 				y -= PADDING;
 			}
 
+			x = bounds.Width - 32 - 64;
+			y = yPositionOnScreen + height;
+			foreach (var c in RightButtons)
+			{
+				y -= 64;
+				c.setPosition(x, y);
+				y -= PADDING;
+			}
+
+
+
 			NameBox.X = xPositionOnScreen + LEFT / 2 + PADDING;
 			NameBox.Y = yPositionOnScreen + PADDING;
 			NameBox.Width = AddButton.bounds.Left - NameBox.X;
@@ -154,10 +176,7 @@ namespace HappyHomeDesigner.Menus
 
 			hoverText = null;
 
-			foreach (var c in TopButtons)
-				c.tryHover(x, y, ref hoverText);
-
-			foreach (var c in BottomButtons)
+			foreach (var c in AllButtons)
 				c.tryHover(x, y, ref hoverText);
 
 			AddButton.tryHover(x, y, ref hoverText);
@@ -200,6 +219,7 @@ namespace HappyHomeDesigner.Menus
 				case "apply": Apply(sound); break;
 				case "save": Update(sound); break;
 				case "delete": Delete(sound); break;
+				case "dropbox": DisplayDropbox(sound); break;
 			}
 		}
 
@@ -207,13 +227,24 @@ namespace HappyHomeDesigner.Menus
 		{
 			visibleLayouts.Range = Scroll.VisibleRange;
 
+			var view = Game1.uiViewport;
+			b.Draw(
+				uiTexture, new Rectangle(0, 0, xPositionOnScreen + width, view.Height),
+				new Rectangle(32, 96, 96, 1), Color.White
+			);
+			b.Draw(
+				uiTexture, new Rectangle(xPositionOnScreen + width, 0, view.Width - 128 - width - xPositionOnScreen, view.Height),
+				new Rectangle(127, 96, 1, 1), Color.White
+			);
+			b.Draw(
+				uiTexture, new Rectangle(view.Width - 128, 0, 128, view.Height),
+				new Rectangle(32, 96, 96, 1), Color.White, 0f, Vector2.Zero, SpriteEffects.FlipHorizontally, 0f
+			);
+
 			drawTextureBox(b, xPositionOnScreen + LEFT, yPositionOnScreen + 4, MAIN_WIDTH, height - 4, Color.White);
 			Scroll.Draw(b);
 
-			foreach (var c in TopButtons)
-				c.draw(b);
-
-			foreach (var c in BottomButtons)
+			foreach (var c in AllButtons)
 				c.draw(b);
 
 			foreach (var e in Entries)
@@ -369,6 +400,16 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutManager.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.pasted"));
+		}
+
+		public void DisplayDropbox(bool playSound)
+		{
+			var inv = Game1.player.team.GetOrCreateGlobalInventory(DROPBOX_ID);
+			var menu = new ItemGrabMenu(inv)
+			{
+				exitFunction = () => { Game1.activeClickableMenu = this; }
+			};
+			Game1.activeClickableMenu = menu;
 		}
 	}
 }

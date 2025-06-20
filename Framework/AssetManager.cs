@@ -24,6 +24,7 @@ namespace HappyHomeDesigner.Framework
 		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
 		public const string PORTABLE_ID = MOD_ID + "_HandCatalogue";
 		public const string FAIRY_MAIL = MOD_ID + "_FairyMail";
+		public const string BLUEPRINT_ID = MOD_ID + "_BlueprintBook";
 
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
@@ -88,10 +89,10 @@ namespace HappyHomeDesigner.Framework
 			var name = e.NameWithoutLocale;
 
 			if (name.IsEquivalentTo(UI_PATH))
-				e.LoadFromModFile<Texture2D>($"assets/{ModEntry.config.UiName}.png", AssetLoadPriority.Low);
+				e.LoadFromModFile<Texture2D>($"assets/{ModEntry.config.UiName}.png", AssetLoadPriority.Exclusive);
 
 			else if (name.IsEquivalentTo(TEXTURE_PATH))
-				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Low);
+				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Exclusive);
 
 			else if (name.IsEquivalentTo(MAIL_BG))
 				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);
@@ -127,6 +128,12 @@ namespace HappyHomeDesigner.Framework
 				entry.Description = i18n.Get("item.portable.desc");
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(PORTABLE_ID, entry);
+
+				entry = localItems["blueprint"].ToObject<ToolData>();
+				entry.DisplayName = i18n.Get("item.blueprint.name");
+				entry.Description = i18n.Get("item.blueprint.desc");
+				entry.Texture = TEXTURE_PATH;
+				data.TryAdd(BLUEPRINT_ID, entry);
 			}
 		}
 
@@ -190,13 +197,21 @@ namespace HappyHomeDesigner.Framework
 
 				if (!IsClientMode)
 				{
-					if (data.TryGetValue("Carpenter", out var shop)) 
+					if (data.TryGetValue("Carpenter", out var shop))
+					{
 						shop.Items.Add(new()
 						{
 							Id = COLLECTORS_ID,
 							ItemId = "(F)" + COLLECTORS_ID,
 							Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
 						});
+						shop.Items.Add(new()
+						{
+							Id = BLUEPRINT_ID,
+							ItemId = "(T)" + BLUEPRINT_ID,
+							Price = 5000
+						});
+					}
 
 					if (ModEntry.config.EasierTrashCatalogue && data.TryGetValue("ShadowShop", out shop))
 						shop.Items.Add(new() {

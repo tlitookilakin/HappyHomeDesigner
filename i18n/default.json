@@ -92,5 +92,7 @@
 	"ui.blueprint.cleared": "Cleared furniture!",
 	"ui.blueprint.copied": "Copied to clipboard!",
 	"ui.blueprint.pasted": "Created from clipboard!",
-	"ui.blueprint.name": "Blueprint name"
+	"ui.blueprint.name": "Blueprint name",
+	"item.blueprint.name": "Blueprint Book",
+	"item.blueprint.desc": "A book used to store your interior designs.\nCan easily save & load\nfurniture layouts."
 }

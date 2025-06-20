@@ -7,6 +7,14 @@
 			"InstantUse": true
 		}
 	},
+	"blueprint": {
+		"Name": "Blueprint Book",
+		"SpriteIndex": 28,
+		"ClassName": "GenericTool",
+		"SetProperties": {
+			"InstantUse": true
+		}
+	},
 	"card": {
 		"Name": "Collector's Card",
 		"SpriteIndex": 8,
