@@ -93,6 +93,9 @@
 	"ui.blueprint.copied": "Copied to clipboard!",
 	"ui.blueprint.pasted": "Created from clipboard!",
 	"ui.blueprint.name": "Blueprint name",
+	"ui.blueprint.empty": "Clipboard is empty",
+	"ui.blueprint.failure": "Could not apply layout",
+	"ui.blueprint.dropbox": "Removed Items",
 	"item.blueprint.name": "Blueprint Book",
 	"item.blueprint.desc": "A book used to store your interior designs.\nCan easily save & load\nfurniture layouts."
 }

@@ -54,7 +54,7 @@ namespace HappyHomeDesigner.Menus
 		private string overText;
 		private int overTicks;
 		private int selectedIndex;
-		private ListSlice<RoomLayoutData> visibleLayouts;
+		private readonly ListSlice<RoomLayoutData> visibleLayouts;
 
 		private const int MAIN_WIDTH = 350;
 		private const int PADDING = 8;
@@ -219,7 +219,7 @@ namespace HappyHomeDesigner.Menus
 				case "apply": Apply(sound); break;
 				case "save": Update(sound); break;
 				case "delete": Delete(sound); break;
-				case "dropbox": DisplayDropbox(sound); break;
+				case "dropbox": DisplayDropbox(); break;
 			}
 		}
 
@@ -330,6 +330,8 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutManager.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.added"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
 		public void Apply(bool playSound)
@@ -337,10 +339,18 @@ namespace HappyHomeDesigner.Menus
 			if (Selected < 0)
 				return;
 
-			if (!layouts[Selected].TryApply(location))
-				return;
-
-			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.applied"));
+			if (layouts[Selected].TryApply(location))
+			{
+				ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.applied"));
+				if (playSound)
+					Game1.playSound("newArtifact");
+			}
+			else
+			{
+				ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.failure"));
+				if (playSound)
+					Game1.playSound("cancel");
+			}
 		}
 
 		public void Delete(bool playSound)
@@ -353,6 +363,8 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutManager.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.deleted"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
 		public void Update(bool playSound)
@@ -364,6 +376,8 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutManager.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.saved"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
 		public void Clear(bool playSound)
@@ -371,6 +385,8 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutData.Clear(location);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.cleared"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
 		public void Copy(bool playSound)
@@ -383,13 +399,20 @@ namespace HappyHomeDesigner.Menus
 				return;
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.copied"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
 		public void Paste(bool playSound)
 		{
 			string s = "";
 			if (!DesktopClipboard.GetText(ref s))
+			{
+				ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.empty"));
+				if (playSound)
+					Game1.playSound("cancel");
 				return;
+			}
 
 			var data = JsonConvert.DeserializeObject<RoomLayoutData>(s);
 			if (data is null)
@@ -400,9 +423,11 @@ namespace HappyHomeDesigner.Menus
 			RoomLayoutManager.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.pasted"));
+			if (playSound)
+				Game1.playSound("newArtifact");
 		}
 
-		public void DisplayDropbox(bool playSound)
+		public void DisplayDropbox()
 		{
 			var inv = Game1.player.team.GetOrCreateGlobalInventory(DROPBOX_ID);
 			var menu = new ItemGrabMenu(inv)

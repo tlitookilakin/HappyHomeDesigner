@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+using StardewValley.TerrainFeatures;
 using System;
 using System.Collections.Generic;
 
@@ -23,13 +24,56 @@ namespace HappyHomeDesigner.Framework
 		{
 			public bool CanPlace(GameLocation where, Vector2 tile)
 			{
+				const CollisionMask mask = CollisionMask.Buildings | CollisionMask.Flooring | CollisionMask.TerrainFeatures;
+
 				var placer = ItemRegistry.Create<Furniture>(id);
-				var valid = placer.canBePlacedHere(
-					where, tile, 
-					CollisionMask.Buildings | CollisionMask.Farmers | CollisionMask.Furniture | 
-					CollisionMask.Objects | CollisionMask.TerrainFeatures | CollisionMask.LocationSpecific
-				);
-				return valid;
+
+				bool ground = placer.isGroundFurniture();
+
+				if (!where.CanPlaceThisFurnitureHere(placer))
+					return false;
+				if (!ground)
+					tile.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
+
+				int width = placer.getTilesWide();
+				int height = placer.getTilesHigh();
+				bool passable = placer.isPassable();
+				int type = placer.furniture_type.Value;
+
+				for (int x = 0; x < width; x++)
+				{
+					for (int y = 0; y < height; y++)
+					{
+						Vector2 pos = new(x + tile.X, y + tile.Y);
+						if (!where.isTilePlaceable(tile, passable))
+							return false;
+						if (!passable && where.objects.TryGetValue(pos, out var obj) && !obj.isPassable())
+							return false;
+
+						if (!ground)
+							if (where.IsTileOccupiedBy(pos, mask))
+								return false;
+							else
+								continue;
+
+						if (type is 15 && y is 0)
+							if (where.IsTileOccupiedBy(pos, mask))
+								return false;
+							else
+								continue;
+
+						if (where.IsTileBlockedBy(pos, mask))
+							return false;
+
+						if (where.terrainFeatures.GetValueOrDefault(pos) is HoeDirt dirt && dirt.crop != null)
+							return false;
+					}
+				}
+
+				if (placer.GetAdditionalFurniturePlacementStatus(where, (int)tile.X * 64, (int)tile.Y * 64) != 0)
+					return false;
+
+				return true;
 			}
 
 			public void Place(GameLocation where, Vector2 tile)
@@ -56,11 +100,11 @@ namespace HappyHomeDesigner.Framework
 			if (where.Name != Location)
 				return false;
 
-			Clear(where);
-
 			foreach ((var tile, var furn) in Furniture)
 				if (!furn.CanPlace(where, tile))
-					continue;
+					return false;
+
+			Clear(where);
 
 			foreach ((var tile, var furn) in Furniture)
 				furn.Place(where, tile);
@@ -100,7 +144,7 @@ namespace HappyHomeDesigner.Framework
 					foreach (var item in chest.Items)
 						inv.Add(item);
 
-				if (obj.QualifiedItemId == "(O)" + AssetManager.PORTABLE_ID)
+				else if (obj.QualifiedItemId == "(O)" + AssetManager.PORTABLE_ID)
 					inv.Add(ItemRegistry.Create("(T)" + AssetManager.PORTABLE_ID));
 
 				else if (obj is not StardewValley.Objects.Furniture)
