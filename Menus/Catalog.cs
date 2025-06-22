@@ -149,6 +149,8 @@ namespace HappyHomeDesigner.Menus
 				SettingsButton = new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
 
 			CNPButton = CustomNPCPaintings.GetButton();
+			if (CNPButton is not null)
+				Tabs.Add(CNPButton);
 
 			Resize(Game1.uiViewport.ToRect());
 
@@ -271,7 +273,7 @@ namespace HappyHomeDesigner.Menus
 			Pages[tab].receiveLeftClick(x, y, playSound);
 			for (int i = 0; i < Tabs.Count; i++)
 			{
-				if (Tabs[i].containsPoint(x, y))
+				if (Tabs[i].containsPoint(x, y) && i < Pages.Count)
 				{
 					if (playSound && tab != i)
 						Game1.playSound("shwip");
@@ -330,11 +332,6 @@ namespace HappyHomeDesigner.Menus
 				var tabComp = Tabs[i];
 				tabComp.setPosition(tabX, tabY);
 				tabX += tabComp.bounds.Width;
-			}
-
-			if (CNPButton is not null)
-			{
-				CNPButton.setPosition(tabX, tabY);
 			}
 
 			CloseButton.bounds.Location = new(40, 52);
