@@ -55,6 +55,7 @@ namespace HappyHomeDesigner.Framework
 		public KeybindList QuickDelete { get; set; }
 		public bool PickupCraftables { get; set; }
 		public bool ExpandSearch { get; set; }
+		public bool SeasonalOverlay { get; set; }
 
 		public Config()
 		{
@@ -96,6 +97,7 @@ namespace HappyHomeDesigner.Framework
 				1f, 5f, .1f
 			);
 			gmcm.QuickBind(man, this, nameof(ExpandSearch));
+			gmcm.QuickBind(man, this, nameof(SeasonalOverlay));
 
 			gmcm.QuickPage(man, "controls");
 			gmcm.QuickBind(man, this, nameof(GiveModifier));
@@ -134,6 +136,7 @@ namespace HappyHomeDesigner.Framework
 			QuickDelete = new(SButton.Delete);
 			PickupCraftables = true;
 			ExpandSearch = true;
+			SeasonalOverlay = true;
 		}
 
 		private void Save()

@@ -97,5 +97,7 @@
 	"ui.blueprint.failure": "Could not apply layout",
 	"ui.blueprint.dropbox": "Removed Items",
 	"item.blueprint.name": "Blueprint Book",
-	"item.blueprint.desc": "A book used to store your interior designs.\nCan easily save & load\nfurniture layouts."
+	"item.blueprint.desc": "A book used to store your interior designs.\nCan easily save & load\nfurniture layouts.",
+	"config.SeasonalOverlay.name": "Seasonal Overlay",
+	"config.SeasonalOverlay.desc": "Adds a decorative seasonal overlay to the catalogue menu."
 }

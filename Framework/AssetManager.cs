@@ -29,6 +29,7 @@ namespace HappyHomeDesigner.Framework
 		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
 		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
+		public const string OVERLAY_TEXTURE = "Mods/" + MOD_ID + "/Overlay";
 
 		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
@@ -93,6 +94,9 @@ namespace HappyHomeDesigner.Framework
 
 			else if (name.IsEquivalentTo(TEXTURE_PATH))
 				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Exclusive);
+
+			else if (name.IsEquivalentTo(OVERLAY_TEXTURE))
+				e.LoadFromModFile<Texture2D>("assets/season_overlay.png", AssetLoadPriority.Exclusive);
 
 			else if (name.IsEquivalentTo(MAIL_BG))
 				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);

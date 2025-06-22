@@ -71,6 +71,24 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.Draw(b);
 			if (search_visible)
 				search.Draw(b);
+
+			DrawOverlay(b);
+		}
+
+		private void DrawOverlay(SpriteBatch b)
+		{
+			if (!ModEntry.config.SeasonalOverlay)
+				return;
+
+			int yOffset = Game1.currentLocation.GetSeasonIndex() * 64;
+			b.Draw(Catalog.OverlayTexture,
+				new Rectangle(xPositionOnScreen - 28, yPositionOnScreen - 32, 256, 256),
+				new Rectangle(0, yOffset, 64, 64), Color.White
+			);
+			b.Draw(Catalog.OverlayTexture,
+				new Rectangle(xPositionOnScreen + width - 256 + 28, yPositionOnScreen + height - 256 + 28, 256, 256),
+				new Rectangle(64, yOffset, 64, 64), Color.White
+			);
 		}
 
 		/// <summary>Called before the panels and tabs are drawn</summary>

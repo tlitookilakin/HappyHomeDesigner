@@ -17,6 +17,7 @@ namespace HappyHomeDesigner.Menus
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
+		internal static Texture2D OverlayTexture;
 		private static bool WasJustHovered = false;
 
 		/// <summary>Attempts to open the menu from an existing shop</summary>
@@ -51,6 +52,7 @@ namespace HappyHomeDesigner.Menus
 			}
 
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
+			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
 
 			if (ActiveMenu.Value is Catalog catalog)
 				if (catalog.Type == ID)
@@ -242,14 +244,15 @@ namespace HappyHomeDesigner.Menus
 				new Rectangle(64, 24, 16, 16),
 				Color.Black * .4f);
 
-			Pages[tab].draw(b);
-			CloseButton.draw(b);
 			SettingsButton?.draw(b);
 
 			for (int i = 0; i < Tabs.Count; i++)
 				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
 
+			Pages[tab].draw(b);
+
 			PlayerInventory.draw(b);
+			CloseButton.draw(b);
 
 			Pages[tab].DrawTooltip(b);
 		}
@@ -337,7 +340,7 @@ namespace HappyHomeDesigner.Menus
 				Pages[i].Resize(region);
 
 			int tabX = xPositionOnScreen + 96;
-			int tabY = yPositionOnScreen + 16;
+			int tabY = yPositionOnScreen + 12;
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				var tabComp = Tabs[i];
