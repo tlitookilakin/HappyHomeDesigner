@@ -146,7 +146,7 @@ namespace HappyHomeDesigner.Menus
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
 
 			if (IGMCM.Installed && ModEntry.config.GMCMButton)
-				SettingsButton = new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
+				SettingsButton = new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
 
 			CNPButton = CustomNPCPaintings.GetButton();
 
@@ -177,7 +177,7 @@ namespace HappyHomeDesigner.Menus
 				return;
 
 			if (enabled)
-				SettingsButton ??= new(new(0, 0, 48, 48), Game1.objectSpriteSheet, new(256, 64, 16, 16), 3f, true);
+				SettingsButton ??= new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
 			else
 				SettingsButton = null;
 		}
@@ -335,10 +335,7 @@ namespace HappyHomeDesigner.Menus
 			if (CNPButton is not null)
 			{
 				CNPButton.setPosition(tabX, tabY);
-				tabX += CNPButton.bounds.Width;
 			}
-
-			SettingsButton?.setPosition(tabX + 8, tabY + 8);
 
 			CloseButton.bounds.Location = new(40, 52);
 			ToggleButton.bounds.Location = new(16, bounds.Height - 64);
@@ -349,6 +346,8 @@ namespace HappyHomeDesigner.Menus
 				Math.Max(currentTab.width + currentTab.xPositionOnScreen + 48 + 3 + 3, (bounds.Width - PlayerInventory.width) / 2) - PlayerInventory.xPositionOnScreen, 
 				(ToggleButton.bounds.Bottom - PlayerInventory.height) - PlayerInventory.yPositionOnScreen
 			);
+
+			SettingsButton?.setPosition(currentTab.xPositionOnScreen + currentTab.width, tabY + 16);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
