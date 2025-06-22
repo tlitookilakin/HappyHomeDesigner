@@ -20,6 +20,8 @@ namespace HappyHomeDesigner.Menus
 		protected int current_filter;
 		public List<SpaceTab> custom_tabs;
 
+		public abstract ICollection<string> KnownIDs { get; }
+
 		/// <returns>The tab representing this page</returns>
 		public abstract ClickableTextureComponent GetTab();
 

@@ -18,6 +18,8 @@ namespace HappyHomeDesigner.Menus
 		private readonly ClickableTextureComponent TrashSlot
 			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
+		public override ICollection<string> KnownIDs => [];
+
 		public ItemPage(IEnumerable<ISalable> source)
 		{
 			foreach(var item in source)

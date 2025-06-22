@@ -39,6 +39,8 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		internal static HashSet<string> knownIDs = new();
 
+		public override ICollection<string> KnownIDs => knownIDs;
+
 		private static string[] preservedFavorites;
 
 		/// <summary>Create and setup a variant page</summary>

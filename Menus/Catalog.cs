@@ -13,7 +13,6 @@ using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
-	// TODO globalize favorites
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
@@ -118,6 +117,9 @@ namespace HappyHomeDesigner.Menus
 		private bool Toggled = true;
 		private Point screenSize;
 		private readonly InventoryWrapper PlayerInventory = new();
+
+		public ICollection<string> KnownIds
+				=> Pages[tab].KnownIDs;
 
 		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{

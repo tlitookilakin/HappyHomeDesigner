@@ -28,6 +28,8 @@ namespace HappyHomeDesigner.Menus
 		private readonly GridPanel FloorsPanel = new(72, 72, true);
 		private readonly UndoRedoButton<WallFloorState> undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 
+		public override ICollection<string> KnownIDs => [];
+
 		private GridPanel ActivePanel;
 
 		public WallFloorPage(IEnumerable<ISalable> items)
