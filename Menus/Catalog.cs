@@ -290,6 +290,17 @@ namespace HappyHomeDesigner.Menus
 				IGMCM.API.OpenModMenu(ModEntry.manifest);
 				if (playSound)
 					Game1.playSound("bigSelect");
+
+				// TODO remove when fixed in gmcm
+				// config temp fix
+				var cfg = Game1.activeClickableMenu;
+				cfg.GetType().GetField("ReturnToList",
+					System.Reflection.BindingFlags.Instance |
+					System.Reflection.BindingFlags.NonPublic |
+					System.Reflection.BindingFlags.Public
+				).SetValue(cfg, () => {
+					Game1.activeClickableMenu = null;
+				});
 			}
 
 			if (CNPButton is not null && CNPButton.containsPoint(x, y))
