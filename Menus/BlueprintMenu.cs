@@ -65,7 +65,7 @@ namespace HappyHomeDesigner.Menus
 		public BlueprintMenu(GameLocation location) : base()
 		{
 			this.location = location;
-			layouts = RoomLayoutManager.GetLayoutsFor(location);
+			layouts = DataService.GetLayoutsFor(location);
 			visibleLayouts = new(layouts, ..);
 			initializeUpperRightCloseButton();
 
@@ -327,7 +327,7 @@ namespace HappyHomeDesigner.Menus
 
 			layouts.Add(RoomLayoutData.CreateFrom(location, name));
 			Selected = layouts.Count - 1;
-			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+			DataService.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.added"));
 			if (playSound)
@@ -360,7 +360,7 @@ namespace HappyHomeDesigner.Menus
 
 			layouts.RemoveAt(Selected);
 			Selected = -1;
-			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+			DataService.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.deleted"));
 			if (playSound)
@@ -373,7 +373,7 @@ namespace HappyHomeDesigner.Menus
 				return;
 
 			layouts[Selected] = RoomLayoutData.CreateFrom(location, layouts[Selected].Name, layouts[Selected].FarmerName);
-			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+			DataService.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.saved"));
 			if (playSound)
@@ -420,7 +420,7 @@ namespace HappyHomeDesigner.Menus
 
 			layouts.Add(data);
 			Selected = layouts.Count - 1;
-			RoomLayoutManager.SaveLayoutsFor(location, layouts);
+			DataService.SaveLayoutsFor(location, layouts);
 
 			ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.pasted"));
 			if (playSound)

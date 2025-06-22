@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Patches;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -48,11 +49,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			KeyFavs = FavoritesKey;
 
-			var favorites = new HashSet<string>(
-				Game1.player.modData.TryGetValue(KeyFavs, out var s) ?
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
-				[]
-			);
+			var favorites = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyFavs));
 
 			knownIDs.Clear();
 			int skipped = 0;
@@ -362,7 +359,7 @@ namespace HappyHomeDesigner.Menus
 		/// <inheritdoc/>
 		public override void Exit()
 		{
-			Game1.player.modData[KeyFavs] = string.Join('	', Favorites) + '	' + string.Join('	', preservedFavorites);
+			DataService.SaveFavoritesFor(Game1.player, KeyFavs, Favorites.Select(Convert.ToString).Concat(preservedFavorites));
 		}
 
 		/// <inheritdoc/>

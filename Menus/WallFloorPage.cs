@@ -8,6 +8,7 @@ using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -33,17 +34,8 @@ namespace HappyHomeDesigner.Menus
 		{
 			filter_count = 4;
 
-			var wallFavs = new HashSet<string>(
-				Game1.player.modData.TryGetValue(KeyWallFav, out var s) ? 
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
-				[]
-			);
-
-			var floorFavs = new HashSet<string>(
-				Game1.player.modData.TryGetValue(KeyFloorFav, out s) ? 
-				s.Split('	', StringSplitOptions.RemoveEmptyEntries) :
-				[]
-			);
+			var wallFavs = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyWallFav));
+			var floorFavs = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyFloorFav));
 
 			var knownWalls = new HashSet<string>();
 			var knownFloors = new HashSet<string>();
@@ -224,8 +216,8 @@ namespace HappyHomeDesigner.Menus
 		/// <inheritdoc/>
 		public override void Exit()
 		{
-			Game1.player.modData[KeyFloorFav] = string.Join('	', favoriteFloors) + '	' + string.Join('	', preservedFloorFavorites);
-			Game1.player.modData[KeyWallFav] = string.Join('	', favoriteWalls) + '	' + string.Join('	', preservedWallFavorites);
+			DataService.SaveFavoritesFor(Game1.player, KeyFloorFav, favoriteFloors.Select(Convert.ToString).Concat(preservedFloorFavorites));
+			DataService.SaveFavoritesFor(Game1.player, KeyWallFav, favoriteWalls.Select(Convert.ToString).Concat(preservedWallFavorites));
 		}
 
 		/// <inheritdoc/>
