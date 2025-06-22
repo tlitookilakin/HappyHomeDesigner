@@ -1,5 +1,6 @@
 ﻿using HappyHomeDesigner.Framework;
 using HarmonyLib;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace HappyHomeDesigner.Patches
 
 		private static IEnumerable<CodeInstruction> InsertCombineCheck(IEnumerable<CodeInstruction> source, ILGenerator gen)
 		{
+			bool android = Constants.TargetPlatform is GamePlatform.Android;
+
 			var il = new CodeMatcher(source, gen);
 			var slot = gen.DeclareLocal(typeof(Item));
 			var held = gen.DeclareLocal(typeof(Item));
@@ -45,21 +48,51 @@ namespace HappyHomeDesigner.Patches
 
 			var leaveTarget = il.Instruction.operand;
 
-			il.MatchEndBackwards(
-				new(OpCodes.Ldloc_2),
-				new(OpCodes.Brfalse)
-			);
+			if (android)
+			{
+				il.MatchEndBackwards(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Ldfld),
+					new(OpCodes.Ldloc_2),
+					new(OpCodes.Callvirt),
+					new(OpCodes.Brfalse)
+				);
+			}
+			else
+			{
+				il.MatchEndBackwards(
+					new(OpCodes.Ldloc_2),
+					new(OpCodes.Brfalse)
+				);
+			}
 
 			if (!il.AssertValid("Fusion patch failed. Could not find match point 2."))
 				return null;
 
 			il.Advance(1)
-			.CreateLabel(out var jump)
-			.InsertAndAdvance(
+			.CreateLabel(out var jump);
 
-				// slot = actualInventory[i];
-				new(OpCodes.Ldloc_2),
-				new(OpCodes.Stloc, slot),
+			// slot = actualInventory[i];
+			if (android)
+			{
+				il.InsertAndAdvance(
+
+					new CodeInstruction(OpCodes.Ldarg_0),
+					new CodeInstruction(OpCodes.Ldfld, typeof(InventoryMenu).GetField(nameof(InventoryMenu.actualInventory))),
+					new CodeInstruction(OpCodes.Ldloc_2),
+					new CodeInstruction(OpCodes.Callvirt, typeof(IList<Item>).GetMethod("get_Item")),
+					new CodeInstruction(OpCodes.Stloc, slot)
+				);
+			}
+			else
+			{
+				il.InsertAndAdvance(
+					new(OpCodes.Ldloc_2),
+					new(OpCodes.Stloc, slot)
+				);
+			}
+
+			il.InsertAndAdvance(
 
 				// held = toAddTo;
 				new(OpCodes.Ldarg_3),
@@ -75,7 +108,7 @@ namespace HappyHomeDesigner.Patches
 				// actualInventory[i] = slot;
 				new(OpCodes.Ldarg_0),
 				new(OpCodes.Ldfld, typeof(InventoryMenu).GetField(nameof(InventoryMenu.actualInventory))),
-				new(OpCodes.Ldloc_1),
+				new(android ? OpCodes.Ldloc_2 : OpCodes.Ldloc_1),
 				new(OpCodes.Ldloc, slot),
 				new(OpCodes.Callvirt, typeof(IList<Item>).GetMethod("set_Item")),
 
