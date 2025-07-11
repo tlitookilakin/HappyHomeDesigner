@@ -40,11 +40,13 @@ namespace HappyHomeDesigner.Framework
 				bool passable = placer.isPassable();
 				int type = placer.furniture_type.Value;
 
+				Vector2 tile2 = new(MathF.Floor(tile.X), MathF.Floor(tile.Y));
 				for (int x = 0; x < width; x++)
 				{
 					for (int y = 0; y < height; y++)
 					{
-						Vector2 pos = new(x + tile.X, y + tile.Y);
+						Vector2 pos = new(tile2.X + x, tile2.Y + y);
+
 						if (!where.isTilePlaceable(tile, passable))
 							return false;
 						if (!passable && where.objects.TryGetValue(pos, out var obj) && !obj.isPassable())

@@ -406,17 +406,27 @@ namespace HappyHomeDesigner.Menus
 		public void Paste(bool playSound)
 		{
 			string s = "";
-			if (!DesktopClipboard.GetText(ref s))
+			RoomLayoutData data = null;
+
+			if (DesktopClipboard.GetText(ref s))
+			{
+				try
+				{
+					data = JsonConvert.DeserializeObject<RoomLayoutData>(s);
+				}
+				catch (Exception ex)
+				{
+					ModEntry.monitor.Log($"Error reading layout from clipboard:\n{ex}", StardewModdingAPI.LogLevel.Trace);
+				}
+			}
+
+			if (data is null)
 			{
 				ShowOverlayText(ModEntry.i18n.Get("ui.blueprint.empty"));
 				if (playSound)
 					Game1.playSound("cancel");
 				return;
 			}
-
-			var data = JsonConvert.DeserializeObject<RoomLayoutData>(s);
-			if (data is null)
-				return;
 
 			layouts.Add(data);
 			Selected = layouts.Count - 1;
