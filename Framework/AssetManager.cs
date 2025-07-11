@@ -9,6 +9,7 @@ using StardewValley.GameData.Powers;
 using StardewValley.GameData.Shops;
 using StardewValley.GameData.Tools;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HappyHomeDesigner.Framework
 {
@@ -30,6 +31,7 @@ namespace HappyHomeDesigner.Framework
 		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
 		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
 		public const string OVERLAY_TEXTURE = "Mods/" + MOD_ID + "/Overlay";
+		public const string TEXT_PATH = "Mods/" + MOD_ID + "/Strings";
 
 		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
@@ -104,6 +106,9 @@ namespace HappyHomeDesigner.Framework
 			else if (name.IsEquivalentTo("Data/Shops"))
 				e.Edit(TagShops, AssetEditPriority.Default);
 
+			else if (name.IsEquivalentTo(TEXT_PATH))
+				e.LoadFrom(GetLangText, AssetLoadPriority.Medium);
+
 			else if (!ModEntry.config.ClientMode)
 			{
 				if (name.IsEquivalentTo("Data/Furniture"))
@@ -123,19 +128,24 @@ namespace HappyHomeDesigner.Framework
 			}
 		}
 
+		private static Dictionary<string, string> GetLangText()
+		{
+			return new(i18n.GetTranslations().Select(static t => new KeyValuePair<string, string>(t.Key, t)));
+		}
+
 		private static void AddHandCatalogue(IAssetData asset)
 		{
 			if (asset.Data is Dictionary<string, ToolData> data)
 			{
 				var entry = localItems["handheld"].ToObject<ToolData>();
-				entry.DisplayName = i18n.Get("item.portable.name");
-				entry.Description = i18n.Get("item.portable.desc");
+				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.portable.name]";
+				entry.Description = $"[LocalizedText {TEXT_PATH}:item.portable.desc]";
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(PORTABLE_ID, entry);
 
 				entry = localItems["blueprint"].ToObject<ToolData>();
-				entry.DisplayName = i18n.Get("item.blueprint.name");
-				entry.Description = i18n.Get("item.blueprint.desc");
+				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.blueprint.name]";
+				entry.Description = $"[LocalizedText {TEXT_PATH}:item.blueprint.desc]";
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(BLUEPRINT_ID, entry);
 			}
@@ -146,14 +156,14 @@ namespace HappyHomeDesigner.Framework
 			if (asset.Data is Dictionary<string, ObjectData> data)
 			{
 				var entry = localItems["card"].ToObject<ObjectData>();
-				entry.DisplayName = i18n.Get("item.card.name");
-				entry.Description = i18n.Get("item.card.desc");
+				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.card.name]";
+				entry.Description = $"[LocalizedText {TEXT_PATH}:item.card.desc]";
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(CARD_ID, entry);
 
 				entry = localItems["handheld_dummy"].ToObject<ObjectData>();
-				entry.DisplayName = i18n.Get("item.portable.name");
-				entry.Description = i18n.Get("item.portable.desc");
+				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.portable.name]";
+				entry.Description = $"[LocalizedText {TEXT_PATH}:item.portable.desc]";
 				entry.Texture = TEXTURE_PATH;
 				data.TryAdd(PORTABLE_ID, entry);
 			}
@@ -181,8 +191,8 @@ namespace HappyHomeDesigner.Framework
 				data.TryAdd(
 					CARD_ID, new()
 					{
-						DisplayName = i18n.Get("item.card.name"),
-						Description = i18n.Get("item.card.desc"),
+						DisplayName = $"[LocalizedText {TEXT_PATH}:item.card.name]",
+						Description = $"[LocalizedText {TEXT_PATH}:item.card.desc]",
 						TexturePath = TEXTURE_PATH,
 						TexturePosition = ItemRegistry.GetData(CARD_ID).GetSourceRect().Location,
 						UnlockedCondition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
@@ -261,7 +271,7 @@ namespace HappyHomeDesigner.Framework
 		{
 			return string.Format(
 				data[name],
-				i18n.Get($"{prefix}.{name}.name"),
+				$"[LocalizedText {TEXT_PATH.Replace('/', '\\')}:{prefix}.{name}.name]",
 				"Mods\\" + MOD_ID + "\\Catalogue"
 			);
 		}
