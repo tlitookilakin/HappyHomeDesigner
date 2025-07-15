@@ -15,7 +15,9 @@ namespace HappyHomeDesigner.Patches
 	internal static class CraftablePlacement
 	{
 		public const string UNIQUE_ITEM_FLAG = ModEntry.MOD_ID + "_UNIQUE_ITEM";
-		private static readonly AccessTools.FieldRef<Chest, int> currentFrame = AccessTools.FieldRefAccess<Chest, int>("currentLidFrame");
+		private static readonly AccessTools.FieldRef<Chest, int> currentFrame 
+			= AccessTools.FieldRefAccess<Chest, int>("currentLidFrame");
+		private static readonly string[] IdBlacklist = ["(O)590"];
 
 		internal static void Apply(HarmonyHelper helper)
 		{
@@ -88,7 +90,7 @@ namespace HappyHomeDesigner.Patches
 			var where = who.currentLocation;
 			Vector2 tile = new(x / 64, y / 64);
 
-			if (where.Objects.TryGetValue(tile, out var obj) && obj.CanBeGrabbed && !obj.isDebrisOrForage())
+			if (where.Objects.TryGetValue(tile, out var obj) && obj.CanBeGrabbed && !obj.isDebrisOrForage() && !IdBlacklist.Contains(obj.QualifiedItemId))
 			{
 				if (TryPickupObject(obj, out var item))
 				{
