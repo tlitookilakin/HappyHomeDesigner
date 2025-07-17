@@ -1,5 +1,6 @@
 ﻿using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
@@ -14,41 +15,44 @@ namespace HappyHomeDesigner.Framework
 		public string Name { get; set; }
 		public string ID { get; set; }
 		public string Location { get; set; }
-		public Dictionary<Vector2, FurnitureItem> Furniture { get; set; } = new();
+
+		[JsonConverter(typeof(FurnitureDataMigrator))]
+		public List<FurnitureItem> Furniture { get; set; } = [];
 		public Dictionary<string, string> Walls { get; set; }
 		public Dictionary<string, string> Floors { get; set; }
 		public string Date { get; set; } = "";
 		public string FarmerName { get; set; } = "";
 
-		public record class FurnitureItem(string id, Dictionary<string, string> modData, int rotation, FurnitureItem held)
+		public record class FurnitureItem(string id, Dictionary<string, string> modData, int rotation, FurnitureItem held, Vector2 tile)
 		{
-			public bool CanPlace(GameLocation where, Vector2 tile)
+			public bool CanPlace(GameLocation where)
 			{
 				const CollisionMask mask = CollisionMask.Buildings | CollisionMask.Flooring | CollisionMask.TerrainFeatures;
 
 				var placer = ItemRegistry.Create<Furniture>(id);
-
 				bool ground = placer.isGroundFurniture();
+				Vector2 tile2 = tile;
 
 				if (!where.CanPlaceThisFurnitureHere(placer))
 					return false;
 				if (!ground)
-					tile.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
+					tile2.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
 
 				int width = placer.getTilesWide();
 				int height = placer.getTilesHigh();
 				bool passable = placer.isPassable();
 				int type = placer.furniture_type.Value;
 
-				Vector2 tile2 = new(MathF.Floor(tile.X), MathF.Floor(tile.Y));
+				Vector2 tileSnap = new(MathF.Floor(tile.X), MathF.Floor(tile.Y));
 				for (int x = 0; x < width; x++)
 				{
 					for (int y = 0; y < height; y++)
 					{
-						Vector2 pos = new(tile2.X + x, tile2.Y + y);
+						Vector2 pos = new(tileSnap.X + x, tileSnap.Y + y);
 
-						if (!where.isTilePlaceable(tile, passable))
+						if (!where.isTilePlaceable(pos, passable))
 							return false;
+
 						if (!passable && where.objects.TryGetValue(pos, out var obj) && !obj.isPassable())
 							return false;
 
@@ -78,7 +82,7 @@ namespace HappyHomeDesigner.Framework
 				return true;
 			}
 
-			public void Place(GameLocation where, Vector2 tile)
+			public void Place(GameLocation where)
 			{
 				var placer = Create();
 				placer.TileLocation = tile;
@@ -102,14 +106,14 @@ namespace HappyHomeDesigner.Framework
 			if (where.Name != Location)
 				return false;
 
-			foreach ((var tile, var furn) in Furniture)
-				if (!furn.CanPlace(where, tile))
+			foreach (var furn in Furniture)
+				if (!furn.CanPlace(where))
 					return false;
 
 			Clear(where);
 
-			foreach ((var tile, var furn) in Furniture)
-				furn.Place(where, tile);
+			foreach (var furn in Furniture)
+				furn.Place(where);
 
 			if (where is DecoratableLocation deco)
 			{
@@ -175,7 +179,7 @@ namespace HappyHomeDesigner.Framework
 			};
 
 			foreach (var furn in location.furniture)
-				data.Furniture.Add(furn.TileLocation, CreateFrom(furn));
+				data.Furniture.Add(CreateFrom(furn));
 
 			if (location is DecoratableLocation deco)
 			{
@@ -195,7 +199,48 @@ namespace HappyHomeDesigner.Framework
 
 		private static FurnitureItem CreateFrom(Furniture furn)
 		{
-			return new(furn.QualifiedItemId, furn.modData.Get(), furn.currentRotation.Value, furn.heldObject.Value is Furniture held ? CreateFrom(held) : null);
+			return new(
+				furn.QualifiedItemId, furn.modData.Get(), furn.currentRotation.Value, 
+				furn.heldObject.Value is Furniture held ? CreateFrom(held) : null, furn.TileLocation
+			);
+		}
+
+		public class FurnitureDataMigrator : JsonConverter
+		{
+			public override bool CanConvert(Type objectType)
+			{
+				return objectType == typeof(List<FurnitureItem>) || objectType == typeof(Dictionary<Vector2, FurnitureItem>);
+			}
+
+			public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+			{
+				if (reader.TokenType == JsonToken.StartArray)
+					return serializer.Deserialize<List<FurnitureItem>>(reader);
+
+				if (reader.TokenType != JsonToken.StartObject)
+					throw new JsonSerializationException("Expected object or array for furniture list, got neither.");
+
+				List<FurnitureItem> items = [];
+				while (reader.Read() && reader.TokenType == JsonToken.PropertyName)
+				{
+					var split = ((string)reader.Value).Split(',', 2);
+					var tile = new Vector2(float.Parse(split[0]), float.Parse(split[1]));
+
+					if (!reader.Read())
+						break;
+
+					var entry = serializer.Deserialize<FurnitureItem>(reader);
+					items.Add(new(entry.id, entry.modData, entry.rotation, entry.held, tile));
+				}
+
+				return items;
+			}
+
+			public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+			{
+				// write as-is
+				serializer.Serialize(writer, value);
+			}
 		}
 	}
 }

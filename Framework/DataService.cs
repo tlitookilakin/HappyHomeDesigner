@@ -11,13 +11,28 @@ namespace HappyHomeDesigner.Framework
 
 		public static List<RoomLayoutData> GetLayoutsFor(GameLocation where)
 		{
-			List<RoomLayoutData> entries = ModEntry.helper.Data.ReadGlobalData<List<RoomLayoutData>>($"{PATH}_{where.Name}");
+			List<RoomLayoutData> entries = null;
+			try
+			{
+				entries = ModEntry.helper.Data.ReadGlobalData<List<RoomLayoutData>>($"{PATH}_{where.Name}");
+			}
+			catch (Exception e)
+			{
+				ModEntry.monitor.Log($"Error loading layouts for location '{where.Name}':\n{e}", LogLevel.Warn);
+			}
 			return entries ?? [];
 		}
 
 		public static void SaveLayoutsFor(GameLocation where, IList<RoomLayoutData> data)
 		{
-			ModEntry.helper.Data.WriteGlobalData($"{PATH}_{where.Name}", data);
+			try
+			{
+				ModEntry.helper.Data.WriteGlobalData($"{PATH}_{where.Name}", data);
+			}
+			catch(Exception e)
+			{
+				ModEntry.monitor.Log($"Error saving layouts for location '{where.Name}':\n{e}", LogLevel.Warn);
+			}
 		}
 
 		public static IEnumerable<string> GetFavoritesFor(Farmer who, string key)
