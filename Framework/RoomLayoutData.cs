@@ -25,16 +25,23 @@ namespace HappyHomeDesigner.Framework
 
 		public record class FurnitureItem(string id, Dictionary<string, string> modData, int rotation, FurnitureItem held, Vector2 tile)
 		{
-			public bool CanPlace(GameLocation where)
+			public bool CanPlace(GameLocation where, out string? error)
 			{
-				const CollisionMask mask = CollisionMask.Buildings | CollisionMask.Flooring | CollisionMask.TerrainFeatures;
+				error = null;
+				const CollisionMask passMask = CollisionMask.Buildings | CollisionMask.Flooring | CollisionMask.TerrainFeatures;
+				const CollisionMask mask = 
+					CollisionMask.Buildings | CollisionMask.TerrainFeatures | CollisionMask.LocationSpecific | CollisionMask.Flooring;
 
 				var placer = ItemRegistry.Create<Furniture>(id);
-				bool ground = placer.isGroundFurniture();
-				Vector2 tile2 = tile;
 
 				if (!where.CanPlaceThisFurnitureHere(placer))
+				{
+					error = $"'{placer.DisplayName}': Placement restrictions not met for object.";
 					return false;
+				}
+
+				bool ground = placer.isGroundFurniture();
+				Vector2 tile2 = tile;
 				if (!ground)
 					tile2.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
 
@@ -51,35 +58,62 @@ namespace HappyHomeDesigner.Framework
 						Vector2 pos = new(tileSnap.X + x, tileSnap.Y + y);
 
 						if (!where.isTilePlaceable(pos, passable))
+						{
+							error = $"'{placer.DisplayName}': Tile {pos} is not placeable";
 							return false;
+						}
 
 						if (!passable && where.objects.TryGetValue(pos, out var obj) && !obj.isPassable())
+						{
+							error = $"'{placer.DisplayName}': Tile {pos} is blocked by object '{obj.DisplayName}'";
 							return false;
+						}
 
-						if (!ground)
-							if (where.IsTileOccupiedBy(pos, mask))
-								return false;
-							else
+						if (!ground || (type is 15 && y is 0))
+						{
+							if (!where.IsTileOccupiedBy(pos, mask, passMask))
 								continue;
 
-						if (type is 15 && y is 0)
-							if (where.IsTileOccupiedBy(pos, mask))
-								return false;
-							else
-								continue;
-
-						if (where.IsTileBlockedBy(pos, mask))
+							error = $"'{placer.DisplayName}': Tile {pos} is blocked";
 							return false;
+						}
+
+						if (where.IsTileBlockedBy(pos, mask, passMask))
+						{
+							error = $"'{placer.DisplayName}': Tile {pos} is blocked";
+							return false;
+						}
 
 						if (where.terrainFeatures.GetValueOrDefault(pos) is HoeDirt dirt && dirt.crop != null)
+						{
+							error = $"'{placer.DisplayName}': Tile {pos} is blocked by a crop";
 							return false;
+						}
 					}
 				}
 
-				if (placer.GetAdditionalFurniturePlacementStatus(where, (int)tile.X * 64, (int)tile.Y * 64) != 0)
-					return false;
+				switch (placer.GetAdditionalFurniturePlacementStatus(where, (int)tile.X * 64, (int)tile.Y * 64))
+				{
+					case 0:
+						return true;
+					case 1:
+						error = $"'{placer.DisplayName}': Wall object must be placed on a wall";
+						break;
+					case 2:
+						error = $"'{placer.DisplayName}': Cannot place on a tile that does not allow furniture";
+						break;
+					case 3:
+						error = $"'{placer.DisplayName}': Cannot place floor furniture on a wall";
+						break;
+					case 4:
+						error = $"'{placer.DisplayName}': This location is not decoratable";
+						break;
+					default:
+						error = $"'{placer.DisplayName}': Furniture could not be placed for an unknown reason";
+						break;
+				}
 
-				return true;
+				return false;
 			}
 
 			public void Place(GameLocation where)
@@ -106,9 +140,19 @@ namespace HappyHomeDesigner.Framework
 			if (where.Name != Location)
 				return false;
 
+			List<string> errors = [];
 			foreach (var furn in Furniture)
-				if (!furn.CanPlace(where))
-					return false;
+				if (!furn.CanPlace(where, out string error))
+					errors.Add(error);
+
+			if (errors.Count > 0)
+			{
+				ModEntry.monitor.Log(
+					$"Could not place {errors.Count} furniture items in layout: {string.Join('\n', [.. errors])}", 
+					StardewModdingAPI.LogLevel.Debug
+				);
+				return false;
+			}
 
 			Clear(where);
 
