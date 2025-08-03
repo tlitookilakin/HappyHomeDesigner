@@ -35,6 +35,7 @@ namespace HappyHomeDesigner
 
 			AssetManager.Init(Helper);
 			InventoryWatcher.Init(Helper);
+			Commands.BindAll(Helper);
 		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
