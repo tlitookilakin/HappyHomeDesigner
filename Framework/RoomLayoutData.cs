@@ -123,6 +123,11 @@ namespace HappyHomeDesigner.Framework
 				placer.currentRotation.Value = rotation;
 				placer.updateRotation();
 				where.furniture.Add(placer);
+
+				// kills tile snapping from TileLocation
+				// needed because placement code breaks precise placement
+				var bb = placer.boundingBox.Value;
+				placer.boundingBox.Value = new((int)(tile.X * 64f), (int)(tile.Y * 64f), bb.Width, bb.Height);
 			}
 
 			public Furniture Create()
