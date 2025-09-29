@@ -1,12 +1,9 @@
-﻿using HappyHomeDesigner.Menus;
-using HarmonyLib;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Menus;
 using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Extensions;
 using StardewValley.Menus;
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace HappyHomeDesigner.Integration
@@ -22,15 +19,7 @@ namespace HappyHomeDesigner.Integration
 			if (!ModEntry.helper.ModRegistry.IsLoaded(ID))
 				return;
 
-			var man = ModEntry.helper.ModRegistry.Get(ID).Manifest;
-
-			var asm_id = man.EntryDll.Trim();
-			if (asm_id.EndsWithIgnoreCase(".dll"))
-				asm_id = asm_id[..^4];
-
-			var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == asm_id);
-
-			if (asm == null)
+			if (!ModUtilities.TryFindAssembly("CustomNPCPaintings", out var asm))
 			{
 				ModEntry.monitor.Log(ModEntry.i18n.Get("logging.cnpcp.noload"), LogLevel.Warn);
 				ModEntry.monitor.Log("CNPC: no assembly", LogLevel.Trace);
