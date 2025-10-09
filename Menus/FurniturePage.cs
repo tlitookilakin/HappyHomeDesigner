@@ -19,6 +19,17 @@ namespace HappyHomeDesigner.Menus
 		private int[] Map;
 		private int defaultSlot;
 
+		// Furniture Framework integration
+		private static readonly string[] FFTagsDefault = [
+			"ff_category_table", "ff_category_seat", "ff_category_wall", "ff_category_floor", "ff_category_decor"
+		];
+		private static readonly string[] FFTagsExtended = [
+			"ff_hhd_category_chair", "ff_hhd_category_couch", "ff_hhd_category_other", "ff_hhd_category_table",
+			"ff_hhd_category_wall", "ff_hhd_category_light","ff_hhd_category_decor", "ff_hhd_category_floor",
+			"ff_hhd_category_wall_light", "ff_hhd_category_bed"
+		];
+		private string[] FFMap;
+
 		public FurniturePage(IEnumerable<ISalable> items)
 			: base(items, KeyFavs, "furniture") { }
 
@@ -30,12 +41,14 @@ namespace HappyHomeDesigner.Menus
 				Map = ExtendedTabMap;
 				defaultSlot = DEFAULT_EXTENDED;
 				iconRow = 0;
+				FFMap = FFTagsExtended;
 			}
 			else
 			{
 				Map = DefaultTabMap;
 				defaultSlot = DEFAULT_DEFAULT;
 				iconRow = 8;
+				FFMap = FFTagsDefault;
 			}
 
 			filter_count = Map.Max() + 1;
@@ -58,10 +71,17 @@ namespace HappyHomeDesigner.Menus
 					var entry = new FurnitureEntry(furn, season, seasonName, favorites);
 					var type = furn.furniture_type.Value;
 
-					if (type is < FURNITURE_MAX and >= 0)
-						Filters[Map[type]].Add(entry);
+					// Furniture Framework
+					if (furn.modData.ContainsKey("FF"))
+					{
+						for (int i = FFMap.Length - 1; i >= 0; i--)
+							if (furn.HasContextTag(FFMap[i]))
+								Filters[i].Add(entry);
+					}
+
+					// everything else
 					else
-						Filters[defaultSlot].Add(entry);
+						Filters[type is < FURNITURE_MAX and >= 0 ? Map[type] : defaultSlot].Add(entry);
 
 					if (entry.Favorited)
 						Favorites.Add(entry);
