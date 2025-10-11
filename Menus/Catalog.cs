@@ -126,6 +126,7 @@ namespace HappyHomeDesigner.Menus
 		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
 		{
 			Type = id;
+			AlternativeTextures.UpdateIndex();
 
 			Pages.Add(new FurniturePage(items));
 			Pages.Add(new WallFloorPage(items));

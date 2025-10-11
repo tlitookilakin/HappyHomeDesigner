@@ -9,6 +9,7 @@ using StardewValley.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -25,9 +26,10 @@ namespace HappyHomeDesigner.Integration
 		public static bool Installed;
 
 		public static Func<string, int, bool> IsVariationDisabled;
-		public static Func<string, string, string, bool> HasVariant;
 		public static Action<Furniture, Season, List<Furniture>> VariantsOfFurniture;
 		public static Action<StardewValley.Object, Season, List<StardewValley.Object>> VariantsOfCraftable;
+		private static Func<HashSet<string>> CreateIndexImpl;
+		private static HashSet<string> TextureIndex = [];
 
 		public delegate void TextureSourceGetter(ModDataDictionary data, Rectangle defaultRect, ref Texture2D texture, ref Rectangle source);
 		public static TextureSourceGetter GetTextureSource;
@@ -63,8 +65,8 @@ namespace HappyHomeDesigner.Integration
 				error = "Failed to bind IsVariantDisabled.";
 
 			// bind variant checker
-			else if (!BindHasVariant(manager))
-				error = "Failed to bind HasVariant.";
+			else if (!BindIndexBuilder(manager))
+				error = "Failed to bind index builder.";
 
 			// bind furniture variant factory
 			else if (!TryBindVariantsOf(manager, "Furniture_", out VariantsOfFurniture))
@@ -91,6 +93,25 @@ namespace HappyHomeDesigner.Integration
 			}
 		}
 
+		public static void UpdateIndex()
+		{
+			if (!Installed)
+				return;
+
+			var timer = Stopwatch.StartNew();
+			TextureIndex = CreateIndexImpl();
+			timer.Stop();
+
+			ModEntry.monitor.Log($"Indexed {TextureIndex.Count} alternative textures in {timer.ElapsedMilliseconds} ms.", LogLevel.Debug);
+		}
+
+		public static bool HasVariant(string id, string name, string season)
+		{
+			return
+				TextureIndex.Contains(id) || TextureIndex.Contains(name) ||
+				TextureIndex.Contains($"{id}_{season}") || TextureIndex.Contains($"{name}_{season}");
+		}
+
 		private static bool BindVariantDisabled(Type entry)
 		{
 			var cfg = entry.GetField("modConfig", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(null);
@@ -106,6 +127,79 @@ namespace HappyHomeDesigner.Integration
 				return false;
 
 			IsVariationDisabled = method.CreateDelegate<Func<string, int, bool>>(cfg);
+			return true;
+		}
+
+		private static bool BindIndexBuilder(FieldInfo manager)
+		{
+			/*
+			* BuildIndex() {
+			*	HashSet<string> index = new(StringComparer.OrdinalIgnoreCase);
+			*	var list = manager._alternativeTextures;
+			*	for (int i = list.Count; i >= 0; i--)
+			*		index.Add(list[i].GetNameWithSeason());
+			*	return index;
+			* }
+			*/
+
+			var field = manager.FieldType.GetField("_alternativeTextures", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			if (field is null)
+				return false;
+
+			var model = field.FieldType.GenericTypeArguments[0];
+			var getName = model.GetMethod("GetNameWithSeason", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			if (getName is null)
+				return false;
+
+			var set = Expression.Variable(typeof(HashSet<string>));
+			var loopBreak = Expression.Label();
+			var i = Expression.Variable(typeof(int));
+			var list = Expression.Variable(field.FieldType);
+			var ret = Expression.Label(typeof(HashSet<string>));
+
+			var body = Expression.Block([set, i, list],
+				Expression.Assign(set,
+					Expression.New(
+						typeof(HashSet<string>).GetConstructor([typeof(IEqualityComparer<string>)]),
+						Expression.Constant(StringComparer.OrdinalIgnoreCase)
+					)
+				),
+				Expression.Assign(list, Expression.Field(Expression.Field(null, manager), field)),
+				Expression.Assign(i, Expression.Subtract(
+					Expression.Call(list, field.FieldType.GetProperty("Count").GetMethod),
+					Expression.Constant(1)
+				)),
+				Expression.Loop(
+					Expression.IfThenElse(
+						Expression.GreaterThanOrEqual(i, Expression.Constant(0)),
+						Expression.Block(
+							Expression.Call(set, typeof(HashSet<string>).GetMethod("Add"),
+								Expression.Call(
+									Expression.Call(list, field.FieldType.GetMethod("get_Item"), i),
+									getName
+								)
+							),
+							Expression.PostDecrementAssign(i)
+						),
+						Expression.Break(loopBreak)
+					),
+					loopBreak
+				),
+				Expression.Return(ret, set),
+				Expression.Label(ret, set)
+			);
+
+			try
+			{
+				CreateIndexImpl = Expression.Lambda<Func<HashSet<string>>>(body).Compile();
+			}
+
+			catch (Exception ex)
+			{
+				ModEntry.monitor.Log(ex.ToString(), LogLevel.Trace);
+				return false;
+			}
+
 			return true;
 		}
 
@@ -185,34 +279,6 @@ namespace HappyHomeDesigner.Integration
 				return false;
 			}
 
-			return true;
-		}
-
-		private static bool BindHasVariant(FieldInfo manager)
-		{
-			/*
-			* HasVariant(name, season)
-			*	=>	AlternativeTextures.textureManager.DoesObjectHaveAlternativeTexture(name) || 
-			*		AlternativeTextures.textureManager.DoesObjectHaveAlternativeTexture(name + "_" + season)
-			*/
-
-			var getter = manager.FieldType.GetMethod("DoesObjectHaveAlternativeTexture", [typeof(string), typeof(bool)]);
-			var name = Expression.Parameter(typeof(string));
-			var season = Expression.Parameter(typeof(string));
-			var id = Expression.Parameter(typeof(string));
-
-			var body = Expression.Or(
-				HasVariantCheck(manager, getter, name, season, Expression.Constant(false)),
-				HasVariantCheck(manager, getter, id, season, Expression.Constant(true))
-			);
-			try
-			{
-				HasVariant = Expression.Lambda<Func<string, string, string, bool>>(body, id, name, season).Compile();
-			} catch (Exception ex)
-			{
-				ModEntry.monitor.Log(ex.ToString(), LogLevel.Trace);
-				return false;
-			}
 			return true;
 		}
 
