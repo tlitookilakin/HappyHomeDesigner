@@ -93,11 +93,20 @@ namespace HappyHomeDesigner.Patches
 
 		private static bool SortErrorFurniture(Furniture a, Furniture b, ref int __result)
 		{
+			// fix error items not sorting
 			if (a == null || a.Name == "ErrorItem" || b == null || b.Name == "ErrorItem")
 			{
 				__result = 0;
 				return false;
 			}
+
+			// fix vanilla sort crash
+			if (a.QualifiedItemId is "(F)1226" or "(F)1308" && b.QualifiedItemId is "(F)1226" or "(F)1308")
+			{
+				__result = a.ItemId.CompareTo(b.ItemId);
+				return false;
+			}
+
 			return true;
 		}
 	}
