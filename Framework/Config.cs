@@ -3,7 +3,6 @@ using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
-using StardewValley;
 using System;
 using System.Collections.Generic;
 
@@ -56,6 +55,7 @@ namespace HappyHomeDesigner.Framework
 		public bool PickupCraftables { get; set; }
 		public bool ExpandSearch { get; set; }
 		public bool SeasonalOverlay { get; set; }
+		public bool DisableBlueprintChecks { get; set; }
 
 		public Config()
 		{
@@ -74,9 +74,9 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(PauseTime));
 			gmcm.QuickBind(man, this, nameof(QuickDelete));
 			gmcm.QuickBind(man, this, nameof(ClientMode), true);
-			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
 			gmcm.QuickBind(man, this, nameof(Magnify));
 			gmcm.QuickBind(man, this, nameof(PickupCraftables));
+			gmcm.QuickBind(man, this, nameof(DisableBlueprintChecks));
 
 			gmcm.QuickPage(man, "tweaks");
 			gmcm.QuickBind(man, this, nameof(UiSkin),
@@ -88,6 +88,7 @@ namespace HappyHomeDesigner.Framework
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
+			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
 			gmcm.QuickBind(man, this, nameof(GMCMButton));
 			gmcm.AddNumberOption(man,
 				() => magnifyScale,
@@ -137,6 +138,7 @@ namespace HappyHomeDesigner.Framework
 			PickupCraftables = true;
 			ExpandSearch = true;
 			SeasonalOverlay = true;
+			DisableBlueprintChecks = false;
 		}
 
 		private void Save()

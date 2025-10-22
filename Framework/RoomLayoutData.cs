@@ -145,18 +145,21 @@ namespace HappyHomeDesigner.Framework
 			if (where.Name != Location)
 				return false;
 
-			List<string> errors = [];
-			foreach (var furn in Furniture)
-				if (!furn.CanPlace(where, out string error))
-					errors.Add(error);
-
-			if (errors.Count > 0)
+			if (!ModEntry.config.DisableBlueprintChecks)
 			{
-				ModEntry.monitor.Log(
-					$"Could not place {errors.Count} furniture items in layout: {string.Join('\n', [.. errors])}", 
-					StardewModdingAPI.LogLevel.Debug
-				);
-				return false;
+				List<string> errors = [];
+				foreach (var furn in Furniture)
+					if (!furn.CanPlace(where, out string error))
+						errors.Add(error);
+
+				if (errors.Count > 0)
+				{
+					ModEntry.monitor.Log(
+						$"Could not place {errors.Count} furniture items in layout: {string.Join('\n', [.. errors])}",
+						StardewModdingAPI.LogLevel.Debug
+					);
+					return false;
+				}
 			}
 
 			Clear(where);

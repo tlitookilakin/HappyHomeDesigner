@@ -99,5 +99,7 @@
 	"item.blueprint.name": "Blueprint Book",
 	"item.blueprint.desc": "A book used to store your interior designs.\nCan easily save & load\nfurniture layouts.",
 	"config.SeasonalOverlay.name": "Seasonal Overlay",
-	"config.SeasonalOverlay.desc": "Adds a decorative seasonal overlay to the catalogue menu."
+	"config.SeasonalOverlay.desc": "Adds a decorative seasonal overlay to the catalogue menu.",
+	"config.DisableBlueprintChecks.name": "Force Blueprints",
+	"config.DisableBlueprintChecks.desc": "Disables all placement checks when applying blueprints. Enable at own risk. May cause badly-placed furniture."
 }
