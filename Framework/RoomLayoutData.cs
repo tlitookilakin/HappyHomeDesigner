@@ -253,7 +253,7 @@ namespace HappyHomeDesigner.Framework
 		{
 			return new(
 				furn.QualifiedItemId, furn.modData.Get(), furn.currentRotation.Value, 
-				furn.heldObject.Value is Furniture held ? CreateFrom(held) : null, furn.TileLocation
+				furn.heldObject.Value is Furniture held ? CreateFrom(held) : null, furn.boundingBox.Value.Location.ToVector2() / 64f
 			);
 		}
 
