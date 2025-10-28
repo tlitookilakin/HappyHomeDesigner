@@ -171,11 +171,11 @@ namespace HappyHomeDesigner.Framework
 			{
 				if (Walls != null)
 					foreach (var wall in Walls)
-						deco.SetWallpaper(wall.Key, wall.Value);
+						deco.SetWallpaper(wall.Value, wall.Key);
 
 				if (Floors != null)
 					foreach (var floor in Floors)
-						deco.SetWallpaper(floor.Key, floor.Value);
+						deco.SetFloor(floor.Value, floor.Key);
 			}
 
 			return true;
