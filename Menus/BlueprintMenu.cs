@@ -52,6 +52,7 @@ namespace HappyHomeDesigner.Menus
 
 		private string hoverText;
 		private string overText;
+		private Glyph[] overGlyphs;
 		private int overTicks;
 		private int selectedIndex;
 		private readonly ListSlice<RoomLayoutData> visibleLayouts;
@@ -268,6 +269,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			overTicks = 0;
 			overText = text;
+			overGlyphs = Glyph.Layout(text, MAIN_WIDTH - 64, Glyph.Alignment.Center, Glyph.Alignment.Center);
 		}
 
 		private void AfterDraw(SpriteBatch b)
@@ -280,6 +282,7 @@ namespace HappyHomeDesigner.Menus
 
 		private void DrawOverlay(SpriteBatch b)
 		{
+
 			if (overText is null)
 				return;
 
@@ -292,21 +295,26 @@ namespace HappyHomeDesigner.Menus
 			}
 
 			float alpha = (45 - Math.Max(Math.Abs(overTicks - 45), 30)) / 15f;
+			var panel = new Rectangle(xPositionOnScreen + LEFT, yPositionOnScreen, MAIN_WIDTH, height);
 
 			drawTextureBox(
-				b, Game1.menuTexture, new Rectangle(0, 256, 60, 60), xPositionOnScreen + LEFT, 
-				yPositionOnScreen, MAIN_WIDTH, height, Color.Black * .5f * alpha, drawShadow: false
+				b, Game1.menuTexture, new Rectangle(0, 256, 60, 60), panel.X, 
+				panel.Y, panel.Width, panel.Height, Color.Black * .5f * alpha, drawShadow: false
 			);
 
-			Vector2[] offsets = new Vector2[overText.Length];
 			float amp = 16f * MathF.Max(80 - overTicks, 0) / 80f;
-			for (int i = 0; i < offsets.Length; i++)
-				offsets[i] = new(0f, MathF.Sin(i * .7f + overTicks * .15f) * amp);
+			var color = Utility.GetPrismaticColor(speedMultiplier: 4f);
+			var position = panel.Center.ToVector2();
 
-			b.DrawStringOffset(
-				overText, xPositionOnScreen + MAIN_WIDTH / 2 + LEFT, yPositionOnScreen + height / 2, 
-				MAIN_WIDTH - 64, Utility.GetPrismaticColor(speedMultiplier: 4f), offsets, true
-			);
+			for(int i = 0; i < overGlyphs.Length; i++)
+			{
+				var glyph = overGlyphs[i];
+				b.Draw(
+					glyph.Texture, 
+					glyph.Position + new Vector2(0f, MathF.Sin(i * .7f + overTicks * .15f) * amp) + position, 
+					glyph.Source, color, 0f, Vector2.Zero, glyph.Scale, SpriteEffects.None, 0f
+				);
+			}
 		}
 
 		public override bool readyToClose()
