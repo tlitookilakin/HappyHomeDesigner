@@ -112,7 +112,7 @@ namespace HappyHomeDesigner.Patches
 
 				// return held;
 				new(OpCodes.Ldloc, held),
-				new(OpCodes.Stloc_S, ret),
+				new(OpCodes.Stloc, ret),
 				new(OpCodes.Leave, leaveTarget)
 			);
 

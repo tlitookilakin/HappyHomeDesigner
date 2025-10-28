@@ -14,7 +14,7 @@
 		<Description>A mod that enhances the decorating experience by overhauling the furniture &amp; wallpaper catalogues.</Description>
 		<UpdateKeys>Nexus:19675, GitHub:tlitookilakin/HappyHomeDesigner</UpdateKeys>
 		<MinimumGameVersion_Behavior>Update</MinimumGameVersion_Behavior>
-		<MinimumApiVersion_Behavior>Update</MinimumApiVersion_Behavior>
+		<MinimumApiVersion>4.1.0</MinimumApiVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
