@@ -337,6 +337,14 @@ namespace HappyHomeDesigner.Menus
 			screenSize = bounds.Size;
 
 			Rectangle region = new(32, 96, 400, bounds.Height - 160);
+			if (ModEntry.ANDROID)
+				region.X += 80;
+
+			xPositionOnScreen = region.X;
+			yPositionOnScreen = region.Y;
+			width = region.Width;
+			height = region.Height;
+
 			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Resize(region);
 

@@ -23,7 +23,7 @@ namespace HappyHomeDesigner.Patches
 		{
 			drawPosition = AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
 			getScaleSize = typeof(Furniture)
-				.GetMethod("getScaleSize", BindingFlags.Instance | HarmonyHelper.AnyDeclared)
+				.GetMethod(ModEntry.ANDROID ? "getScaleSizeForMenu" : "getScaleSize", BindingFlags.Instance | HarmonyHelper.AnyDeclared)
 				.CreateDelegate<Func<Furniture, float>>();
 
 			helper

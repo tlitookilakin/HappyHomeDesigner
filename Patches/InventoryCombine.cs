@@ -22,8 +22,6 @@ namespace HappyHomeDesigner.Patches
 
 		private static IEnumerable<CodeInstruction> InsertCombineCheck(IEnumerable<CodeInstruction> source, ILGenerator gen)
 		{
-			bool android = Constants.TargetPlatform is GamePlatform.Android;
-
 			var il = new CodeMatcher(source, gen);
 			var slot = gen.DeclareLocal(typeof(Item));
 			var held = gen.DeclareLocal(typeof(Item));
@@ -48,7 +46,7 @@ namespace HappyHomeDesigner.Patches
 
 			var leaveTarget = il.Instruction.operand;
 
-			if (android)
+			if (ModEntry.ANDROID)
 			{
 				il.MatchEndBackwards(
 					new(OpCodes.Ldarg_0),
@@ -73,7 +71,7 @@ namespace HappyHomeDesigner.Patches
 			.CreateLabel(out var jump);
 
 			// slot = actualInventory[i];
-			if (android)
+			if (ModEntry.ANDROID)
 			{
 				il.InsertAndAdvance(
 
@@ -108,7 +106,7 @@ namespace HappyHomeDesigner.Patches
 				// actualInventory[i] = slot;
 				new(OpCodes.Ldarg_0),
 				new(OpCodes.Ldfld, typeof(InventoryMenu).GetField(nameof(InventoryMenu.actualInventory))),
-				new(android ? OpCodes.Ldloc_2 : OpCodes.Ldloc_1),
+				new(ModEntry.ANDROID ? OpCodes.Ldloc_2 : OpCodes.Ldloc_1),
 				new(OpCodes.Ldloc, slot),
 				new(OpCodes.Callvirt, typeof(IList<Item>).GetMethod("set_Item")),
 

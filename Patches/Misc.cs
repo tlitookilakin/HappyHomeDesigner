@@ -24,8 +24,10 @@ namespace HappyHomeDesigner.Patches
 				.With<FurnitureDataDefinition>(nameof(FurnitureDataDefinition.CreateItem)).Finalizer(ReplaceInvalidFurniture)
 				.With<Toolbar>(nameof(Toolbar.draw)).Prefix(SkipToolbar)
 				.With(nameof(Toolbar.receiveLeftClick)).Prefix(SkipToolbar)
-				.With(nameof(Toolbar.receiveRightClick)).Prefix(SkipToolbar)
-				.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
+				.With(nameof(Toolbar.receiveRightClick)).Prefix(SkipToolbar);
+
+			if (!ModEntry.ANDROID)
+				helper.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
 		}
 
 		private static IEnumerable<CodeInstruction> DisableHeldItemDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
@@ -39,10 +41,11 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Callvirt, typeof(SObject).GetMethod(nameof(SObject.drawPlacementBounds)))
 				);
 
-			il.MatchEndBackwards(
-				new CodeMatch(c => c.Branches(out jumpTarget))
-			);
-				il.Advance(1)
+			il
+				.MatchEndBackwards(
+					new CodeMatch(c => c.Branches(out jumpTarget))
+				)
+				.Advance(1)
 				.InsertAndAdvance(
 					new(OpCodes.Call, typeof(Misc).GetMethod(nameof(ShouldSkipItemDraw))),
 					new(OpCodes.Brtrue, jumpTarget)

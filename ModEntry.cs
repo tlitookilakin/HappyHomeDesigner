@@ -12,6 +12,7 @@ namespace HappyHomeDesigner
 	public class ModEntry : Mod
 	{
 		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";
+		public static readonly bool ANDROID = Constants.TargetPlatform is GamePlatform.Android;
 
 		internal static IMonitor monitor;
 		internal static IManifest manifest;
