@@ -26,13 +26,11 @@ namespace HappyHomeDesigner.Patches
 			var slot = gen.DeclareLocal(typeof(Item));
 			var held = gen.DeclareLocal(typeof(Item));
 
-			LocalBuilder ret;
-
 			// find return point
 			il.End()
 			.MatchStartBackwards(new CodeMatch(OpCodes.Ret))
-			.MatchStartBackwards(new CodeMatch(i => i.operand is LocalBuilder));
-			ret = (LocalBuilder)il.Operand;
+			.MatchStartBackwards(new CodeMatch(i => i.IsLdloc()));
+			var ret = il.Instruction.GetStore();
 			il.Start();
 
 			il.MatchStartForward(
@@ -84,6 +82,7 @@ namespace HappyHomeDesigner.Patches
 			}
 			else
 			{
+				// slot = slot;
 				il.InsertAndAdvance(
 					new(OpCodes.Ldloc_2),
 					new(OpCodes.Stloc, slot)
@@ -95,7 +94,7 @@ namespace HappyHomeDesigner.Patches
 				// held = toAddTo;
 				new(OpCodes.Ldarg_3),
 				new(OpCodes.Stloc, held),
-				
+
 				// if (TryCombine(ref slot, ref held, playSound))
 				new(OpCodes.Ldloca, slot),
 				new(OpCodes.Ldloca, held),
@@ -112,7 +111,7 @@ namespace HappyHomeDesigner.Patches
 
 				// return held;
 				new(OpCodes.Ldloc, held),
-				new(OpCodes.Stloc, ret),
+				ret,
 				new(OpCodes.Leave, leaveTarget)
 			);
 

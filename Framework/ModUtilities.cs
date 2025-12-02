@@ -8,7 +8,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.BellsAndWhistles;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
@@ -19,17 +18,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
+using System.Reflection.Emit;
 
 namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
-		private static readonly Func<char, bool, Rectangle> SpriteTextSourceRect
-			= typeof(SpriteText).GetMethod("getSourceRectForChar", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-			.CreateDelegate<Func<char, bool, Rectangle>>();
-
 		[Flags]
 		public enum CatalogType {None = 0, Furniture = 1, Wallpaper = 2, Collector = 4};
 
@@ -268,22 +262,6 @@ namespace HappyHomeDesigner.Framework
 			return output;
 		}
 
-		public static bool TryPatch(this Harmony harmony, MethodInfo? method, HarmonyMethod? prefix = null, 
-			HarmonyMethod? postfix = null, HarmonyMethod? transpiler = null, HarmonyMethod? finalizer = null, 
-			[CallerMemberName] string? source = null)
-		{
-			try
-			{
-				harmony.Patch(method, prefix, postfix, transpiler, finalizer);
-			} 
-			catch (Exception e)
-			{
-				ModEntry.monitor.Log($"Failed to patch {method?.Name ?? "NULL"} from {source ?? "NULL"}:\t {e}", LogLevel.Error);
-				return false;
-			}
-			return true;
-		}
-
 		public static Color Mult(this Color a, Color b)
 			=> new(
 				(a.R / 255f) * (b.R / 255f),
@@ -353,6 +331,20 @@ namespace HappyHomeDesigner.Framework
 				toAdd.CopyTo(values, length);
 			}
 			length += toAdd.Length;
+		}
+
+		public static CodeInstruction GetStore(this CodeInstruction code)
+		{
+			return code.opcode.Value switch
+			{
+				0xFE or 0x0C or 0x0D => new(OpCodes.Stloc, code.operand),
+				0x11 or 0x12 => new(OpCodes.Stloc_S, code.operand),
+				0x06 => new(OpCodes.Stloc_0),
+				0x07 => new(OpCodes.Stloc_1),
+				0x08 => new(OpCodes.Stloc_2),
+				0x09 => new(OpCodes.Stloc_3),
+				_ => throw new InvalidOperationException("Opcode is not a local loader")
+			};
 		}
 	}
 }
