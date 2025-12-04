@@ -18,10 +18,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.3.1" />
-		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
+		<PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.4.1" />
+		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
+		<PackageReference Include="PropertyChanged.SourceGenerator" Version="1.1.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="tlitookilakin.StarModGen" Version="0.2.2" />
 		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll" private="false" />
-		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\BmFont.dll" private="false" />
+		<Reference Include="BmFont" HintPath="$(GamePath)\BmFont.dll" private="false" />
+		<Reference Include="StardewUI" HintPath="$(GamePath)\Mods\StardewUI\StardewUI.dll" private="false" />
 		<SMAPIDependency Include="PeacefulEnd.AlternativeTextures" Required="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="assets\views\**\*.sml" CopyToOutputDirectory="PreserveNewest" />
+		<None Remove="assets\views\**\*.sml" />
+		<AssemblyMetadata Include="ProjectPath" Value="$(SolutionPath)" />
 	</ItemGroup>
 </Project>

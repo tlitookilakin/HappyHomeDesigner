@@ -345,6 +345,17 @@ namespace HappyHomeDesigner.Framework
 				0x09 => new(OpCodes.Stloc_3),
 				_ => throw new InvalidOperationException("Opcode is not a local loader")
 			};
-		}
-	}
+        }
+
+        public static bool TryGetMetadata(this Assembly asm, string key, out string value)
+        {
+            var target = asm.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == key);
+            value = target?.Value ?? "";
+
+            if (target is null)
+                return false;
+
+            return true;
+        }
+    }
 }

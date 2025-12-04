@@ -4,8 +4,12 @@ using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewUI.Framework;
+using StardewUI.Framework.Api;
 using StardewValley;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace HappyHomeDesigner
 {
@@ -19,8 +23,9 @@ namespace HappyHomeDesigner
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
+        internal static IViewEngine viewEngine;
 
-		public override void Entry(IModHelper helper)
+        public override void Entry(IModHelper helper)
 		{
 			monitor = Monitor;
 			ModEntry.helper = helper;
@@ -68,6 +73,11 @@ namespace HappyHomeDesigner
 		{
 			if (!e.IsSuppressed() && Game1.activeClickableMenu is null && Catalog.TryApplyButton(e.Button, false))
 				e.Button.Suppress();
+
+			#if DEBUG
+			if (!e.IsSuppressed() && e.Button == SButton.F7)
+				Game1.activeClickableMenu = viewEngine.CreateMenuFromAsset($"Mods/{MOD_ID}/Views/test", null);
+			#endif
 		}
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
@@ -84,6 +94,7 @@ namespace HappyHomeDesigner
 			AlternativeTextures.Init(Helper);
 			CustomNPCPaintings.Init();
 			Spacecore.Init();
+			SetupUI();
 		}
 
 		private static void Patch(HarmonyHelper harmony)
@@ -100,5 +111,19 @@ namespace HappyHomeDesigner
 			CraftablePlacement.Apply(harmony);
 			AltTex.Apply(harmony);
 		}
-	}
+
+        private void SetupUI()
+        {
+            viewEngine = Helper.ModRegistry.GetApi<IViewEngine>("focustense.StardewUI")!;
+
+            viewEngine.RegisterViews($"Mods/{MOD_ID}/Views", "assets/views");
+            viewEngine.RegisterSprites($"Mods/{MOD_ID}/Sprites", "assets/sprites");
+
+			#if DEBUG
+            var path = Assembly.GetExecutingAssembly().TryGetMetadata("ProjectPath", out var proj) ?
+                Path.GetDirectoryName(proj) : null;
+            viewEngine.EnableHotReloading(path);
+			#endif
+        }
+    }
 }

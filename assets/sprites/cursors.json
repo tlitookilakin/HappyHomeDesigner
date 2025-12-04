@@ -1,0 +1,10 @@
+﻿{
+	"Texture": "LooseSprites/Cursors",
+	"Sprites": {
+		"bg": {
+			"SourceRect": "384, 373, 18, 18",
+			"Scale": 14,
+			"FixedEdges": "7, 7, 7, 7"
+		}
+	}
+}
