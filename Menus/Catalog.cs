@@ -51,8 +51,8 @@ namespace HappyHomeDesigner.Menus
 				return;
 			}
 
-			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
-			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
+			MenuTexture = ModEntry.Assets.MenuTexture;
+			OverlayTexture = ModEntry.Assets.OverlayTexture;
 
 			if (ActiveMenu.Value is Catalog catalog)
 				if (catalog.Type == ID)
@@ -148,7 +148,7 @@ namespace HappyHomeDesigner.Menus
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
 
-			if (IGMCM.Installed && ModEntry.config.GMCMButton)
+			if (ModEntry.gmcm != null && ModEntry.config.GMCMButton)
 				SettingsButton = new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
 
 			CNPButton = CustomNPCPaintings.GetButton();
@@ -178,7 +178,7 @@ namespace HappyHomeDesigner.Menus
 
 		private void UpdateGMCMButton(bool enabled)
 		{
-			if (!IGMCM.Installed)
+			if (ModEntry.gmcm is null)
 				return;
 
 			if (enabled)
@@ -291,7 +291,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (SettingsButton is not null && SettingsButton.containsPoint(x, y))
 			{
-				IGMCM.API.OpenModMenu(ModEntry.manifest);
+				ModEntry.gmcm?.OpenModMenu(ModEntry.manifest);
 				if (playSound)
 					Game1.playSound("bigSelect");
 

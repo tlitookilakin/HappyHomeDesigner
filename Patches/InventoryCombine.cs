@@ -1,9 +1,8 @@
 ﻿using HappyHomeDesigner.Framework;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
-using System.Collections.Generic;
+using StarModGen.Utils;
 using System.Reflection.Emit;
 
 namespace HappyHomeDesigner.Patches

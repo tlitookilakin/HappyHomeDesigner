@@ -5,9 +5,8 @@ using Microsoft.Xna.Framework;
 using Netcode;
 using StardewValley;
 using StardewValley.Objects;
-using System;
+using StarModGen.Utils;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches

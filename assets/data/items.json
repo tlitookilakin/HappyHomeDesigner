@@ -1,34 +1,23 @@
 ﻿{
-	"handheld": {
-		"Name": "Architect's Catalogue",
-		"SpriteIndex": 9,
-		"ClassName": "GenericTool",
-		"SetProperties": {
-			"InstantUse": true
-		}
-	},
-	"blueprint": {
-		"Name": "Blueprint Book",
-		"SpriteIndex": 28,
-		"ClassName": "GenericTool",
-		"SetProperties": {
-			"InstantUse": true
-		}
-	},
-	"card": {
+	"MembershipCard": {
 		"Name": "Collector's Card",
 		"SpriteIndex": 8,
 		"Category": -29,
 		"ExcludeFromFishingCollection": true,
 		"ExcludeFromRandomSale": true,
-		"ExcludeFromShippingCollection": true
+		"ExcludeFromShippingCollection": true,
+		"DisplayName": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.card.name]",
+		"Description": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.card.desc]"
 	},
-	"handheld_dummy": {
+	"HandCatalogue": {
 		"Name": "Architect's Catalogue",
 		"SpriteIndex": 11,
 		"Category": -29,
 		"ExcludeFromFishingCollection": true,
 		"ExcludeFromRandomSale": true,
-		"ExcludeFromShippingCollection": true
+		"ExcludeFromShippingCollection": true,
+		"DisplayName": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.portable.name]",
+		"Description": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.portable.desc]",
+		"Texture": "Mods/tlitookilakin.HappyHomeDesigner/Catalogue"
 	}
 }

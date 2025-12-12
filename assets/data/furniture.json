@@ -1,5 +1,5 @@
 ﻿{
-	"Catalogue" : "Happy Home Catalogue/table/2 2/-1/1/230000/-1/{0}/0/{1}/true",
-	"CollectorsCatalogue" : "Collector's Catalogue/table/1 2/1 1/1/50000/-1/{0}/2/{1}/true",
-	"DeluxeCatalogue" : "Designer's Dream Catalogue'/table/2 2/2 1/1/300000/-1/{0}/12/{1}/true"
+	"Catalogue": "Happy Home Catalogue/table/2 2/-1/1/230000/-1/[LocalizedText Mods\\tlitookilakin.HappyHomeDesigner\\Strings:furniture.Catalogue.name]/0/Mods\\tlitookilakin.HappyHomeDesigner\\Catalogue/true",
+	"CollectorsCatalogue": "Collector's Catalogue/table/1 2/1 1/1/50000/-1/[LocalizedText Mods\\tlitookilakin.HappyHomeDesigner\\Strings:furniture.CollectorsCatalogue.name]/2/Mods\\tlitookilakin.HappyHomeDesigner\\Catalogue/true",
+	"DeluxeCatalogue": "Designer's Dream Catalogue'/table/2 2/2 1/1/300000/-1/[LocalizedText Mods\\tlitookilakin.HappyHomeDesigner\\Strings:furniture.DeluxeCatalogue.name]/12/Mods\\tlitookilakin.HappyHomeDesigner\\Catalogue/true"
 }

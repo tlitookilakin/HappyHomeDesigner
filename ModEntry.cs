@@ -5,10 +5,8 @@ using HappyHomeDesigner.Patches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewUI.Framework;
-using StardewUI.Framework.Api;
 using StardewValley;
-using System;
-using System.IO;
+using StarModGen.Utils;
 using System.Reflection;
 
 namespace HappyHomeDesigner
@@ -24,14 +22,18 @@ namespace HappyHomeDesigner
 		internal static Config config;
 		internal static ITranslationHelper i18n;
         internal static IViewEngine viewEngine;
+		internal static AssetManager Assets;
+		internal static IGMCMApi gmcm;
 
         public override void Entry(IModHelper helper)
 		{
 			monitor = Monitor;
 			ModEntry.helper = helper;
 			i18n = Helper.Translation;
-			config = Helper.ReadConfig<Config>();
+			config = Config.Init(Helper, ModManifest);
 			manifest = ModManifest;
+
+			Assets = new(config);
 
 			helper.Events.GameLoop.GameLaunched += Launched;
 			helper.Events.Input.ButtonPressed += OnButtonPressed;
@@ -39,7 +41,6 @@ namespace HappyHomeDesigner
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
 
-			AssetManager.Init(Helper);
 			InventoryWatcher.Init(Helper);
 			Commands.BindAll(Helper);
 		}
@@ -84,9 +85,7 @@ namespace HappyHomeDesigner
 		{
 			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
 			{
-				IGMCM.API = Helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");
-				IGMCM.Installed = true;
-				config.Register(IGMCM.API, ModManifest);
+				gmcm = Helper.ModRegistry.GetApi<IGMCMApi>("spacechase0.GenericModConfigMenu");
 			}
 
 			Patch(new(new(ModManifest.UniqueID), Monitor));

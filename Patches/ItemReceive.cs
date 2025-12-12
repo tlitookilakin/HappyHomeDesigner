@@ -1,5 +1,6 @@
 ﻿using HappyHomeDesigner.Framework;
 using StardewValley;
+using StarModGen.Utils;
 
 namespace HappyHomeDesigner.Patches
 {

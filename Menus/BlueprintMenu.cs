@@ -14,7 +14,7 @@ namespace HappyHomeDesigner.Menus
 	{
 		private readonly GameLocation location;
 		private readonly IList<RoomLayoutData> layouts;
-		private readonly Texture2D uiTexture = Game1.content.Load<Texture2D>(AssetManager.UI_PATH);
+		private readonly Texture2D uiTexture = ModEntry.Assets.MenuTexture;
 
 		private readonly ClickableTextureComponent AddButton;
 		private readonly List<ClickableTextureComponent> BottomButtons;

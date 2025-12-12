@@ -1,0 +1,24 @@
+{
+    "HandCatalogue": {
+        "Name": "Architect's Catalogue",
+        "SpriteIndex": 9,
+        "ClassName": "GenericTool",
+        "SetProperties": {
+            "InstantUse": true
+        },
+        "DisplayName": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.portable.name]",
+        "Description": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.portable.desc]",
+        "Texture": "Mods/tlitookilakin.HappyHomeDesigner/Catalogue"
+    },
+    "BlueprintBook": {
+        "Name": "Blueprint Book",
+        "SpriteIndex": 28,
+        "ClassName": "GenericTool",
+        "SetProperties": {
+            "InstantUse": true
+        },
+        "DisplayName": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.blueprint.name]",
+        "Description": "[LocalizedText Mods/tlitookilakin.HappyHomeDesigner/Strings:item.blueprint.desc]",
+        "Texture": "Mods/tlitookilakin.HappyHomeDesigner/Catalogue"
+    }
+}

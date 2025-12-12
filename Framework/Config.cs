@@ -1,14 +1,13 @@
-﻿using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Menus;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
-using System;
-using System.Collections.Generic;
+using StarModGen.Lib;
+using StarModGen.Utils;
 
 namespace HappyHomeDesigner.Framework
 {
-	public class Config
+	[Config(false)]
+	public partial class Config
 	{
 		private static string[] skins;
 		private static string[] skinFiles;
@@ -17,21 +16,51 @@ namespace HappyHomeDesigner.Framework
 
 		internal string UiName => skindex > 0 ? skinFiles[skindex - 1] : GetAutoSkin();
 
+		[ConfigValue(true, "controls")]
 		public bool CloseWithKey { get; set; }
+
+		[ConfigValue(SButton.LeftShift, "controls")]
 		public KeybindList GiveModifier { get; set; }
+
+		[ConfigValue(SButton.LeftControl, "controls")]
 		public KeybindList FavoriteModifier { get; set; }
+
+		[ConfigValue(true)]
 		public bool ExtendedCategories { get; set; }
+
+		[ConfigValue(false, "tweaks")]
 		public bool FurnitureTooltips { get; set; }
+
+		[ConfigValue(true)]
 		public bool PauseTime { get; set; }
+
+		[ConfigValue(true, "tweaks")]
 		public bool ReplaceFurnitureCatalog { get; set; }
-		public bool ReplaceWallpaperCatalog { get; set; }
-		public bool ReplaceRareCatalogs { get; set; }
-		public KeybindList ToggleShortcut { get; set; }
+
+        [ConfigValue(true, "tweaks")]
+        public bool ReplaceWallpaperCatalog { get; set; }
+
+        [ConfigValue(true, "tweaks")]
+        public bool ReplaceRareCatalogs { get; set; }
+
+        [ConfigValue(SButton.None, "controls")]
+        public KeybindList ToggleShortcut { get; set; }
+
+		[ConfigValue(false, "controls")]
 		public bool AlwaysLockScroll { get; set; }
+
+		[ConfigValue(false)]
 		public bool ClientMode { get; set; }
+
+		[ConfigValue(false, "cheats")]
 		public bool EarlyDeluxe { get; set; }
+
+		[ConfigValue(false, "tweaks")]
 		public bool LargeVariants { get; set; }
+
+		[ConfigValue(SButton.None, "cheats")]
 		public KeybindList OpenMenu { get; set; }
+
 		public string UiSkin
 		{
 			get => skins[skindex];
@@ -42,117 +71,62 @@ namespace HappyHomeDesigner.Framework
 					skindex = 0;
 			}
 		}
+
+		[ConfigValue(true, "tweaks")]
 		public bool EasierTrashCatalogue { get; set; }
+
+		[ConfigValue(false)]
 		public bool Magnify { get; set; }
-		public float MagnifyScale
-		{
-			get => magnifyScale;
-			set => magnifyScale = Math.Clamp(value, 1f, 5f);
-		}
-		private float magnifyScale;
+
+		[ConfigValue(2f, "tweaks")]
+		[ConfigRange(Max = 5f, Min = 1f, Step = .5f)]
+		public partial float MagnifyScale { get; set; }
+
+		[ConfigValue(true, "tweaks")]
 		public bool GMCMButton { get; set; }
+
+		[ConfigValue(SButton.Delete, "controls")]
 		public KeybindList QuickDelete { get; set; }
+
+		[ConfigValue(true)]
 		public bool PickupCraftables { get; set; }
+
+		[ConfigValue(true, "tweaks")]
 		public bool ExpandSearch { get; set; }
+
+		[ConfigValue(true, "tweaks")]
 		public bool SeasonalOverlay { get; set; }
+
+		[ConfigValue(false, "tweaks")]
 		public bool DisableBlueprintChecks { get; set; }
 
-		public Config()
-		{
-			logo = ModEntry.helper.ModContent.Load<Texture2D>("assets/logo.png");
+		internal static Config Init(IModHelper h, IManifest man)
+        {
+            logo = ModEntry.helper.ModContent.Load<Texture2D>("assets/logo.png");
+            Registering += OnRegistering;
+            Reset += OnReset;
 			LoadSkins();
-			Reset();
+			return Create(h, man);
 		}
 
-		public void Register(IGMCM gmcm, IManifest man)
-		{
-			gmcm.Register(man, Reset, Save);
+        private static void OnReset(Config cfg)
+        {
+			cfg.UiSkin = "Auto";
+        }
 
-			gmcm.AddImage(man, () => logo, logo.Bounds, 2);
-
-			gmcm.QuickBind(man, this, nameof(ExtendedCategories));
-			gmcm.QuickBind(man, this, nameof(PauseTime));
-			gmcm.QuickBind(man, this, nameof(QuickDelete));
-			gmcm.QuickBind(man, this, nameof(ClientMode), true);
-			gmcm.QuickBind(man, this, nameof(Magnify));
-			gmcm.QuickBind(man, this, nameof(PickupCraftables));
-			gmcm.QuickBind(man, this, nameof(DisableBlueprintChecks));
-
-			gmcm.QuickPage(man, "tweaks");
-			gmcm.QuickBind(man, this, nameof(UiSkin),
-				allowedValues: skins,
-				formatValue: s => ModEntry.i18n.Get($"skin.{s}")
-			);
-			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
-			gmcm.QuickBind(man, this, nameof(LargeVariants));
-			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
-			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
-			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
-			gmcm.QuickBind(man, this, nameof(EasierTrashCatalogue));
-			gmcm.QuickBind(man, this, nameof(GMCMButton));
-			gmcm.AddNumberOption(man,
-				() => magnifyScale,
-				v => magnifyScale = v, 
-				() => ModEntry.i18n.Get("config.MagnifyScale.name"),
-				() => ModEntry.i18n.Get("config.MagnifyScale.desc"),
-				1f, 5f, .1f
-			);
-			gmcm.QuickBind(man, this, nameof(ExpandSearch));
-			gmcm.QuickBind(man, this, nameof(SeasonalOverlay));
-
-			gmcm.QuickPage(man, "controls");
-			gmcm.QuickBind(man, this, nameof(GiveModifier));
-			gmcm.QuickBind(man, this, nameof(FavoriteModifier));
-			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
-			gmcm.QuickBind(man, this, nameof(CloseWithKey));
-			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
-
-			gmcm.QuickPage(man, "cheats");
-			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
-			gmcm.QuickBind(man, this, nameof(OpenMenu));
-		}
-
-		private void Reset()
-		{
-			CloseWithKey = true;
-			GiveModifier = new(SButton.LeftShift);
-			FavoriteModifier = new(SButton.LeftControl);
-			ExtendedCategories = true;
-			FurnitureTooltips = true;
-			PauseTime = true;
-			ReplaceFurnitureCatalog = true;
-			ReplaceWallpaperCatalog = true;
-			ReplaceRareCatalogs = true;
-			ToggleShortcut = new(SButton.None);
-			AlwaysLockScroll = false;
-			ClientMode = false;
-			EarlyDeluxe = false;
-			LargeVariants = false;
-			OpenMenu = new(SButton.None);
-			UiSkin = "Auto";
-			EasierTrashCatalogue = true;
-			Magnify = false;
-			MagnifyScale = 2f;
-			GMCMButton = true;
-			QuickDelete = new(SButton.Delete);
-			PickupCraftables = true;
-			ExpandSearch = true;
-			SeasonalOverlay = true;
-			DisableBlueprintChecks = false;
-		}
-
-		private void Save()
-		{
-			ModEntry.helper.WriteConfig(this);
-			ModEntry.helper.GameContent.InvalidateCache(AssetManager.UI_PATH);
-
-			AssetManager.ReloadIfNecessary();
-			Catalog.UpdateGMCMButton();
-		}
+        private static void OnRegistering(object sender, IGMCMApi e)
+        {
+			e.AddImage(ModEntry.manifest, () => logo, logo.Bounds, 2); 
+			e.QuickPage(ModEntry.manifest, "tweaks");
+            e.QuickBind(ModEntry.manifest, sender, nameof(UiSkin),
+                allowedValues: skins,
+                formatValue: s => ModEntry.i18n.Get($"skin.{s}")
+            );
+        }
 
 		private static void LoadSkins()
 		{
-			var skinData = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/recolors.json");
+			var skinData = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/data/recolors.json");
 			skinFiles = [.. skinData.Values];
 			skins = ["Auto", .. skinData.Keys];
 		}

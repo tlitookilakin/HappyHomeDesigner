@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewValley;
 using StardewValley.Objects;
+using StarModGen.Utils;
 using System;
 using System.Reflection;
 
@@ -23,7 +24,10 @@ namespace HappyHomeDesigner.Patches
 		{
 			drawPosition = AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
 			getScaleSize = typeof(Furniture)
-				.GetMethod(ModEntry.ANDROID ? "getScaleSizeForMenu" : "getScaleSize", BindingFlags.Instance | HarmonyHelper.AnyDeclared)
+				.GetMethod(
+					ModEntry.ANDROID ? "getScaleSizeForMenu" : "getScaleSize", 
+					BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic
+				)
 				.CreateDelegate<Func<Furniture, float>>();
 
 			helper

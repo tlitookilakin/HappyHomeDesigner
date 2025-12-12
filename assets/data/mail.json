@@ -1,0 +1,4 @@
+{
+    "CardMail": "[letterbg Mods/MOD_ID/Mail 0]^{0}^ ^\t\t-Esme Blackbriar%item id (O)MOD_ID_MembershipCard 1 %%[#]{1}",
+    "FairyMail": "[letterbg 2]{0}[#]{1}"
+}

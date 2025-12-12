@@ -4,6 +4,8 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<EnableHarmony>true</EnableHarmony>
 		<LangVersion>Latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -24,7 +26,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="tlitookilakin.StarModGen" Version="0.2.2" />
+		<PackageReference Include="tlitookilakin.StarModGen" Version="0.2.7" ExcludeAssets="runtime" />
 		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll" private="false" />
 		<Reference Include="BmFont" HintPath="$(GamePath)\BmFont.dll" private="false" />
 		<Reference Include="StardewUI" HintPath="$(GamePath)\Mods\StardewUI\StardewUI.dll" private="false" />

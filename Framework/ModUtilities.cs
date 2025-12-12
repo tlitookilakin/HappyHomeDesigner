@@ -13,6 +13,7 @@ using StardewValley.Internal;
 using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
+using StarModGen.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -142,7 +143,7 @@ namespace HappyHomeDesigner.Framework
 		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
 			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
 
-		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name, 
+		public static void QuickBind(this IGMCMApi gmcm, IManifest manifest, object config, string name, 
 			bool titleOnly = false, string[] allowedValues = null, Func<string, string> formatValue = null)
 		{
 			var prop = config.GetType().GetProperty(name) ??
@@ -184,7 +185,7 @@ namespace HappyHomeDesigner.Framework
 				gmcm.SetTitleScreenOnlyForNextOptions(manifest, false);
 		}
 
-		public static void QuickPage(this IGMCM gmcm, IManifest manifest, string name, string owner = "")
+		public static void QuickPage(this IGMCMApi gmcm, IManifest manifest, string name, string owner = "")
 		{
 			gmcm.AddPage(manifest, owner);
 			gmcm.AddPageLink(manifest, name,
@@ -357,5 +358,6 @@ namespace HappyHomeDesigner.Framework
 
             return true;
         }
+
     }
 }

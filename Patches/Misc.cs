@@ -9,6 +9,7 @@ using StardewValley.Menus;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using SObject = StardewValley.Object;
+using StarModGen.Utils;
 
 namespace HappyHomeDesigner.Patches
 {

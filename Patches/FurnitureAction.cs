@@ -3,6 +3,7 @@ using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
+using StarModGen.Utils;
 using static HappyHomeDesigner.Framework.ModUtilities;
 
 namespace HappyHomeDesigner.Patches

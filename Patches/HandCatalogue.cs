@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
+using StarModGen.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -175,7 +176,7 @@ namespace HappyHomeDesigner.Patches
 			const float offset = -2.5f * 4f;
 
 			var localPos = Game1.GlobalToLocal(Game1.viewport, position);
-			var texture = AssetManager.BookSpriteSheet;
+			var texture = ModEntry.Assets.BookSpriteSheet;
 
 			if (!frameData.TryGetValue(held, out var fdata))
 				frameData.Add(held, fdata = new(-1));

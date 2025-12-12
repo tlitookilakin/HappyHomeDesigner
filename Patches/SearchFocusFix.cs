@@ -2,6 +2,7 @@
 using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
+using StarModGen.Utils;
 
 namespace HappyHomeDesigner.Patches
 {

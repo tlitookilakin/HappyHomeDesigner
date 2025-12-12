@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace HappyHomeDesigner.Framework
 {
-	public class ListSlice<T> : IList<T> where T : class
+	public class ListSlice<T> : IList<T>, INotifyCollectionChanged, INotifyPropertyChanged where T : class
 	{
 		public IList<T> Source;
 		public Range Range
@@ -14,6 +14,7 @@ namespace HappyHomeDesigner.Framework
 			{
 				range = value;
 				UpdateRangeIfNeeded(true);
+				CollectionChanged?.Invoke(this, new(NotifyCollectionChangedAction.Reset));
 			}
 		}
 
@@ -22,11 +23,49 @@ namespace HappyHomeDesigner.Framework
 		private int SourceLen;
 		private Range range;
 
+		public event NotifyCollectionChangedEventHandler? CollectionChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
+
 		public ListSlice(IList<T> source, Range range)
 		{
 			Source = source;
 			SourceLen = source.Count;
 			Range = range;
+			if (source is INotifyCollectionChanged n)
+				n.CollectionChanged += OnSourceChanged;
+		}
+
+		private void OnSourceChanged(object? sender, NotifyCollectionChangedEventArgs e)
+		{
+			var oldStart = Start;
+			UpdateRangeIfNeeded(true);
+
+			if (e.Action is NotifyCollectionChangedAction.Reset)
+			{
+				CollectionChanged?.Invoke(this, new(NotifyCollectionChangedAction.Reset));
+				return;
+			}
+
+			NotifyCollectionChangedEventArgs? args = e.Action switch {
+				NotifyCollectionChangedAction.Reset
+					=> new(e.Action),
+				NotifyCollectionChangedAction.Remove 
+					=> e.OldStartingIndex < (Start + Length) ? new(e.Action, e.OldItems) : null,
+				NotifyCollectionChangedAction.Add
+					=> Start + Length < SourceLen ? null : new(e.Action, e.NewItems),
+				NotifyCollectionChangedAction.Replace
+					=> e.OldStartingIndex < Start + Length && e.OldStartingIndex + e.OldItems!.Count > Start ? 
+						new(e.Action, e.NewItems!, e.OldItems, e.OldStartingIndex - oldStart) : null,
+				NotifyCollectionChangedAction.Move
+					=> e.OldStartingIndex < Start + Length && e.OldStartingIndex + e.OldItems!.Count > Start ?
+						new(e.Action, e.OldItems, e.NewStartingIndex - Start, e.OldStartingIndex - oldStart) : null,
+				_ => null
+			};
+
+			if (args is null)
+				return;
+
+			CollectionChanged?.Invoke(this, args);
 		}
 
 		public T this[int index]
@@ -77,6 +116,7 @@ namespace HappyHomeDesigner.Framework
 			if (Start >= Source.Count)
 				Start = Math.Max(Source.Count - 1, 0);
 			Length = end < Start ? 0 : end - Start;
+			PropertyChanged?.Invoke(this, new(nameof(Range)));
 		}
 
 		public void Clear()

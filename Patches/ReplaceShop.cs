@@ -4,6 +4,7 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
+using StarModGen.Utils;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 

@@ -7,6 +7,7 @@ using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
+using StarModGen.Utils;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -30,7 +31,7 @@ namespace HappyHomeDesigner.Patches
 			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out asm))
 				return;
 
-			var harmony = helper.Patcher;
+			var harmony = helper.Harmony;
 			var min_version = new Version(MINIMUM_VERSION);
 			var current_version = asm.GetName().Version;
 

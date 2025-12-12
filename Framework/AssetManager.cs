@@ -1,39 +1,26 @@
-﻿using HappyHomeDesigner.Menus;
-using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.GameData.Objects;
 using StardewValley.GameData.Powers;
 using StardewValley.GameData.Shops;
-using StardewValley.GameData.Tools;
-using System.Collections.Generic;
-using System.Linq;
+using StarModGen.Lib;
+using System.ComponentModel;
 
 namespace HappyHomeDesigner.Framework
 {
-	internal class AssetManager
+	internal partial class AssetManager : INotifyPropertyChanged
 	{
-		private const string MOD_ID = ModEntry.MOD_ID;
-
+		public const string CARD_MAIL = MOD_ID + "_CardMail";
+		public const string FAIRY_MAIL = MOD_ID + "_FairyMail";
+		public const string CARD_ID = MOD_ID + "_MembershipCard";
+		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
+		public const string TEXT_PATH = "Mods/" + MOD_ID + "/Strings";
 		public const string CATALOGUE_ID = MOD_ID + "_Catalogue";
 		public const string COLLECTORS_ID = MOD_ID + "_CollectorsCatalogue";
 		public const string DELUXE_ID = MOD_ID + "_DeluxeCatalogue";
-		public const string CARD_ID = MOD_ID + "_MembershipCard";
-		public const string CARD_MAIL = MOD_ID + "_CardMail";
-		public const string CARD_FLAG = MOD_ID + "_IsCollectorMember";
 		public const string PORTABLE_ID = MOD_ID + "_HandCatalogue";
-		public const string FAIRY_MAIL = MOD_ID + "_FairyMail";
 		public const string BLUEPRINT_ID = MOD_ID + "_BlueprintBook";
 
-		public const string TEXTURE_PATH = "Mods/" + MOD_ID + "/Catalogue";
-		public const string UI_PATH = "Mods/" + MOD_ID + "/UI";
-		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
-		public const string OVERLAY_TEXTURE = "Mods/" + MOD_ID + "/Overlay";
-		public const string TEXT_PATH = "Mods/" + MOD_ID + "/Strings";
-
-		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
 		private static readonly string[] ServerRequired = 
 			["Data/Furniture", "Data/Powers", "Data/Shops", "Data/Mail", "Data/Tools"];
@@ -41,42 +28,26 @@ namespace HappyHomeDesigner.Framework
 		private static readonly string[] RareCatalogueShops = 
 			["JunimoFurnitureCatalogue", "TrashFurnitureCatalogue", "RetroFurnitureCatalogue", "WizardFurnitureCatalogue", "JojaFurnitureCatalogue"];
 
-		private static Dictionary<string, string> localFurniture;
-		private static Dictionary<string, JToken> localItems;
-		private static IGameContentHelper gameContent;
+		[Asset("LooseSprites/Book_Animation")]
+		public partial Texture2D BookSpriteSheet { get; }
 
-		public static Texture2D BookSpriteSheet
-			=> bookSprite ??= gameContent.Load<Texture2D>("LooseSprites/Book_Animation");
-		private static Texture2D bookSprite;
+		[Asset("/UI")]
+		public partial Texture2D MenuTexture { get; }
 
-		public static void Init(IModHelper helper)
+		[Asset("/Overlay", "textures/season_overlay")]
+		public partial Texture2D OverlayTexture { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [AssetEntry]
+		public partial void Setup(IModHelper helper);
+
+		public AssetManager(Config cfg)
 		{
-			gameContent = helper.GameContent;
-			ReadLocalData(helper);
-			i18n = helper.Translation;
-			IsClientMode = ModEntry.config.ClientMode;
-			helper.Events.Content.AssetRequested += ProvideData;
-			helper.Events.Content.AssetsInvalidated += ReloadCached;
+			IsClientMode = cfg.ClientMode;
 		}
 
-		private static void ReloadCached(object sender, AssetsInvalidatedEventArgs e)
-		{
-			foreach (var name in e.NamesWithoutLocale)
-			{
-				if (name.IsEquivalentTo("LooseSprites/Book_Animation"))
-					bookSprite = null;
-				else if (name.IsEquivalentTo(UI_PATH) && Catalog.HasAnyActive())
-					Catalog.MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(UI_PATH);
-			}
-		}
-
-		private static void ReadLocalData(IModHelper helper)
-		{
-			localFurniture = helper.ModContent.Load<Dictionary<string, string>>("assets/furniture.json");
-			localItems = helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
-		}
-
-		public static void ReloadIfNecessary()
+		private void ReloadIfNecessary()
 		{
 			if (IsClientMode == ModEntry.config.ClientMode)
 				return; // no change
@@ -87,105 +58,31 @@ namespace HappyHomeDesigner.Framework
 				ModEntry.helper.GameContent.InvalidateCache(item);
 		}
 
-		public static void ProvideData(object sender, AssetRequestedEventArgs e)
+		[AssetEdit("Data/Mail")]
+		private void AddMail(IAssetData asset)
 		{
-			var name = e.NameWithoutLocale;
+			if (ModEntry.config.ClientMode)
+				return;
 
-			if (name.IsEquivalentTo(UI_PATH))
-				e.LoadFromModFile<Texture2D>($"assets/{ModEntry.config.UiName}.png", AssetLoadPriority.Exclusive);
-
-			else if (name.IsEquivalentTo(TEXTURE_PATH))
-				e.LoadFromModFile<Texture2D>("assets/catalog.png", AssetLoadPriority.Exclusive);
-
-			else if (name.IsEquivalentTo(OVERLAY_TEXTURE))
-				e.LoadFromModFile<Texture2D>("assets/season_overlay.png", AssetLoadPriority.Exclusive);
-
-			else if (name.IsEquivalentTo(MAIL_BG))
-				e.LoadFromModFile<Texture2D>("assets/mail.png", AssetLoadPriority.Low);
-
-			else if (name.IsEquivalentTo("Data/Shops"))
-				e.Edit(TagShops, AssetEditPriority.Default);
-
-			else if (name.IsEquivalentTo(TEXT_PATH))
-				e.LoadFrom(GetLangText, AssetLoadPriority.Medium);
-
-			else if (!ModEntry.config.ClientMode)
-			{
-				if (name.IsEquivalentTo("Data/Furniture"))
-					e.Edit(AddCatalogues, AssetEditPriority.Early);
-
-				else if (name.IsEquivalentTo("Data/Powers"))
-					e.Edit(AddCardPower, AssetEditPriority.Early);
-
-				else if (name.IsEquivalentTo("Data/Mail"))
-					e.Edit(AddMail, AssetEditPriority.Early);
-
-				else if (name.IsEquivalentTo("Data/Objects"))
-					e.Edit(AddCardItem, AssetEditPriority.Early);
-
-				else if (name.IsEquivalentTo("Data/Tools"))
-					e.Edit(AddHandCatalogue, AssetEditPriority.Early);
-			}
-		}
-
-		private static Dictionary<string, string> GetLangText()
-		{
-			return new(i18n.GetTranslations().Select(static t => new KeyValuePair<string, string>(t.Key, t)));
-		}
-
-		private static void AddHandCatalogue(IAssetData asset)
-		{
-			if (asset.Data is Dictionary<string, ToolData> data)
-			{
-				var entry = localItems["handheld"].ToObject<ToolData>();
-				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.portable.name]";
-				entry.Description = $"[LocalizedText {TEXT_PATH}:item.portable.desc]";
-				entry.Texture = TEXTURE_PATH;
-				data.TryAdd(PORTABLE_ID, entry);
-
-				entry = localItems["blueprint"].ToObject<ToolData>();
-				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.blueprint.name]";
-				entry.Description = $"[LocalizedText {TEXT_PATH}:item.blueprint.desc]";
-				entry.Texture = TEXTURE_PATH;
-				data.TryAdd(BLUEPRINT_ID, entry);
-			}
-		}
-
-		private static void AddCardItem(IAssetData asset)
-		{
-			if (asset.Data is Dictionary<string, ObjectData> data)
-			{
-				var entry = localItems["card"].ToObject<ObjectData>();
-				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.card.name]";
-				entry.Description = $"[LocalizedText {TEXT_PATH}:item.card.desc]";
-				entry.Texture = TEXTURE_PATH;
-				data.TryAdd(CARD_ID, entry);
-
-				entry = localItems["handheld_dummy"].ToObject<ObjectData>();
-				entry.DisplayName = $"[LocalizedText {TEXT_PATH}:item.portable.name]";
-				entry.Description = $"[LocalizedText {TEXT_PATH}:item.portable.desc]";
-				entry.Texture = TEXTURE_PATH;
-				data.TryAdd(PORTABLE_ID, entry);
-			}
-		}
-
-		private static void AddMail(IAssetData asset)
-		{
 			if (asset.Data is Dictionary<string, string> data)
 			{
-				data.TryAdd(CARD_MAIL,
-					$"[letterbg {MAIL_BG} 0]^{i18n.Get("mail.collectorAcceptance.text")}" + 
-					$" ^ ^\t\t-Esme Blackbriar%item id (O){CARD_ID} 1 %%[#]{i18n.Get("mail.collectorAcceptance.name")}"
-				);
+				var raw = ModEntry.helper.ModContent.Load<Dictionary<string, string>>("assets/data/mail.json");
 
-				data.TryAdd(FAIRY_MAIL,
-					$"[letterbg 2]{i18n.Get("mail.fairyDust.text")}[#]{i18n.Get("mail.fairyDust.name")}"
-				);
+				foreach ((var key, var val) in raw)
+					data[$"{MOD_ID}_{key}"] = string.Format(
+						val.Replace("MOD_ID", MOD_ID),
+                        ModEntry.helper.Translation.Get($"mail.{key}.text"),
+                        ModEntry.helper.Translation.Get($"mail.{key}.name")
+					);
 			}
 		}
 
-		private static void AddCardPower(IAssetData asset)
+		[AssetEdit("Data/Powers")]
+		private void AddCardPower(IAssetData asset)
 		{
+			if (ModEntry.config.ClientMode)
+				return;
+
 			if (asset.Data is Dictionary<string, PowersData> data)
 			{
 				data.TryAdd(
@@ -193,7 +90,7 @@ namespace HappyHomeDesigner.Framework
 					{
 						DisplayName = $"[LocalizedText {TEXT_PATH}:item.card.name]",
 						Description = $"[LocalizedText {TEXT_PATH}:item.card.desc]",
-						TexturePath = TEXTURE_PATH,
+						TexturePath = $"Mods/{MOD_ID}/Catalogue",
 						TexturePosition = ItemRegistry.GetData(CARD_ID).GetSourceRect().Location,
 						UnlockedCondition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
 					}
@@ -201,7 +98,8 @@ namespace HappyHomeDesigner.Framework
 			}
 		}
 
-		private static void TagShops(IAssetData asset)
+		[AssetEdit("Data/Shops")]
+		private void TagShops(IAssetData asset)
 		{
 			if (asset.Data is Dictionary<string, ShopData> data)
 			{
@@ -209,20 +107,20 @@ namespace HappyHomeDesigner.Framework
 					if (data.TryGetValue(RareCatalogueShops[i], out var shop))
 						(shop.CustomFields ??= [])["HappyHomeDesigner/Catalogue"] = "True";
 
-				if (!IsClientMode)
+				if (!ModEntry.config.ClientMode)
 				{
 					if (data.TryGetValue("Carpenter", out var shop))
 					{
 						shop.Items.Add(new()
 						{
-							Id = COLLECTORS_ID,
-							ItemId = "(F)" + COLLECTORS_ID,
+							Id = $"{MOD_ID}_Collectors",
+							ItemId = $"(F){MOD_ID}_CollectorsCatalogue",
 							Condition = "PLAYER_HAS_MAIL Current " + CARD_FLAG
 						});
 						shop.Items.Add(new()
 						{
-							Id = BLUEPRINT_ID,
-							ItemId = "(T)" + BLUEPRINT_ID,
+							Id = $"{MOD_ID}_Blueprint",
+							ItemId = $"(T){MOD_ID}_BlueprintBook",
 							Price = 5000
 						});
 					}
@@ -255,25 +153,6 @@ namespace HappyHomeDesigner.Framework
 
 				#endif
 			}
-		}
-
-		private static void AddCatalogues(IAssetData asset)
-		{
-			if (asset.Data is Dictionary<string, string> data)
-			{
-				data.TryAdd(CATALOGUE_ID, GetEntry(localFurniture, "furniture", "Catalogue"));
-				data.TryAdd(COLLECTORS_ID, GetEntry(localFurniture, "furniture", "CollectorsCatalogue"));
-				data.TryAdd(DELUXE_ID, GetEntry(localFurniture, "furniture", "DeluxeCatalogue"));
-			}
-		}
-
-		private static string GetEntry(IDictionary<string, string> data, string prefix, string name)
-		{
-			return string.Format(
-				data[name],
-				$"[LocalizedText {TEXT_PATH.Replace('/', '\\')}:{prefix}.{name}.name]",
-				"Mods\\" + MOD_ID + "\\Catalogue"
-			);
 		}
 	}
 }
