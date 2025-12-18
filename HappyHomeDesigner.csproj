@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>2.4.2</Version>
+		<Version>2.4.3</Version>
 		<Authors>tlitookilakin</Authors>
 		<Name>Happy Home Designer</Name>
 		<UniqueID>tlitookilakin.HappyHomeDesigner</UniqueID>
@@ -15,6 +15,7 @@
 		<UpdateKeys>Nexus:19675, GitHub:tlitookilakin/HappyHomeDesigner</UpdateKeys>
 		<MinimumGameVersion_Behavior>Update</MinimumGameVersion_Behavior>
 		<MinimumApiVersion>4.1.0</MinimumApiVersion>
+		<BaseManifest>new</BaseManifest>
 	</PropertyGroup>
 
 	<ItemGroup>
