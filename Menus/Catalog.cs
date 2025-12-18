@@ -348,8 +348,8 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Resize(region);
 
-			int tabX = xPositionOnScreen + 96;
-			int tabY = yPositionOnScreen + 12;
+			int tabX = xPositionOnScreen + 48;
+			int tabY = yPositionOnScreen - 84;
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				var tabComp = Tabs[i];
