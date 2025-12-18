@@ -223,7 +223,9 @@ namespace HappyHomeDesigner.Menus
 
 		public override void draw(SpriteBatch b)
 		{
-			int m_x = Game1.getMouseX();
+			var shadow = Color.Black * .4f;
+
+            int m_x = Game1.getMouseX();
 			int m_y = Game1.getMouseY();
 			if (WasJustHovered && !isWithinBounds(m_x, m_y))
 			{
@@ -239,16 +241,13 @@ namespace HappyHomeDesigner.Menus
 			if (!Toggled)
 				return;
 
-			// tab shadow
-			b.Draw(MenuTexture, 
-				new Rectangle(xPositionOnScreen + 92, yPositionOnScreen + 20, 64, 64),
-				new Rectangle(64, 24, 16, 16),
-				Color.Black * .4f);
-
 			SettingsButton?.draw(b);
 
 			for (int i = 0; i < Tabs.Count; i++)
-				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f);
+			{
+				Tabs[i].draw(b, shadow, 0f, xOffset: -4, yOffset: i == tab ? 0 : 4);
+				Tabs[i].draw(b, i == tab ? Color.White : Color.DarkGray, 0f, yOffset: i == tab ? -4 : 0);
+			}
 
 			Pages[tab].draw(b);
 
@@ -349,7 +348,7 @@ namespace HappyHomeDesigner.Menus
 				Pages[i].Resize(region);
 
 			int tabX = xPositionOnScreen + 48;
-			int tabY = yPositionOnScreen - 84;
+			int tabY = yPositionOnScreen - 80;
 			for (int i = 0; i < Tabs.Count; i++)
 			{
 				var tabComp = Tabs[i];
