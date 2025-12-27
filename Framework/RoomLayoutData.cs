@@ -108,11 +108,11 @@ namespace HappyHomeDesigner.Framework
 					case 4:
 						error = $"'{placer.DisplayName}': This location is not decoratable";
 						break;
-                    case -1:
-                        if (placer is BedFurniture)
-                            return true;
-                        goto default;
-                    default:
+					case -1:
+						if (placer is BedFurniture)
+							return true;
+						goto default;
+					default:
 						error = $"'{placer.DisplayName}': Furniture could not be placed for an unknown reason";
 						break;
 				}

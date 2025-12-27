@@ -225,7 +225,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			var shadow = Color.Black * .4f;
 
-            int m_x = Game1.getMouseX();
+			int m_x = Game1.getMouseX();
 			int m_y = Game1.getMouseY();
 			if (WasJustHovered && !isWithinBounds(m_x, m_y))
 			{
