@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Menus;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
@@ -32,6 +33,7 @@ namespace HappyHomeDesigner.Framework
 		public const string MAIL_BG = "Mods/" + MOD_ID + "/Mail";
 		public const string OVERLAY_TEXTURE = "Mods/" + MOD_ID + "/Overlay";
 		public const string TEXT_PATH = "Mods/" + MOD_ID + "/Strings";
+		public const string COLLECTIONS = "Mods/" + MOD_ID + "/Collections";
 
 		private static ITranslationHelper i18n;
 		private static bool IsClientMode;
@@ -48,6 +50,10 @@ namespace HappyHomeDesigner.Framework
 		public static Texture2D BookSpriteSheet
 			=> bookSprite ??= gameContent.Load<Texture2D>("LooseSprites/Book_Animation");
 		private static Texture2D bookSprite;
+
+		public static Dictionary<string, StyleCollection> Collections
+			=> collections ??= gameContent.Load<Dictionary<string, StyleCollection>>(COLLECTIONS);
+		private static Dictionary<string, StyleCollection> collections;
 
 		public static void Init(IModHelper helper)
 		{

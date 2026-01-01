@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Menus;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using StardewValley;
@@ -8,7 +9,7 @@ using StardewValley.TerrainFeatures;
 using System;
 using System.Collections.Generic;
 
-namespace HappyHomeDesigner.Framework
+namespace HappyHomeDesigner.Data
 {
 	public class RoomLayoutData
 	{

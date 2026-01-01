@@ -15,6 +15,7 @@ using StardewValley.Mods;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -239,6 +240,9 @@ namespace HappyHomeDesigner.Framework
 
 		public static IEnumerable<ISalable> GenerateCombined(CatalogType catalog)
 		{
+			var watch = new Stopwatch();
+			watch.Start();
+
 			IEnumerable<ISalable> output = [];
 			var shopData = DataLoader.Shops(Game1.content);
 
@@ -258,6 +262,9 @@ namespace HappyHomeDesigner.Framework
 						fields.ContainsKey("HappyHomeDesigner/Catalogue")
 					)
 						output = output.Concat(ShopBuilder.GetShopStock(id, sdata).Keys);
+
+			watch.Stop();
+			ModEntry.monitor.Log($"Loaded contents in {watch.ElapsedMilliseconds} ms", LogLevel.Debug);
 
 			return output;
 		}

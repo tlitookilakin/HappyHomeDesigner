@@ -2,7 +2,7 @@
 using StardewValley.Locations;
 using System;
 
-namespace HappyHomeDesigner.Framework
+namespace HappyHomeDesigner.Data
 {
 	public struct WallFloorState : IUndoRedoState<WallFloorState>
 	{

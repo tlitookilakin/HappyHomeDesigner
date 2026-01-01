@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Integration;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -6,7 +7,7 @@ using StardewModdingAPI.Utilities;
 using System;
 using System.Collections.Generic;
 
-namespace HappyHomeDesigner.Framework
+namespace HappyHomeDesigner.Data
 {
 	public class Config
 	{

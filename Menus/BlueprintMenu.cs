@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HappyHomeDesigner.Framework
+namespace HappyHomeDesigner.Data
 {
 	public interface IUndoRedoState<T> : IEquatable<T> where T : IUndoRedoState<T>
 	{

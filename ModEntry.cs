@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;

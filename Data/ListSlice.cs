@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace HappyHomeDesigner.Framework
+namespace HappyHomeDesigner.Data
 {
 	public class ListSlice<T> : IList<T> where T : class
 	{
