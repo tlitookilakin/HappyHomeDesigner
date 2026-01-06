@@ -85,6 +85,7 @@ namespace HappyHomeDesigner
 			AlternativeTextures.Init(Helper);
 			CustomNPCPaintings.Init();
 			Spacecore.Init();
+			Calcifer.Init(helper);
 		}
 
 		private static void Patch(HarmonyHelper harmony)

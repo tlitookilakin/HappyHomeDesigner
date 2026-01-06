@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Integration;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Delegates;
@@ -17,7 +18,7 @@ namespace HappyHomeDesigner.Framework
 		private readonly IEnumerable<StyleCollection> collections;
 		private readonly IEnumerable<string> shopsToUse;
 
-		private readonly IEnumerator<ItemQueryResult[]> batch;
+		private readonly IEnumerator<KeyValuePair<string, ItemQueryResult>[]> batch;
 
 		public ShopBatcher(IEnumerable<string> ShopsToUse)
 		{
@@ -29,37 +30,53 @@ namespace HappyHomeDesigner.Framework
 			var gsq = new GameStateQueryContext(Game1.currentLocation, Game1.player, null, null, Game1.random);
 
 			batch = shopsToUse
-				.SelectMany(id => shops[id].Items)
-				.Where(e => e.Condition is null || GameStateQuery.CheckConditions(e.Condition, gsq))
+				.SelectMany(id => shops[id].Items, (id, val) => (id, val))
+				.Where(e => e.val.Condition is null || GameStateQuery.CheckConditions(e.val.Condition, gsq))
 				.SelectMany(item => LazyItemResolver.TryResolve(
-					item.ItemId, ctx,
-					perItemCondition: item.PerItemCondition,
-					maxItems: item.MaxItems,
-					avoidRepeat: item.AvoidRepeat,
+					item.val.ItemId, ctx,
+					perItemCondition: item.val.PerItemCondition,
+					maxItems: item.val.MaxItems,
+					avoidRepeat: item.val.AvoidRepeat,
 					logError: static (q, e) => ModEntry.monitor.Log($"Error checking query '{q}': {e}", LogLevel.Warn)
-				))
+				), 
+				(item, result) => new KeyValuePair<string, ItemQueryResult>(item.id, result))
 				.Chunk(100)
 				.GetEnumerator();
 		}
 
-		public bool DoBatch(out IDictionary<StyleCollection, List<ISalable>> items)
+		public bool DoBatch(out IDictionary<IStyleSet, List<ISalable>> items)
 		{
 			items = null;
 			if (!batch.MoveNext())
 				return false;
 
-			items = new Dictionary<StyleCollection, List<ISalable>>();
-			foreach (var entry in batch.Current)
+			items = new Dictionary<IStyleSet, List<ISalable>>();
+			foreach ((var shop, var entry) in batch.Current)
 			{
 				if (entry.Item is not Item item)
 					continue;
+
+				bool foundCollection = false;
 
 				foreach (var collection in collections)
 				{
 					if (collection.Contains(item))
 					{
+						foundCollection = true;
+
 						if (!items.TryGetValue(collection, out var group))
 							items[collection] = [item];
+						else
+							group.Add(item);
+					}
+				}
+
+				if (!foundCollection)
+				{
+					if (Calcifer.Active && Calcifer.TryGetCollection(shop, out var style))
+					{
+						if (!items.TryGetValue(style, out var group))
+							items[style] = [item];
 						else
 							group.Add(item);
 					}
