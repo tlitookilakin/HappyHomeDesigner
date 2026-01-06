@@ -83,7 +83,7 @@ namespace HappyHomeDesigner.Menus
 			base.receiveLeftClick(x, y, playSound);
 			if (Panel.TrySelect(x, y, out int index))
 			{
-				var item = Panel.Items[index] as ItemEntry;
+				var item = Panel.FilteredItems[index] as ItemEntry;
 
 				if (Game1.player.addItemToInventoryBool(item.item.getOne()) && playSound)
 					Game1.playSound("pickUpItem");
