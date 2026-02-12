@@ -1,118 +1,85 @@
-﻿using StardewValley;
-using StardewValley.Extensions;
+﻿using HarmonyLib;
+using StardewValley;
 using StardewValley.Internal;
+using StardewValley.ItemTypeDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static HarmonyLib.AccessTools;
-using static StardewValley.Internal.ItemQueryResolver;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace HappyHomeDesigner.Framework
 {
-	// Lifted directly from the decompile, but with some cleanup, and returns the enumerable directly
-	// instead of converting to an array, which allows it to be lazily evaluated.
-	// This must be copypasted because harmony reverse patches can't alter the return type.
-
 	internal static class LazyItemResolver
 	{
+		private static bool IsLazy = false;
+		private static IEnumerable<ItemQueryResult> results;
 
-		private static readonly FieldRef<ItemQueryContext, string> queryString =
-			ModUtilities.GetDirect<ItemQueryContext, string>(nameof(ItemQueryContext.QueryString));
+		internal static void Apply(HarmonyHelper harmony)
+		{
+			harmony.Patcher.Patch(
+				typeof(ItemQueryResolver).GetMethod(
+					nameof(ItemQueryResolver.TryResolve),
+					BindingFlags.Public | BindingFlags.Static,
+					typeof(LazyItemResolver).GetMethod(nameof(TryResolve)).GetParameters().Select(p => p.ParameterType).ToArray()
+				),
+				transpiler: new(typeof(LazyItemResolver), nameof(ModifyReturn))
+			);
+		}
 
 		public static IEnumerable<ItemQueryResult> TryResolve(string query, ItemQueryContext context, ItemQuerySearchMode filter = ItemQuerySearchMode.All, string perItemCondition = null, int? maxItems = null, bool avoidRepeat = false, HashSet<string> avoidItemIds = null, Action<string, string> logError = null)
 		{
-			if (string.IsNullOrWhiteSpace(query))
+			IsLazy = true;
+			results = null;
+			try
 			{
-				return Helpers.ErrorResult(query, "", logError, "must specify an item ID or query");
+				var output = ItemQueryResolver.TryResolve(query, context, filter, perItemCondition, maxItems, avoidRepeat, avoidItemIds, logError);
+				return results ?? output;
 			}
-			string queryKey = query;
-			string arguments = null;
-			int splitIndex = query.IndexOf(' ');
-			if (splitIndex > -1)
+			finally
 			{
-				queryKey = query[..splitIndex];
-				arguments = query[(splitIndex + 1)..];
+				IsLazy = false; 
+				results = null;
 			}
-			context ??= new ItemQueryContext();
-			queryString(context) = query;
-			if (context.ParentContext != null)
-			{
-				List<string> path = [];
-				for (ItemQueryContext cur = context; cur != null; cur = cur.ParentContext)
-				{
-					bool num = path.Contains(cur.QueryString);
-					path.Add(cur.QueryString);
-					if (num)
-					{
-						logError?.Invoke(query, "detected circular reference in item queries: " + string.Join(" -> ", path));
-						return [];
-					}
-				}
-			}
-			IEnumerable<ItemQueryResult> results;
-			if (ItemResolvers.TryGetValue(queryKey, out var resolver))
-			{
-				results = resolver(queryKey, arguments ?? string.Empty, context, avoidRepeat, avoidItemIds, logError ?? new Action<string, string>(LogNothing));
-				if (results is ItemQueryResult[] rawArray && rawArray.Length == 0)
-				{
-					return rawArray;
-				}
-				HashSet<string> duplicates = (avoidRepeat ? new HashSet<string>() : null);
-				if (!avoidRepeat)
-				{
-					HashSet<string> hashSet = avoidItemIds;
-					if ((hashSet == null || hashSet.Count <= 0) && GameStateQuery.IsImmutablyFalse(perItemCondition))
-					{
-						goto IL_0174;
-					}
-				}
-				results = results.Where(delegate (ItemQueryResult result)
-				{
-					HashSet<string> hashSet3 = avoidItemIds;
-					if (hashSet3 == null || !hashSet3.Contains(result.Item.QualifiedItemId))
-					{
-						HashSet<string> hashSet4 = duplicates;
-						if (hashSet4 == null || hashSet4.Add(result.Item.QualifiedItemId))
-							return GameStateQuery.CheckConditions(perItemCondition, null, null, result.Item as Item);
-					}
-					return false;
-				});
-				goto IL_0174;
-			}
-			Item instance = ItemRegistry.Create(query);
-			if (instance != null)
-			{
-				HashSet<string> hashSet2 = avoidItemIds;
-				if (hashSet2 == null || !hashSet2.Contains(instance.QualifiedItemId))
-					return [new(instance)];
-			}
-			return [];
-		IL_0174:
-			switch (filter)
-			{
-				case ItemQuerySearchMode.AllOfTypeItem:
-					results = results.Where(result => result.Item is Item);
-					break;
-				case ItemQuerySearchMode.FirstOfTypeItem:
-					{
-						ItemQueryResult result3 = results.FirstOrDefault(p => p.Item is Item);
-						results = (result3 == null) ? [] : [result3];
-						break;
-					}
-				case ItemQuerySearchMode.RandomOfTypeItem:
-					{
-						ItemQueryResult result2 = (context.Random ?? Game1.random).ChooseFrom(results.Where(p => p.Item is Item).ToArray());
-						results = (result2 == null) ? [] : [result2];
-						break;
-					}
-			}
-			if (maxItems.HasValue)
-			{
-				results = results.Take(maxItems.Value);
-			}
-			return results;
 		}
 
-		private static void LogNothing(string q, string e) { }
+		private static IEnumerable<CodeInstruction> ModifyReturn(IEnumerable<CodeInstruction> codes, ILGenerator gen)
+		{
+
+			var il = new CodeMatcher(codes, gen);
+
+			// find ToArray()
+			il
+				.End()
+				.MatchStartBackwards(
+					new CodeMatch(OpCodes.Call, typeof(Enumerable).GetMethod(nameof(Enumerable.ToArray)).MakeGenericMethod(typeof(ItemQueryResult)))
+				)
+				.Advance(-1);
+
+			var src = il.Instruction.Clone();
+			var jump = gen.DefineLabel();
+
+			// if (TryLazify(enumerable)) return []; 
+			il
+				.Advance(1)
+				.InsertAndAdvance(
+					new(OpCodes.Call, typeof(LazyItemResolver).GetMethod(nameof(TryLazify), BindingFlags.NonPublic | BindingFlags.Static)),
+					new(OpCodes.Brfalse, jump),
+					new(OpCodes.Call, typeof(Array).GetMethod(nameof(Array.Empty)).MakeGenericMethod(typeof(ItemQueryResult))),
+					new(OpCodes.Ret),
+					src.WithLabels(jump)
+				);
+
+			return il.InstructionEnumeration();
+		}
+
+		private static bool TryLazify(IEnumerable<ItemQueryResult> items)
+		{
+			if (!IsLazy)
+				return false;
+
+			results = items;
+			return true;
+		}
 	}
 }

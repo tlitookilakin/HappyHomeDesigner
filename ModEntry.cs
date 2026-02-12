@@ -38,6 +38,7 @@ namespace HappyHomeDesigner
 			AssetManager.Init(Helper);
 			InventoryWatcher.Init(Helper);
 			Commands.BindAll(Helper);
+			Debug.Init(Helper);
 		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
@@ -101,6 +102,7 @@ namespace HappyHomeDesigner
 			Misc.Apply(harmony);
 			CraftablePlacement.Apply(harmony);
 			AltTex.Apply(harmony);
+			LazyItemResolver.Apply(harmony);
 		}
 	}
 }

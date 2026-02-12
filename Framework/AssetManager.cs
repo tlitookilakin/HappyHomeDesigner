@@ -115,6 +115,9 @@ namespace HappyHomeDesigner.Framework
 			else if (name.IsEquivalentTo(TEXT_PATH))
 				e.LoadFrom(GetLangText, AssetLoadPriority.Medium);
 
+			else if (name.IsEquivalentTo(COLLECTIONS))
+				e.LoadFrom(() => new Dictionary<string, StyleCollection>(), AssetLoadPriority.Medium);
+
 			else if (!ModEntry.config.ClientMode)
 			{
 				if (name.IsEquivalentTo("Data/Furniture"))

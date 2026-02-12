@@ -3,6 +3,7 @@ using HappyHomeDesigner.Integration;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Delegates;
+using StardewValley.Extensions;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace HappyHomeDesigner.Framework
 
 		private readonly IEnumerator<KeyValuePair<string, ItemQueryResult>[]> batch;
 
-		public ShopBatcher(IEnumerable<string> ShopsToUse)
+		public ShopBatcher(params IEnumerable<string> ShopsToUse)
 		{
 			shopsToUse = ShopsToUse;
 			shops = DataLoader.Shops(Game1.content);
@@ -32,14 +33,10 @@ namespace HappyHomeDesigner.Framework
 			batch = shopsToUse
 				.SelectMany(id => shops[id].Items, (id, val) => (id, val))
 				.Where(e => e.val.Condition is null || GameStateQuery.CheckConditions(e.val.Condition, gsq))
-				.SelectMany(item => LazyItemResolver.TryResolve(
-					item.val.ItemId, ctx,
-					perItemCondition: item.val.PerItemCondition,
-					maxItems: item.val.MaxItems,
-					avoidRepeat: item.val.AvoidRepeat,
-					logError: static (q, e) => ModEntry.monitor.Log($"Error checking query '{q}': {e}", LogLevel.Warn)
-				), 
-				(item, result) => new KeyValuePair<string, ItemQueryResult>(item.id, result))
+				.SelectMany(
+					(item) => GetProvider(item.val, ctx), 
+					(item, result) => new KeyValuePair<string, ItemQueryResult>(item.id, result)
+				)
 				.Chunk(100)
 				.GetEnumerator();
 		}
@@ -84,6 +81,67 @@ namespace HappyHomeDesigner.Framework
 			}
 
 			return true;
+		}
+
+		public static IEnumerable<ItemQueryResult> GetProvider(ShopItemData data, ItemQueryContext ctx)
+		{
+			// use unsorted lazy spawning
+			if (data.ItemId.StartsWith("ALL_ITEMS (F)"))
+			{
+				bool randomSale = data.ItemId.Contains("@isRandomSale");
+				IEnumerable<ItemQueryResult> items;
+
+				// simple case; no filters
+				if (data.PerItemCondition is not string c)
+					items = LazyFurniture(randomSale);
+
+				// simple context tag filter
+				else if (c.StartsWith("ITEM_CONTEXT_TAG") && !c.Contains(','))
+					items = LazyFurniture(randomSale, ArgUtility.SplitBySpaceQuoteAware(c));
+
+				// complex filter
+				else
+					items = LazyFurniture(randomSale).Where(i => GameStateQuery.CheckConditions(c, targetItem: i.Item as Item));
+
+				if (data.MaxItems is int max)
+					items = items.Take(max);
+			}
+
+			// fallback to standard lazy
+			return LazyItemResolver.TryResolve(
+				data.ItemId, ctx,
+				perItemCondition: data.PerItemCondition,
+				maxItems: data.MaxItems,
+				avoidRepeat: data.AvoidRepeat,
+				logError: static (q, e) => ModEntry.monitor.Log($"Error checking query '{q}': {e}", LogLevel.Warn)
+			);
+		}
+
+		private static IEnumerable<ItemQueryResult> LazyFurniture(bool randomSale, string[] tags = default)
+		{
+			var def = ItemRegistry.RequireTypeDefinition("(F)");
+			var ids = def.GetAllIds();
+
+			if (tags != null && tags.Length > 2)
+			{
+				// cut out query and target
+				tags = tags[2..];
+
+				if (tags.Length is 1)
+					ids = ids.Where(id => ItemContextTagManager.HasBaseTag(id, tags[0]));
+				else
+					ids = ids.Where(id => ItemContextTagManager.DoAllTagsMatch(tags, ItemContextTagManager.GetBaseContextTags(id)));
+			}
+
+			var datas = ids.Select(def.GetData);
+
+			if (randomSale)
+				datas = datas.Where(d => !d.ExcludeFromRandomSale);
+
+			return datas
+				.Select(def.CreateItem)
+				.Where(f => f.Name is not "ErrorItem")
+				.Select(f => new ItemQueryResult(f));
 		}
 	}
 }

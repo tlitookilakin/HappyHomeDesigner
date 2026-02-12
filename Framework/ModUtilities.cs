@@ -8,6 +8,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.GameData.Crops;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
 using StardewValley.Menus;
@@ -236,6 +237,21 @@ namespace HappyHomeDesigner.Framework
 					data.CustomFields is Dictionary<string, string> fields &&
 					fields.ContainsKey("HappyHomeDesigner/Catalogue")
 			};
+		}
+
+		public static List<string> GetCollectorShops(IDictionary<string, ShopData> shops = null)
+		{
+			List<string> ret = [];
+			shops ??= DataLoader.Shops(Game1.content);
+
+			foreach ((var id, var sdata) in shops)
+				if (
+					sdata.CustomFields is Dictionary<string, string> fields &&
+					fields.ContainsKey("HappyHomeDesigner/Catalogue")
+				)
+					ret.Add(id);
+
+			return ret;
 		}
 
 		public static IEnumerable<ISalable> GenerateCombined(CatalogType catalog)
