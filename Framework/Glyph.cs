@@ -15,6 +15,13 @@ public record struct Glyph(Vector2 Position, Rectangle Source, Texture2D Texture
 
 	public static Glyph[] Layout(string text, int width, Alignment halign, Alignment valign)
 	{
+		if (text is null || text.Trim().Length == 0)
+		{
+			ModEntry.monitor.Log("Attempted to display empty text! Your language file is broken!", StardewModdingAPI.LogLevel.Warn);
+			ModEntry.monitor.Log("Your translation is bad and you should feel bad.");
+			return [];
+		}
+
 		var glyphs = new Glyph[text.Length];
 		List<string> lines = [];
 
