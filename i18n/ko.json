@@ -1,27 +1,129 @@
 ﻿{
-	/* translated by twinklesky6 on NexusMods */
+	/* translated by twinklesky6 & 4KMong on NexusMods */
 	/* https://forums.nexusmods.com/profile/181405749-twinklesky6/ */
-	"furniture.Catalog.name": "해피 홈 카탈로그",
-	"furniture.Catalog.description": "당신의 집 꾸미기에 무제한의 벽지와 가구, 그리고 편의성을 제공합니다!",
-	"config.CloseWithKey.name": "닫기 키",
-	"config.CloseWithKey.desc": "메뉴 키로 꾸미기 메뉴를 바로 닫을 수 있게 합니다.",
-	"config.GiveModifier.name": "가구 인벤토리에 넣기 키",
-	"config.GiveModifier.desc": "이 키를 누른 채로 아이템을 클릭하면 인벤토리로 이동됩니다..",
+	/* https://www.nexusmods.com/profile/4KMong */
+	
+	"furniture.Catalogue.name": "해피 홈 카탈로그",
+	"furniture.Catalogue.desc": "집에서 편하게\n많은 벽지와 바닥,\n그리고 거의 모든 가구를\n무제한으로 이용할 수\n있습니다!",
+
+	"config.CloseWithKey.name": "키로 닫기",
+	"config.CloseWithKey.desc": "메뉴 닫기 키로 카탈로그 메뉴를 닫을 수 있게 합니다.",
+	"config.GiveModifier.name": "인벤토리로 가져오기 키",
+	"config.GiveModifier.desc": "이 키를 누른 채로 아이템을 클릭하면 인벤토리에 들어갑니다.",
 	"config.FavoriteModifier.name": "즐겨찾기 키",
-	"config.FavoriteModifier.desc": "이 키를 누른 채로 아이템을 클릭하면 즐겨찾기에 등록됩니다..",
-	"config.ExtendedCategories.name": "확장된 카테고리",
-	"config.ExtendedCategories.desc": "활성화 하면 가구 분류 카테고리를 좀 더 세분화합니다.",
+	"config.FavoriteModifier.desc": "이 키를 누른 채로 아이템을 클릭하면 즐겨찾기에 추가/해제됩니다.",
+	"config.ExtendedCategories.name": "확장 카테고리",
+	"config.ExtendedCategories.desc": "활성화하면 기본 가구 필터 탭을 더 세분화된 필터로 바꿉니다.",
 	"config.FurnitureTooltips.name": "가구 툴팁",
-	"config.FurnitureTooltips.desc": "활성화하면 아이템 위에 마우스를 올릴 시 아이템의 정보가 오버레이됩니다.",
+	"config.FurnitureTooltips.desc": "활성화하면 가구 카탈로그에서 마우스를 올린 아이템의 툴팁을 표시합니다.",
 	"config.PauseTime.name": "시간 정지",
-	"config.PauseTime.desc": "활성화 하면 카탈로그 창이 열려 있는 동안 시간의 흐름이 멈춥니다. 멀티플레이에서는 효과가 없습니다.",
-	"config.ReplaceFurnitureCatalog.name": "가구 카탈로그 UI 재배치",
-	"config.ReplaceFurnitureCatalog.desc": "활성화 하면,기본 가구 카탈로그 UI를 새 UI로 바꿉니다.",
-	"config.ReplaceWallpaperCatalog.name": "벽지 & 바닥 카탈로그 UI 재배치",
-	"config.ReplaceWallpaperCatalog.desc": "활성화 하면,기본 벽지 & 바닥 카탈로그 UI를 새 UI로 바꿉니다.",
-	"logging.alternativeTextures.versionWarning": "현재 버전의 해피 홈 디자이너 모드는 {{min}} 버전 이상의 대체 텍스쳐 모드만 지원합니다. {{current}} 버전의 대체 텍스쳐 모드에서는 텍스쳐 통합이 지원되지 않습니다. 통합 기능을 재활성화 하려면 {{min}} 버전 이상의 대체 택스쳐 모드를 설치해주세요.",
-	"logging.removedWallsAndFloors": " {{walls}} 또는  {{floors}} 의 중복 배치가 발견되어 제거하였습니다.",
-	"config.ToggleShortcut.name": "카탈로그 보이기/숨기기 단축키",
-	"config.ToggleShortcut.desc": "카탈로그를 여는 동안 카탈로그 창을 보이거나 숨기는 단축키.",
-	"ui.search.name": "검색"
+	"config.PauseTime.desc": "활성화하면 카탈로그가 열려 있는 동안 시간이 멈춥니다. 멀티플레이에서는 효과가 없습니다.",
+	"config.ReplaceFurnitureCatalog.name": "가구 카탈로그 교체",
+	"config.ReplaceFurnitureCatalog.desc": "활성화하면 기본 가구 카탈로그 UI를 새 UI로 바꿉니다.",
+	"config.ReplaceWallpaperCatalog.name": "벽지 & 바닥 카탈로그 교체",
+	"config.ReplaceWallpaperCatalog.desc": "활성화하면 기본 벽지 & 바닥 카탈로그 UI를 새 UI로 바꿉니다.",
+
+	"logging.alternativeTextures.versionWarning": "현재 버전의 해피 홈 디자이너는 Alternative Textures {{min}} 이상만 지원합니다. 현재 버전은 {{current}}이며, Alternative Textures 통합이 적용되지 않습니다. 통합 기능을 다시 활성화하려면 Alternative Textures를 {{min}} 이상으로 업데이트하세요.",
+	"logging.removedWallsAndFloors": "중복 벽지 {{walls}}개와 중복 바닥 {{floors}}개를 찾아 제거했습니다.",
+
+	"config.ToggleShortcut.name": "카탈로그 표시/숨기기 단축키",
+	"config.ToggleShortcut.desc": "카탈로그가 열려 있는 동안 창을 표시하거나 숨기는 키보드 단축키입니다.",
+	"ui.search.name": "검색",
+
+	"item.card.receive": "이제 희귀 장식품 수집가 협회의 회원이 되었습니다! 로빈에게서 새 카탈로그를 구입할 수 있습니다.",
+	"item.card.name": "수집가 카드",
+	"item.card.desc": "희귀 장식품 수집가 협회 회원 카드입니다. 수집가 카탈로그를 이용할 수 있습니다.",
+
+	"furniture.CollectorsCatalogue.name": "수집가 카탈로그",
+	"furniture.CollectorsCatalogue.desc": "희귀하고 이국적인 수집품을 위한 수집가용 카탈로그입니다.",
+	"furniture.DeluxeCatalogue.name": "설계자의 이상적인 카탈로그",
+	"furniture.DeluxeCatalogue.desc": "최고급 집에 어울리는 진정한 카탈로그입니다.",
+
+	"mail.collectorAcceptance.text": "펀길 희귀 장식품 수집가 협회는 희귀하고 독특한 홈 데코 컬렉션을 훌륭하게 모아온 @을(를) 공식적으로 치하하고자 합니다. 이 컬렉션에 대한 포상과 역사 보존에 대한 변함없는 헌신에 대한 감사의 뜻으로, 협회는 @에게 공식 회원 자격을 제안합니다.",
+	"mail.collectorAcceptance.name": "희귀 장식품 수집가 협회 가입 편지",
+
+	"mail.fairyDust.text": "안녕하시오, @.^완벽한 카탈로그를 발견한 듯하군요. 아니, 거의 완벽하다고 해야겠지요. 제 연금술 실험에 따르면, 요정 가루의 마법적 성질을 빌리면 그것을 더… 주머니에 넣기 쉬운 형태로 바꿀 수도 있을 것 같습니다. 그런 시도를 해 본다면, 결과를 꼭 알려주시오.^\t-라스모디우스",
+	"mail.fairyDust.name": "요정 가루와 카탈로그",
+
+	"config.ReplaceRareCatalogs.name": "희귀 카탈로그 교체",
+	"config.ReplaceRareCatalogs.desc": "활성화하면 기본 희귀 카탈로그 UI를 새 UI로 바꿉니다.",
+	"config.AlwaysLockScroll.name": "스크롤 항상 고정",
+	"config.AlwaysLockScroll.desc": "비활성화하면 마우스가 메뉴 위에 있을 때만 스크롤 휠 입력이 잡힙니다. 활성화하면 메뉴가 열려 있는 동안 항상 스크롤 휠 입력이 잡힙니다.",
+
+	"item.portable.name": "건축가의 카탈로그",
+	"item.portable.desc": "최고급 집에 어울리는 휴대용 카탈로그입니다.",
+
+	"config.ClientMode.name": "클라이언트 모드",
+	"config.ClientMode.desc": "서버에 이 모드가 설치되어 있지 않아도 안전하게 사용할 수 있도록 콘텐츠 기능을 비활성화합니다.",
+	"config.EarlyDeluxe.name": "조기 디럭스 카탈로그",
+	"config.EarlyDeluxe.desc": "수집가 카탈로그의 내용을 표준 통합 카탈로그에 추가합니다.",
+	"config.LargeVariants.name": "큰 변형 패널",
+	"config.LargeVariants.desc": "변형 패널의 높이를 늘립니다. HUD 일부가 가려질 수 있습니다.",
+
+	"config.cheats.name": "치트",
+	"config.cheats.desc": "게임 밸런스에 영향을 주는 옵션",
+	"config.tweaks.name": "조정",
+	"config.tweaks.desc": "작은 변화를 주는 옵션",
+
+	"config.OpenMenu.name": "메뉴 열기 키",
+	"config.OpenMenu.desc": "어디서든 무료로 설계자의 이상적인 카탈로그를 열고, 잠금 조건을 무시합니다.",
+
+	"config.UiSkin.name": "UI 스킨",
+	"config.UiSkin.desc": "사용할 (공식 지원) UI 리컬러를 선택합니다. 리컬러 모드는 이 설정을 덮어쓸 수 있습니다.",
+	"skin.Auto": "자동",
+	"skin.Default": "기본(스타듀)",
+	"skin.Maraluna.OvergrownFloweryInterface": "무성한 꽃무늬",
+	"skin.ManaKirel.VintageInterface2": "빈티지 버전2",
+	"skin.DaisyNiko.EarthyRecolour": "데이지니코의 대지색 리컬러",
+	"skin.ManaKirel.VMI": "빈티지 버전1",
+
+	"config.EasierTrashCatalogue.name": "쓰레기 카탈로그 쉽게",
+	"config.EasierTrashCatalogue.desc": "쓰레기 카탈로그를 더 쉽게 얻을 수 있게 합니다.",
+	"config.Magnify.name": "확대",
+	"config.Magnify.desc": "큰 아이템의 디테일을 보기 쉽게, 더 큰 미리보기 툴팁을 표시합니다.",
+	"config.MagnifyScale.name": "확대 배율",
+	"config.MagnifyScale.desc": "미리보기 툴팁의 크기 배율입니다. '확대'가 비활성화되어 있으면 효과가 없습니다.",
+	"config.GMCMButton.name": "GMCM 버튼",
+	"config.GMCMButton.desc": "카탈로그 메뉴에 설정 버튼을 표시할지 여부입니다.",
+
+	"ui.EmptyCatalogue.text": "이 카탈로그에는 아이템이 없습니다!",
+
+	"config.QuickDelete.name": "들고 있는 아이템 삭제",
+	"config.QuickDelete.desc": "카탈로그가 열려 있을 때 이 키를 누르면, 가능할 경우 들고 있는 아이템을 삭제합니다.",
+	"config.controls.name": "조작",
+	"config.controls.desc": "키 바인딩 및 입력 옵션",
+	"config.PickupCraftables.name": "장식물 집기",
+	"config.PickupCraftables.desc": "장식물을 즉시 집거나 옮길 수 있게 합니다.",
+	"config.ExpandSearch.name": "검색창 확장",
+	"config.ExpandSearch.desc": "마우스를 올렸을 때 검색창이 전체 너비로 확장될지 여부입니다.",
+
+	"logging.cnpcp.noload": "Custom NPC Paintings 통합 실패! 어셈블리를 찾지 못했습니다.",
+	"logging.cnpcp.notype": "Custom NPC Paintings 통합 실패! 메뉴 타입을 찾지 못했습니다.",
+
+	"ui.blueprint.add": "생성",
+	"ui.blueprint.clear": "가구 비우기",
+	"ui.blueprint.copy": "클립보드로 복사",
+	"ui.blueprint.paste": "클립보드에서 생성",
+	"ui.blueprint.apply": "배치 적용",
+	"ui.blueprint.save": "배치 업데이트",
+	"ui.blueprint.delete": "배치 삭제",
+	"ui.blueprint.added": "배치를 생성했습니다!",
+	"ui.blueprint.applied": "배치를 적용했습니다!",
+	"ui.blueprint.deleted": "배치를 삭제했습니다!",
+	"ui.blueprint.saved": "배치를 업데이트했습니다!",
+	"ui.blueprint.cleared": "가구를 비웠습니다!",
+	"ui.blueprint.copied": "클립보드로 복사했습니다!",
+	"ui.blueprint.pasted": "클립보드에서 생성했습니다!",
+	"ui.blueprint.name": "설계도 이름",
+	"ui.blueprint.empty": "클립보드가 비어 있습니다",
+	"ui.blueprint.failure": "배치를 적용할 수 없습니다",
+	"ui.blueprint.dropbox": "제거된 아이템",
+
+	"item.blueprint.name": "설계도 모음집",
+	"item.blueprint.desc": "인테리어 디자인을 저장하는 책입니다.\n가구 배치를 쉽게\n저장하고 불러올 수\n있습니다.",
+
+	"config.SeasonalOverlay.name": "계절 오버레이",
+	"config.SeasonalOverlay.desc": "카탈로그 메뉴에 장식용 계절 오버레이를 추가합니다.",
+	"config.DisableBlueprintChecks.name": "설계도 강제 적용",
+	"config.DisableBlueprintChecks.desc": "설계도을 적용할 때 모든 배치 검사를 비활성화합니다. 위험할 수 있으니 주의하세요. 가구가 이상한 위치에 놓일 수 있습니다."
 }
