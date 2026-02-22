@@ -9,16 +9,21 @@ using StardewValley.Menus;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using SObject = StardewValley.Object;
+using Netcode;
+using Microsoft.Xna.Framework;
 
 namespace HappyHomeDesigner.Patches
 {
 	internal class Misc
 	{
+		public static bool IsLazyFurnitureContext = false;
+
 		internal static void Apply(HarmonyHelper helper)
 		{
 			helper
 				.With<Furniture>("loadDescription").Postfix(EditDescription)
 				.With(nameof(Furniture.IsCloseEnoughToFarmer)).Postfix(SetFreePlace)
+				.With(nameof(Furniture.InitializeAtTile)).Transpiler(DisableTextureLoading)
 				.With<Utility>(nameof(Utility.isWithinTileWithLeeway)).Postfix(SetFreePlace)
 				.With(nameof(Utility.SortAllFurnitures)).Prefix(SortErrorFurniture)
 				.With<FurnitureDataDefinition>(nameof(FurnitureDataDefinition.CreateItem)).Finalizer(ReplaceInvalidFurniture)
@@ -28,6 +33,43 @@ namespace HappyHomeDesigner.Patches
 
 			if (!ModEntry.ANDROID)
 				helper.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
+		}
+
+		private static IEnumerable<CodeInstruction> DisableTextureLoading(IEnumerable<CodeInstruction> instructions, ILGenerator gen)
+		{
+			var il = new CodeMatcher(instructions, gen);
+			var jump = gen.DefineLabel();
+
+			il
+				.MatchStartForward(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Call, typeof(Item).GetProperty(nameof(Item.QualifiedItemId)).GetMethod),
+					new(OpCodes.Call, typeof(ItemRegistry).GetMethod(nameof(ItemRegistry.GetDataOrErrorItem))),
+					new(OpCodes.Callvirt, typeof(ParsedItemData).GetMethod(nameof(ParsedItemData.GetTexture)))
+				)
+				.InsertAndAdvance(
+					new(OpCodes.Ldsfld, typeof(Misc).GetField(nameof(IsLazyFurnitureContext))),
+					new(OpCodes.Brtrue, jump)
+				)
+				.MatchStartForward(
+					new CodeMatch(OpCodes.Stloc_0)
+				)
+				.Advance(1)
+				.AddLabels([jump])
+				.MatchStartForward(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
+				);
+
+			var start = il.Pos;
+
+			il
+				.MatchStartForward(
+					new CodeMatch(OpCodes.Callvirt, typeof(NetFieldBase<Rectangle, NetRectangle>).GetProperty(nameof(NetRectangle.Value)).SetMethod)
+				)
+				.RemoveInstructionsInRange(start, il.Pos);
+
+			return il.InstructionEnumeration();
 		}
 
 		private static IEnumerable<CodeInstruction> DisableHeldItemDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)

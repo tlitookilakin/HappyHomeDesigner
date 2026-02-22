@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
-using StardewValley;
 using StardewValley.Internal;
-using StardewValley.ItemTypeDefinitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +25,7 @@ namespace HappyHomeDesigner.Framework
 			);
 		}
 
-		public static IEnumerable<ItemQueryResult> TryResolve(string query, ItemQueryContext context, ItemQuerySearchMode filter = ItemQuerySearchMode.All, string perItemCondition = null, int? maxItems = null, bool avoidRepeat = false, HashSet<string> avoidItemIds = null, Action<string, string> logError = null)
+        public static IEnumerable<ItemQueryResult> TryResolve(string query, ItemQueryContext context, ItemQuerySearchMode filter = ItemQuerySearchMode.All, string perItemCondition = null, int? maxItems = null, bool avoidRepeat = false, HashSet<string> avoidItemIds = null, Action<string, string> logError = null)
 		{
 			IsLazy = true;
 			results = null;

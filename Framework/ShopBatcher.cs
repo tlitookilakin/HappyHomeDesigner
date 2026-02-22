@@ -1,11 +1,17 @@
 ﻿using HappyHomeDesigner.Data;
 using HappyHomeDesigner.Integration;
+using HappyHomeDesigner.Menus;
+using HappyHomeDesigner.Patches;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
 using StardewValley.GameData.Shops;
 using StardewValley.Internal;
+using StardewValley.ItemTypeDefinitions;
+using StardewValley.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,14 +21,32 @@ namespace HappyHomeDesigner.Framework
 	{
 		public bool Done { get; private set; }
 
+		private static bool inited = false;
+		private static IAssetName FurnitureName;
+		private static readonly Dictionary<string, Furniture> furnitureCache = [];
+		private static Func<ParsedItemData, Item> CreateFurniture;
+
 		private readonly IReadOnlyDictionary<string, ShopData> shops;
 		private readonly IEnumerable<StyleCollection> collections;
 		private readonly IEnumerable<string> shopsToUse;
 
 		private readonly IEnumerator<KeyValuePair<string, ItemQueryResult>[]> batch;
 
+		private static void Init()
+		{
+			if (inited) return;
+
+			inited = true;
+			FurnitureName = ModEntry.helper.GameContent.ParseAssetName("Data/Furniture");
+			ModEntry.helper.Events.Content.AssetsInvalidated += ContentInvalidated;
+			CreateFurniture = typeof(ShopBatcher).GetMethod(nameof(CreateAndCache))
+				.CreateDelegate<Func<ParsedItemData, Item>>(ItemRegistry.RequireTypeDefinition("(F)"));
+		}
+
 		public ShopBatcher(params IEnumerable<string> ShopsToUse)
 		{
+			Init();
+
 			shopsToUse = ShopsToUse;
 			shops = DataLoader.Shops(Game1.content);
 			collections = AssetManager.Collections.Values;
@@ -86,7 +110,7 @@ namespace HappyHomeDesigner.Framework
 		public static IEnumerable<ItemQueryResult> GetProvider(ShopItemData data, ItemQueryContext ctx)
 		{
 			// use unsorted lazy spawning
-			if (data.ItemId.StartsWith("ALL_ITEMS (F)"))
+			if (data.ItemId.StartsWith("ALL_ITEMS (F)", StringComparison.OrdinalIgnoreCase))
 			{
 				bool randomSale = data.ItemId.Contains("@isRandomSale");
 				IEnumerable<ItemQueryResult> items;
@@ -105,6 +129,8 @@ namespace HappyHomeDesigner.Framework
 
 				if (data.MaxItems is int max)
 					items = items.Take(max);
+
+				return items;
 			}
 
 			// fallback to standard lazy
@@ -139,9 +165,28 @@ namespace HappyHomeDesigner.Framework
 				datas = datas.Where(d => !d.ExcludeFromRandomSale);
 
 			return datas
-				.Select(def.CreateItem)
+				.Select(CreateFurniture)
 				.Where(f => f.Name is not "ErrorItem")
 				.Select(f => new ItemQueryResult(f));
+		}
+
+		private static void ContentInvalidated(object sender, AssetsInvalidatedEventArgs e)
+		{
+			if (e.NamesWithoutLocale.Any(name => name.Equals(FurnitureName)))
+				furnitureCache.Clear();
+		}
+
+		public static Item CreateAndCache(FurnitureDataDefinition definition, ParsedItemData data)
+		{
+			if (furnitureCache.TryGetValue(data.ItemId, out var f))
+				return f;
+
+			Misc.IsLazyFurnitureContext = true;
+			f = (Furniture)definition.CreateItem(data);
+			Misc.IsLazyFurnitureContext = false;
+
+			furnitureCache[data.ItemId] = f;
+			return f;
 		}
 	}
 }

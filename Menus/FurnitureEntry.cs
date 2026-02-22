@@ -1,4 +1,5 @@
 ﻿using HappyHomeDesigner.Integration;
+using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace HappyHomeDesigner.Menus
 		public override Furniture GetOne()
 		{
 			var item = Item.getOne() as Furniture;
+			item.InitializeAtTile(Vector2.Zero); // fix default bounding box
 			item.Price = 0;
 			item.currentRotation.Value = 0;
 			item.updateRotation();
