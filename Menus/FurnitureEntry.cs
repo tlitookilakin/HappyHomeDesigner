@@ -1,5 +1,8 @@
 ﻿using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 using System.Collections.Generic;
@@ -9,6 +12,8 @@ namespace HappyHomeDesigner.Menus
 {
 	internal class FurnitureEntry : VariantEntry<Furniture>
 	{
+		bool inited = false;
+
 		/// <inheritdoc/>
 		public FurnitureEntry(Furniture Item, Season season, string seasonName, ICollection<string> favorites)
 			: base(Item, season, seasonName, favorites, "Furniture_")
@@ -26,8 +31,8 @@ namespace HappyHomeDesigner.Menus
 		/// <inheritdoc/>
 		public override Furniture GetOne()
 		{
+			Init();
 			var item = Item.getOne() as Furniture;
-			item.InitializeAtTile(Vector2.Zero); // fix default bounding box
 			item.Price = 0;
 			item.currentRotation.Value = 0;
 			item.updateRotation();
@@ -44,6 +49,30 @@ namespace HappyHomeDesigner.Menus
 			AlternativeTextures.VariantsOfFurniture(Item, season, skins);
 
 			return skins.Select(f => new FurnitureEntry(f) as VariantEntry<Furniture>).ToList();
+		}
+
+		/// <inheritdoc/>
+        public override void Draw(SpriteBatch b, int x, int y)
+        {
+			Init();
+            base.Draw(b, x, y);
+        }
+
+		private void Init()
+		{
+			if (!inited)
+			{
+				inited = true;
+				try
+				{
+					// fix default bounding box & texture
+					Item.InitializeAtTile(Vector2.Zero);
+				}
+				catch (ContentLoadException ex)
+				{
+					ModEntry.monitor.Log($"Failed to load texture for furniture '{Item.ItemId}': {ex}", LogLevel.Warn);
+				}
+			}
 		}
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using HappyHomeDesigner.Data;
 using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -30,7 +29,7 @@ namespace HappyHomeDesigner.Framework
 		private readonly IEnumerable<StyleCollection> collections;
 		private readonly IEnumerable<string> shopsToUse;
 
-		private readonly IEnumerator<KeyValuePair<string, ItemQueryResult>[]> batch;
+		private readonly IEnumerator<IEnumerable<KeyValuePair<string, ItemQueryResult>>> batch;
 
 		private static void Init()
 		{
@@ -58,10 +57,10 @@ namespace HappyHomeDesigner.Framework
 				.SelectMany(id => shops[id].Items, (id, val) => (id, val))
 				.Where(e => e.val.Condition is null || GameStateQuery.CheckConditions(e.val.Condition, gsq))
 				.SelectMany(
-					(item) => GetProvider(item.val, ctx), 
+					(item) => GetProvider(item.val, ctx, item.id), 
 					(item, result) => new KeyValuePair<string, ItemQueryResult>(item.id, result)
 				)
-				.Chunk(100)
+				.TimeChunk(14)
 				.GetEnumerator();
 		}
 
@@ -107,34 +106,67 @@ namespace HappyHomeDesigner.Framework
 			return true;
 		}
 
-		public static IEnumerable<ItemQueryResult> GetProvider(ShopItemData data, ItemQueryContext ctx)
+		public static IEnumerable<ItemQueryResult> GetProvider(ShopItemData data, ItemQueryContext ctx, string owner)
 		{
-			// use unsorted lazy spawning
-			if (data.ItemId.StartsWith("ALL_ITEMS (F)", StringComparison.OrdinalIgnoreCase))
+			// use simple lazy spawning
+			if (data.ItemId.StartsWith("ALL_ITEMS", StringComparison.OrdinalIgnoreCase))
 			{
-				bool randomSale = data.ItemId.Contains("@isRandomSale");
-				IEnumerable<ItemQueryResult> items;
+				var split = data.ItemId.Split(' ');
+				if (split.Length < 2) // invalid
+					goto Fallback;
 
-				// simple case; no filters
-				if (data.PerItemCondition is not string c)
-					items = LazyFurniture(randomSale);
+				var category = split[1];
+				IItemDataDefinition definition;
 
-				// simple context tag filter
-				else if (c.StartsWith("ITEM_CONTEXT_TAG") && !c.Contains(','))
-					items = LazyFurniture(randomSale, ArgUtility.SplitBySpaceQuoteAware(c));
+				try
+				{
+					definition = ItemRegistry.RequireTypeDefinition(category);
+				} 
+				catch (KeyNotFoundException)
+				{
+					ModEntry.monitor.Log(
+						$"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'."
+					, LogLevel.Info);
+					goto Fallback;
+				}
 
-				// complex filter
-				else
-					items = LazyFurniture(randomSale).Where(i => GameStateQuery.CheckConditions(c, targetItem: i.Item as Item));
+				// use simple tags-only condition or no filter if possible
+				var tags = data.PerItemCondition is string c && 
+					c.StartsWith("ITEM_CONTEXT_TAG") && !c.Contains(',')
+					? ArgUtility.SplitBySpaceQuoteAware(c) : [];
 
+				var items = LazyResolve(
+					ItemRegistry.RequireTypeDefinition(category),
+					split.Contains("@isRandomSale"),
+					tags,
+					// use cache for furniture; other object types should be fine as-is
+					category.EqualsIgnoreCase("(F)") ? CreateFurniture : definition.CreateItem
+				);
+
+				// complex condition, run full check
+				if (tags.Length is 0 && data.PerItemCondition is string cond)
+					items = items.Where(i => GameStateQuery.CheckConditions(cond, targetItem: i.Item as Item));
+
+				// clip max
 				if (data.MaxItems is int max)
 					items = items.Take(max);
 
 				return items;
 			}
 
+			// single furniture item
+			else if (data.ItemId.StartsWith("(F)", StringComparison.OrdinalIgnoreCase))
+			{
+				Misc.IsLazyFurnitureContext = true;
+				var item = ItemRegistry.Create(data.ItemId);
+				Misc.IsLazyFurnitureContext = false;
+
+				return [new(item)];
+			}
+
+		Fallback:
 			// fallback to standard lazy
-			return LazyItemResolver.TryResolve(
+			return ItemQueryResolver.TryResolve(
 				data.ItemId, ctx,
 				perItemCondition: data.PerItemCondition,
 				maxItems: data.MaxItems,
@@ -143,12 +175,11 @@ namespace HappyHomeDesigner.Framework
 			);
 		}
 
-		private static IEnumerable<ItemQueryResult> LazyFurniture(bool randomSale, string[] tags = default)
+		private static IEnumerable<ItemQueryResult> LazyResolve(IItemDataDefinition def, bool randomSale, string[] tags, Func<ParsedItemData, Item> factory)
 		{
-			var def = ItemRegistry.RequireTypeDefinition("(F)");
 			var ids = def.GetAllIds();
 
-			if (tags != null && tags.Length > 2)
+			if (tags.Length > 2)
 			{
 				// cut out query and target
 				tags = tags[2..];
@@ -165,7 +196,7 @@ namespace HappyHomeDesigner.Framework
 				datas = datas.Where(d => !d.ExcludeFromRandomSale);
 
 			return datas
-				.Select(CreateFurniture)
+				.Select(factory)
 				.Where(f => f.Name is not "ErrorItem")
 				.Select(f => new ItemQueryResult(f));
 		}

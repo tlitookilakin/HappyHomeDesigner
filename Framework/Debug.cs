@@ -27,6 +27,7 @@ namespace HappyHomeDesigner.Framework
         internal static void Benchmark()
         {
             List<TimeSpan> batches = [];
+
             var timer = Stopwatch.StartNew();
             var total = Stopwatch.StartNew();
 

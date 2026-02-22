@@ -15,6 +15,7 @@ using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -368,6 +369,74 @@ namespace HappyHomeDesigner.Framework
 				0x09 => new(OpCodes.Stloc_3),
 				_ => throw new InvalidOperationException("Opcode is not a local loader")
 			};
+		}
+
+		public static IEnumerable<IEnumerable<T>> TimeChunk<T>(this IEnumerable<T> source, int millis)
+		{
+			return new TimeChunker<T>(source, millis);
+		}
+
+		private class TimeChunker<T>(IEnumerable<T> source, int millis) : IEnumerable<IEnumerable<T>>
+		{
+			public IEnumerator<IEnumerable<T>> GetEnumerator()
+			{
+				return new TimeChunk(source.GetEnumerator(), millis);
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+			private class TimeChunk(IEnumerator<T> source, int millis) : IEnumerator<IEnumerable<T>>
+			{
+				private readonly Stopwatch timer = new();
+				private bool disposed = false;
+				private readonly long ticks = millis * TimeSpan.TicksPerMillisecond;
+				private bool EndOfSequence = false;
+
+				public IEnumerable<T> Current { get; private set; }
+
+				object IEnumerator.Current => Current;
+
+				public void Dispose()
+				{
+					if (disposed)
+						return;
+
+					disposed = true;
+					source.Dispose();
+				}
+
+				public bool MoveNext()
+				{
+					if (disposed || EndOfSequence)
+						return false;
+
+					Current = GetItems();
+					return !EndOfSequence;
+				}
+
+				private IEnumerable<T> GetItems()
+				{
+					EndOfSequence = true;
+					timer.Restart();
+					while (source.MoveNext())
+					{
+						EndOfSequence = false;
+						if (timer.ElapsedTicks > ticks)
+							break;
+
+						yield return source.Current;
+					}
+				}
+
+				public void Reset()
+				{
+					source.Reset();
+					EndOfSequence = false;
+				}
+			}
 		}
 	}
 }

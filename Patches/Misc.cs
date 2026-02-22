@@ -11,6 +11,7 @@ using System.Reflection.Emit;
 using SObject = StardewValley.Object;
 using Netcode;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyHomeDesigner.Patches
 {
@@ -23,7 +24,7 @@ namespace HappyHomeDesigner.Patches
 			helper
 				.With<Furniture>("loadDescription").Postfix(EditDescription)
 				.With(nameof(Furniture.IsCloseEnoughToFarmer)).Postfix(SetFreePlace)
-				.With(nameof(Furniture.InitializeAtTile)).Transpiler(DisableTextureLoading)
+				.With<ParsedItemData>(nameof(ParsedItemData.GetTexture)).Prefix(SpoofTextureIfLazy)
 				.With<Utility>(nameof(Utility.isWithinTileWithLeeway)).Postfix(SetFreePlace)
 				.With(nameof(Utility.SortAllFurnitures)).Prefix(SortErrorFurniture)
 				.With<FurnitureDataDefinition>(nameof(FurnitureDataDefinition.CreateItem)).Finalizer(ReplaceInvalidFurniture)
@@ -35,41 +36,13 @@ namespace HappyHomeDesigner.Patches
 				helper.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
 		}
 
-		private static IEnumerable<CodeInstruction> DisableTextureLoading(IEnumerable<CodeInstruction> instructions, ILGenerator gen)
+		private static bool SpoofTextureIfLazy(ParsedItemData __instance, ref Texture2D __result)
 		{
-			var il = new CodeMatcher(instructions, gen);
-			var jump = gen.DefineLabel();
+			if (!IsLazyFurnitureContext || __instance.ItemType is not FurnitureDataDefinition)
+				return true;
 
-			il
-				.MatchStartForward(
-					new(OpCodes.Ldarg_0),
-					new(OpCodes.Call, typeof(Item).GetProperty(nameof(Item.QualifiedItemId)).GetMethod),
-					new(OpCodes.Call, typeof(ItemRegistry).GetMethod(nameof(ItemRegistry.GetDataOrErrorItem))),
-					new(OpCodes.Callvirt, typeof(ParsedItemData).GetMethod(nameof(ParsedItemData.GetTexture)))
-				)
-				.InsertAndAdvance(
-					new(OpCodes.Ldsfld, typeof(Misc).GetField(nameof(IsLazyFurnitureContext))),
-					new(OpCodes.Brtrue, jump)
-				)
-				.MatchStartForward(
-					new CodeMatch(OpCodes.Stloc_0)
-				)
-				.Advance(1)
-				.AddLabels([jump])
-				.MatchStartForward(
-					new(OpCodes.Ldarg_0),
-					new(OpCodes.Ldfld, typeof(Furniture).GetField(nameof(Furniture.defaultSourceRect)))
-				);
-
-			var start = il.Pos;
-
-			il
-				.MatchStartForward(
-					new CodeMatch(OpCodes.Callvirt, typeof(NetFieldBase<Rectangle, NetRectangle>).GetProperty(nameof(NetRectangle.Value)).SetMethod)
-				)
-				.RemoveInstructionsInRange(start, il.Pos);
-
-			return il.InstructionEnumeration();
+			__result = Game1.staminaRect;
+			return false;
 		}
 
 		private static IEnumerable<CodeInstruction> DisableHeldItemDraw(IEnumerable<CodeInstruction> source, ILGenerator gen)
