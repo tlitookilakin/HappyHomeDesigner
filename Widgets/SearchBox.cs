@@ -1,5 +1,4 @@
-﻿using HappyHomeDesigner.Framework;
-using HappyHomeDesigner.Menus;
+﻿using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -10,25 +9,14 @@ using System.Runtime.CompilerServices;
 
 namespace HappyHomeDesigner.Widgets
 {
-	public class SearchBox : BlankTextBox
+	public class SearchBox : BlankTextBox, IItemPool
 	{
-		private static readonly ConditionalWeakTable<IReadOnlyList<IGridItem>, string[]> mapCache = new();
+		private static readonly ConditionalWeakTable<IReadOnlyList<IGridItem>, string[]> mapCache = [];
 		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 		private static readonly Rectangle Spyglass = new(0, 48, 16, 16);
 
-		public IReadOnlyList<IGridItem> Filtered => filtered ?? source;
-
 		public event Action OnTextChanged;
-
-		public IReadOnlyList<IGridItem> Source
-		{
-			get => source;
-			set
-			{
-				source = value;
-				Filter(true);
-			}
-		}
+        public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
 		public int FullWidth
 		{
@@ -40,6 +28,7 @@ namespace HappyHomeDesigner.Widgets
 					Width = fullWidth;
 			}
 		}
+
 		public int SmallWidth
 		{
 			get => smallWidth;
@@ -51,22 +40,31 @@ namespace HappyHomeDesigner.Widgets
 			}
 		}
 
-		private string[] source_map;
-		private IReadOnlyList<IGridItem> source;
+        public IReadOnlyList<IGridItem> Items => filtered ?? source.Items;
+
+        private string[] source_map;
 		private IReadOnlyList<string> filtered_map;
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
 		private float iconOpacity = 1f;
 		private int fullWidth = 0;
 		private int smallWidth = 0;
+		private readonly IItemPool source;
 
-		public SearchBox(Texture2D caretTexture, SpriteFont font, Color textColor)
+		public SearchBox(IItemPool source, Texture2D caretTexture, SpriteFont font, Color textColor)
 			: base(caretTexture, font, textColor)
 		{
 			LastValue = Text;
+			this.source = source;
+            source.ItemPoolChanged += SourceChanged;
 		}
 
-		public void Reset()
+        private void SourceChanged(object sender, ItemPoolChangedEvent e)
+        {
+			Filter(true, old: e.OldItems, reset: e.Reset);
+        }
+
+        public void Reset()
 		{
 			if (Text == string.Empty)
 				return;
@@ -148,30 +146,32 @@ namespace HappyHomeDesigner.Widgets
 			b.Draw(Catalog.MenuTexture, new Vector2(X + Width - 40, Y + 8), Spyglass, Color.White * iconOpacity, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0f);
 		}
 
-		private void Filter(bool refresh, string search = null)
+		private void Filter(bool refresh, string search = null, IReadOnlyList<IGridItem> old = null, bool reset = false)
 		{
-			if (source.Count is 0)
+			if (source.Items.Count is 0)
 				return;
 
 			search ??= Text.Replace(" ", null);
+
+			var prev = filtered ?? old ?? source.Items;
 
 			if (search.Length is 0)
 			{
 				filtered_map = null;
 				filtered = null;
+				ItemPoolChanged?.Invoke(this, new(this, prev, reset));
 				return;
 			}
 
 			IReadOnlyList<IGridItem> source_items = filtered;
 			IReadOnlyList<string> source_names = filtered_map;
 
-
 			if (refresh || filtered_map is null || !search.StartsWith(LastValue, StringComparison.OrdinalIgnoreCase))
 			{
-				if (!mapCache.TryGetValue(source, out source_map))
-					mapCache.Add(source, source_map = GetNames(source));
+				if (!mapCache.TryGetValue(source.Items, out source_map))
+					mapCache.Add(source.Items, source_map = GetNames(source.Items));
 
-				source_items = source;
+				source_items = source.Items;
 				source_names = source_map;
 			}
 
@@ -190,6 +190,8 @@ namespace HappyHomeDesigner.Widgets
 
 			filtered_map = result_map;
 			filtered = result;
+
+			ItemPoolChanged?.Invoke(this, new(this, prev, reset));
 		}
 
 		private static string[] GetNames(IReadOnlyList<IGridItem> items)
@@ -202,5 +204,8 @@ namespace HappyHomeDesigner.Widgets
 
 			return names;
 		}
-	}
+
+        public IGridItem GetFocusedItem()
+			=> source.GetFocusedItem();
+    }
 }

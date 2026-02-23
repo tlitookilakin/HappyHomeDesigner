@@ -9,39 +9,72 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Patches;
 using System.Linq;
+using HappyHomeDesigner.Widgets;
 
 namespace HappyHomeDesigner.Menus
 {
 	/// <summary>Base type used for pages that with a list of items that support variants and direct placement.</summary>
 	/// <typeparam name="T">The variant entry type</typeparam>
 	/// <typeparam name="TE">The wrapped item type</typeparam>
-	internal abstract class VariantPage<T, TE> : ScreenPage 
+	internal abstract class VariantPage<T, TE> : ScreenPage, IItemPool
 		where TE: Item
 		where T : VariantEntry<TE>
 	{
 		private readonly string KeyFavs;
 
-		protected readonly List<T> entries = new();
-		protected IReadOnlyList<VariantEntry<TE>> variants = [];
-		protected readonly List<T> Favorites = new();
-		private bool showVariants = false;
-		private int variantIndex = -1;
-		private T variantItem;
+		protected readonly List<T> entries = [];
+		protected readonly List<T> Favorites = [];
+		protected SimpleItemPool VariantPool;
+		protected T Selected
+		{
+			get => _selected;
+			set
+			{
+				if (_selected == value)
+					return;
+
+				_selected?.Selected = false;
+				_selected = value;
+				_selected?.Selected = true;
+
+				if (value != null)
+					VariantPool.SetItems(value.GetVariants(), true);
+			}
+		}
+		private T _selected;
+		protected int SelectedIndex;
 		protected TE hovered;
 		protected TE hovered_variant;
 		protected List<T>[] CustomFilters;
 
+		public IReadOnlyList<IGridItem> Items
+		{
+			get => _items;
+			set
+			{
+				if (_items == value)
+					return;
+
+				var old = _items;
+				_items = value;
+
+				ItemPoolChanged?.Invoke(this, new(this, old, true));
+			}
+		}
+		private IReadOnlyList<IGridItem> _items = [];
+
 		protected int iconRow;
-		protected readonly GridPanel MainPanel = new(CELL_SIZE, CELL_SIZE, true);
-		protected readonly GridPanel VariantPanel = new(CELL_SIZE, CELL_SIZE, false);
+		protected readonly GridPanel MainPanel;
+		protected readonly GridPanel VariantPanel;
 		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
-		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
-		internal static HashSet<string> knownIDs = new();
+		internal static HashSet<string> knownIDs = [];
 
 		public override ICollection<string> KnownIDs => knownIDs;
 
 		private static string[] preservedFavorites;
+
+		public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
 		/// <summary>Create and setup a variant page</summary>
 		/// <param name="existing">A list of items that belong to this page</param>
@@ -55,6 +88,12 @@ namespace HappyHomeDesigner.Menus
 
 			knownIDs.Clear();
 			int skipped = 0;
+
+			VariantPool = new(() => Selected);
+			MainPanel = new(this, CELL_SIZE, CELL_SIZE, true);
+			VariantPanel = new(VariantPool, CELL_SIZE, CELL_SIZE, false);
+
+			MainPanel.VisibleItems.ItemPoolChanged += DisplayChanged;
 
 			Init();
 
@@ -85,12 +124,14 @@ namespace HappyHomeDesigner.Menus
 			if (skipped is not 0)
 				ModEntry.monitor.Log($"Found and skipped {skipped} duplicate {typeName} items", LogLevel.Debug);
 
-			MainPanel.DisplayChanged += UpdateDisplay;
-
-			MainPanel.Items = entries;
-			VariantPanel.Items = variants;
-
 			preservedFavorites = [.. favorites];
+			Items = entries;
+		}
+
+		protected virtual void DisplayChanged(object sender, ItemPoolChangedEvent e)
+		{
+			if (Selected is IGridItem s && !e.Source.Items.Contains(s))
+				Selected = null;
 		}
 
 		public bool TrySetCustomFilter(T entry)
@@ -121,21 +162,10 @@ namespace HappyHomeDesigner.Menus
 		public override int Count() 
 			=> entries.Count;
 
-		/// <summary>Updates the selected cell index when the search or filter changes</summary>
-		public void UpdateDisplay()
-		{
-			variantIndex = MainPanel.FilteredItems.Find(variantItem);
-
-			if (variantIndex is -1)
-				variantItem = null;
-
-			showVariants = variantIndex is not -1;
-		}
-
 		public override void draw(SpriteBatch b)
 		{
 			MainPanel.DrawShadow(b);
-			if (showVariants)
+			if (Selected != null)
 				VariantPanel.DrawShadow(b);
 
 			base.draw(b);
@@ -143,20 +173,8 @@ namespace HappyHomeDesigner.Menus
 			TrashSlot.draw(b);
 			MainPanel.draw(b);
 
-			if (variantIndex is >= 0)
-			{
-				int cols = MainPanel.Columns;
-				int variantDrawIndex = variantIndex - MainPanel.Offset;
-				if (variantDrawIndex >= 0 && variantDrawIndex < MainPanel.VisibleCells)
-					b.DrawFrame(Game1.menuTexture, new(
-						xPositionOnScreen + variantDrawIndex % cols * CELL_SIZE - 8 + 55,
-						yPositionOnScreen + variantDrawIndex / cols * CELL_SIZE - 8,
-						CELL_SIZE + 16, CELL_SIZE + 16),
-						FrameSource, 13, 1, Color.White, 0);
-			}
-
 			//AltTex.forceMenuDraw = true;
-			if (showVariants)
+			if (Selected != null)
 				VariantPanel.draw(b);
 			//AltTex.forceMenuDraw = false;
 		}
@@ -210,11 +228,11 @@ namespace HappyHomeDesigner.Menus
 			VariantPanel.performHoverAction(x, y);
 
 			hovered = MainPanel.TrySelect(x, y, out int index) ?
-				(MainPanel.FilteredItems[index] as T).Item :
+				(MainPanel.VisibleItems.Items[index] as T).Item :
 				null;
 
 			hovered_variant = VariantPanel.TrySelect(x, y, out index) ?
-				(VariantPanel.FilteredItems[index] as T).Item :
+				(VariantPanel.VisibleItems.Items[index] as T).Item :
 				null;
 		}
 
@@ -230,36 +248,16 @@ namespace HappyHomeDesigner.Menus
 
 			if (!MainPanel.isWithinBounds(x, y) && TrySelectFilter(x, y, playSound))
 			{
-				HideVariants();
-				MainPanel.Items = ApplyFilter();
+				Items = ApplyFilter();
 				return;
 			}
 
 			HandleGridClick(x, y, playSound, MainPanel, true);
-			if (showVariants)
+			if (Selected != null)
 				HandleGridClick(x, y, playSound, VariantPanel, false);
 
 			if (TrashSlot.containsPoint(x, y))
 				DeleteActiveItem(playSound, knownIDs);
-		}
-
-		/// <summary>Opens the variant panel for a given item</summary>
-		/// <param name="entry">The item to get variants from</param>
-		/// <param name="index">The index of the item</param>
-		private void ShowVariantsFor(T entry, int index)
-		{
-			variantIndex = index;
-			variantItem = entry;
-			variants = entry.GetVariants();
-			VariantPanel.Items = variants;
-			showVariants = true;
-		}
-
-		/// <summary>Closes the variant panel</summary>
-		private void HideVariants()
-		{
-			variantIndex = -1;
-			showVariants = false;
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -285,7 +283,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (panel.TrySelect(mx, my, out int index))
 			{
-				var entry = panel.FilteredItems[index] as T;
+				var entry = panel.VisibleItems.Items[index] as T;
 
 				if (allowVariants)
 				{
@@ -296,21 +294,24 @@ namespace HappyHomeDesigner.Menus
 						else
 							Favorites.Remove(entry);
 
-						if (MainPanel.Items == Favorites)
-							MainPanel.UpdateCount();
+						if (Items == Favorites)
+						{
+							IReadOnlyList<T> old = entry.Favorited ? Favorites.CopyWithout(entry) : [.. Favorites, entry];
+							ItemPoolChanged?.Invoke(this, new(this, old, false));
+						}
 
 						return;
 					}
 
 					if (entry.HasVariants)
 					{
-						ShowVariantsFor(entry, index);
+						Selected = entry;
 						if (playSound)
 							Game1.playSound("shwip");
 
 						return;
 					}
-					HideVariants();
+					Selected = null;
 				}
 
 				if (ModEntry.config.GiveModifier.IsDown())
@@ -354,7 +355,7 @@ namespace HappyHomeDesigner.Menus
 			return
 				base.isWithinBounds(x, y) ||
 				MainPanel.isWithinBounds(x, y) ||
-				(showVariants && VariantPanel.isWithinBounds(x, y)) ||
+				(Selected != null && VariantPanel.isWithinBounds(x, y)) ||
 				TrashSlot.containsPoint(x, y);
 		}
 
@@ -394,6 +395,11 @@ namespace HappyHomeDesigner.Menus
 				return ApplyFilter();
 
 			return current_filter < CustomFilters.Length ? CustomFilters[current_filter] : Favorites;
+		}
+
+		public IGridItem GetFocusedItem()
+		{
+			return Selected;
 		}
 	}
 }

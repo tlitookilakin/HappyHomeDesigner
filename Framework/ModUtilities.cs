@@ -330,6 +330,34 @@ namespace HappyHomeDesigner.Framework
 			});
 		}
 
+		public static IReadOnlyList<T> CopyWithout<T>(this IReadOnlyList<T> source, T target) where T : class
+		{
+			int ind = source.Find(target);
+			if (ind == -1)
+				return source;
+
+			T[] output = new T[source.Count - 1];
+
+			if (source is List<T> list)
+			{
+				if (ind > 0)
+					list.CopyTo(0, output, 0, ind);
+
+				if (output.Length - ind > 0)
+					list.CopyTo(ind + 1, output, ind, output.Length - ind);
+			}
+			else
+			{
+                for (int i = 0; i < ind; i++)
+					output[i] = source[i];
+
+				for (int i = ind; i < output.Length; i++)
+					output[i] = source[i + 1];
+            }
+
+			return output;
+		}
+
 		public static Dictionary<string, string> Get(this ModDataDictionary dict)
 		{
 			return new Dictionary<string, string>(dict.Pairs);

@@ -2,7 +2,6 @@
 using StardewValley;
 using StardewValley.Menus;
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Widgets;
 
@@ -17,38 +16,22 @@ namespace HappyHomeDesigner.Menus
 		public readonly int CellWidth;
 		public readonly int CellHeight;
 
-		public int Offset => scrollBar.CellOffset;
-		public int Columns => scrollBar.Columns;
-		public int VisibleCells => scrollBar.VisibleRows * scrollBar.Columns;
-		public IReadOnlyList<IGridItem> FilteredItems => search.Filtered;
-
-		public event Action DisplayChanged;
-		public ScrollBar scrollBar = new();
+		public IItemPool VisibleItems => search;
+		public ScrollBar scrollBar;
 
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
-		private readonly SearchBox search = 
-			new(null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.search.name")};
+		private readonly SearchBox search; 
 		private readonly bool search_visible;
+		private readonly IItemPool items;
 
-		public IReadOnlyList<IGridItem> Items
-		{
-			get => items;
-			set
-			{
-				items = value;
-				search.Source = items;
-				UpdateCount();
-				scrollBar.Reset();
-			}
-		}
-		private IReadOnlyList<IGridItem> items;
-
-		public GridPanel(int cellWidth, int cellHeight, bool showSearch)
+		public GridPanel(IItemPool items, int cellWidth, int cellHeight, bool showSearch)
 		{
 			CellWidth = cellWidth;
 			CellHeight = cellHeight;
+			this.items = items;
 
-			search.OnTextChanged += UpdateCount;
+			search = new(items, null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.search.name") };
+			scrollBar = new(search);
 
 			search_visible = showSearch;
 		}
@@ -58,7 +41,7 @@ namespace HappyHomeDesigner.Menus
 			int offset = scrollBar.CellOffset;
 			int cols = scrollBar.Columns;
 
-			var displayed = search.Filtered;
+			var displayed = search.Items;
 
 			drawTextureBox(b, Game1.mouseCursors, BackgroundSource, xPositionOnScreen - BORDER_WIDTH, 
 				yPositionOnScreen - (BORDER_WIDTH + 4), width + (BORDER_WIDTH * 2), 
@@ -125,7 +108,6 @@ namespace HappyHomeDesigner.Menus
 			scrollBar.Columns = width / CellWidth;
 			scrollBar.VisibleRows = height / CellHeight;
 			scrollBar.Resize(this.height + (BORDER_WIDTH * 2) + 4, xPositionOnScreen + this.width + BORDER_WIDTH, yPositionOnScreen - (BORDER_WIDTH + 4));
-			UpdateCount();
 
 			search.X = xPositionOnScreen - BORDER_WIDTH;
 			search.Y = yPositionOnScreen + this.height + BORDER_WIDTH + MARGIN_BOTTOM + 8;
@@ -161,14 +143,7 @@ namespace HappyHomeDesigner.Menus
 				return false;
 
 			which = relX / CellWidth + scrollBar.Columns * (relY / CellHeight) + scrollBar.CellOffset;
-			return which < search.Filtered.Count;
-		}
-
-		/// <summary>Update the item count when the item list changes</summary>
-		public void UpdateCount()
-		{
-			scrollBar.Rows = search.Filtered.Count / scrollBar.Columns + (search.Filtered.Count % scrollBar.Columns is not 0 ? 1 : 0);
-			DisplayChanged?.Invoke();
+			return which < search.Items.Count;
 		}
 	}
 }

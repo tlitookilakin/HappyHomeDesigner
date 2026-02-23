@@ -6,23 +6,30 @@ using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using System;
 using System.Collections.Generic;
 
 namespace HappyHomeDesigner.Menus
 {
-	internal class ItemPage : ScreenPage
+	internal class ItemPage : ScreenPage, IItemPool
 	{
 		private readonly List<ItemEntry> entries = [];
 		private readonly HashSet<string> knownIDs = [];
-		private readonly GridPanel Panel = new(80, 80, true);
+		private readonly GridPanel Panel;
 		private readonly ClickableTextureComponent TrashSlot
 			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
-		public override ICollection<string> KnownIDs => [];
+        public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
-		public ItemPage(IEnumerable<ISalable> source)
+        public override ICollection<string> KnownIDs => [];
+
+		public IReadOnlyList<IGridItem> Items => entries;
+
+        public ItemPage(IEnumerable<ISalable> source)
 		{
-			foreach(var item in source)
+			Panel = new(this, 80, 80, true);
+
+			foreach (var item in source)
 			{
 				if (item is Furniture or Wallpaper or null || item is not Item obj || item.HasTypeBigCraftable())
 					continue;
@@ -32,8 +39,6 @@ namespace HappyHomeDesigner.Menus
 
 				entries.Add(new(obj));
 			}
-
-			Panel.Items = entries;
 		}
 
 		/// <inheritdoc/>
@@ -83,7 +88,7 @@ namespace HappyHomeDesigner.Menus
 			base.receiveLeftClick(x, y, playSound);
 			if (Panel.TrySelect(x, y, out int index))
 			{
-				var item = Panel.FilteredItems[index] as ItemEntry;
+				var item = Panel.VisibleItems.Items[index] as ItemEntry;
 
 				if (Game1.player.addItemToInventoryBool(item.item.getOne()) && playSound)
 					Game1.playSound("pickUpItem");
@@ -128,5 +133,10 @@ namespace HappyHomeDesigner.Menus
 		{
 			Panel.receiveRightClick(x, y, playSound);
 		}
-	}
+
+        public IGridItem GetFocusedItem()
+        {
+			return null;
+        }
+    }
 }

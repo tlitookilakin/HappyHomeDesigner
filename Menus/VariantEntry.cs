@@ -1,15 +1,18 @@
-﻿using HappyHomeDesigner.Integration;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley.Menus;
-using StardewValley;
-using System.Collections.Generic;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using StardewValley;
+using StardewValley.Menus;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace HappyHomeDesigner.Menus
 {
 	internal abstract class VariantEntry<T> : IGridItem where T : Item
 	{
 		internal const int CELL_SIZE = 80;
+		private static readonly Rectangle FrameSource = new(0, 256, 60, 60);
 
 		// 384 396 15 15 cursors
 		// 256 256 10 10 cursors
@@ -21,6 +24,7 @@ namespace HappyHomeDesigner.Menus
 
 		public bool Favorited;
 		public bool HasVariants;
+		public bool Selected;
 		public readonly T Item;
 
 		protected readonly Season season = default;
@@ -55,6 +59,9 @@ namespace HappyHomeDesigner.Menus
 		{
 			IClickableMenu.drawTextureBox(b, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
 			Item.drawInMenu(b, new(x + 8, y + 8), 1f);
+
+			if (Selected)
+				b.DrawFrame(Game1.menuTexture, new(x - 8, y - 8, CELL_SIZE + 16, CELL_SIZE + 16), FrameSource, 13, 1, Color.White);
 
 			if (HasVariants)
 				b.Draw(Catalog.MenuTexture, new Rectangle(x + CELL_SIZE - 22, y + 1, 21, 21), star, Color.White);

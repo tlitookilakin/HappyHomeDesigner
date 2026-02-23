@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Menus;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
@@ -10,6 +12,43 @@ namespace HappyHomeDesigner.Widgets
 	public class ScrollBar
 	{
 		public const int WIDTH = 40;
+
+		private readonly IItemPool source;
+
+		public ScrollBar() { }
+
+		public ScrollBar(IItemPool source)
+		{
+			this.source = source;
+			source.ItemPoolChanged += Changed;
+		}
+
+		private void Changed(object _, ItemPoolChangedEvent e)
+		{
+			int r = e.Source.Items.Count / Columns + (e.Source.Items.Count % Columns is not 0 ? 1 : 0);
+			int position = e.Reset ? 0 : Offset;
+
+			if (e.Source.GetFocusedItem() is IGridItem target && e.OldItems != null)
+			{
+				int old_index = e.OldItems.Find(target);
+				if (old_index >= Offset * Columns && old_index < (Offset + VisibleRows) * Columns)
+				{
+					int rowOffset = (old_index / Columns) - Offset;
+					Rows = r;
+
+					var new_index = e.Source.Items.Find(target);
+					if (new_index >= 0)
+						position = (new_index / Columns) - rowOffset;
+				}
+			}
+			else
+			{
+				Rows = r;
+			}
+
+			Offset = Math.Max(0, Math.Min(position, Rows - VisibleRows));
+			CellOffset = Offset * Columns;
+		}
 
 		public int Rows
 		{
@@ -28,6 +67,16 @@ namespace HappyHomeDesigner.Widgets
 			set
 			{
 				columns = value;
+
+				if (source != null)
+				{
+					int r = source.Items.Count / columns;
+					if (source.Items.Count % Columns != 0)
+						r++;
+
+					Rows = r;
+				}
+
 				CellOffset = Offset * columns;
 			}
 		}

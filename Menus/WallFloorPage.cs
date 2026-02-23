@@ -1,5 +1,6 @@
 ﻿using HappyHomeDesigner.Data;
 using HappyHomeDesigner.Framework;
+using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -25,16 +26,25 @@ namespace HappyHomeDesigner.Menus
 		private readonly string[] preservedWallFavorites;
 		private readonly string[] preservedFloorFavorites;
 
-		private readonly GridPanel WallPanel = new(56, 140, true);
-		private readonly GridPanel FloorsPanel = new(72, 72, true);
+		private readonly SimpleItemPool WallPool;
+		private readonly SimpleItemPool FloorPool;
+		private readonly GridPanel WallPanel;
+		private readonly GridPanel FloorsPanel;
 		private readonly UndoRedoButton<WallFloorState> undoRedo = new(new(0, 0, 144, 80), "undo_redo");
 
+		// todo add actual storage
 		public override ICollection<string> KnownIDs => [];
 
 		private GridPanel ActivePanel;
 
 		public WallFloorPage(IEnumerable<ISalable> items)
 		{
+			WallPool = new(() => null);
+			FloorPool = new(() => null);
+
+			WallPanel = new(WallPool, 56, 140, true);
+			FloorsPanel = new(FloorPool, 72, 72, true);
+
 			filter_count = 4;
 
 			var wallFavs = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyWallFav));
@@ -88,8 +98,8 @@ namespace HappyHomeDesigner.Menus
 				ModEntry.i18n.Log("logging.removedWallsAndFloors", new { walls = removedWalls, floors = removedFloors }, LogLevel.Info);
 			ModEntry.monitor.Log($"removed {removedWalls} duplicate walls and {removedFloors} duplicate floors.", LogLevel.Trace);
 
-			WallPanel.Items = walls;
-			FloorsPanel.Items = floors;
+			WallPool.SetItems(walls, true);
+			FloorPool.SetItems(floors, true);
 			ActivePanel = WallPanel;
 
 			preservedWallFavorites = [.. wallFavs];
@@ -160,12 +170,12 @@ namespace HappyHomeDesigner.Menus
 
 				if ((current_filter >> 1) is not 0)
 				{
-					WallPanel.Items = favoriteWalls;
-					FloorsPanel.Items = favoriteFloors;
+					WallPool.SetItems(favoriteWalls, false);
+					FloorPool.SetItems(favoriteFloors, false);
 				} else
 				{
-					WallPanel.Items = walls;
-					FloorsPanel.Items = floors;
+					WallPool.SetItems(walls, false);
+					FloorPool.SetItems(floors, false);
 				}
 
 				MoveButtons();
@@ -175,7 +185,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (ActivePanel.TrySelect(x, y, out int index))
 			{
-				var item = ActivePanel.FilteredItems[index] as WallEntry;
+				var item = ActivePanel.VisibleItems.Items[index] as WallEntry;
 
 				if (ModEntry.config.FavoriteModifier.IsDown())
 				{
@@ -187,7 +197,7 @@ namespace HappyHomeDesigner.Menus
 						Favorites.Remove(item);
 
 					if ((current_filter >> 1) is not 0)
-						ActivePanel.UpdateCount();
+						(ActivePanel == WallPanel ? WallPool : FloorPool).Update(item, item.Favorited);
 
 					return;
 				}
