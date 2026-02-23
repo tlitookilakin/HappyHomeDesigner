@@ -166,6 +166,9 @@ namespace HappyHomeDesigner.Framework
 					}
 				}
 
+				if (split.Contains("@requirePrice"))
+					items = items.Where(i => i.Item.salePrice(true) > 0);
+
 				// complex condition, run full check
 				if (tags.Length is 0 && data.PerItemCondition is string cond)
 					items = items.Where(i => GameStateQuery.CheckConditions(cond, targetItem: i.Item as Item));
