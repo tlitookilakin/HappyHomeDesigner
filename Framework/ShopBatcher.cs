@@ -23,7 +23,7 @@ namespace HappyHomeDesigner.Framework
 		private static bool inited = false;
 		private static IAssetName FurnitureName;
 		private static readonly Dictionary<string, Furniture> furnitureCache = [];
-		private static Func<ParsedItemData, Item> CreateFurniture;
+		private static IItemDataDefinition furnitureDef;
 
 		private readonly IReadOnlyDictionary<string, ShopData> shops;
 		private readonly IEnumerable<StyleCollection> collections;
@@ -37,9 +37,8 @@ namespace HappyHomeDesigner.Framework
 
 			inited = true;
 			FurnitureName = ModEntry.helper.GameContent.ParseAssetName("Data/Furniture");
+			furnitureDef = ItemRegistry.RequireTypeDefinition("(F)");
 			ModEntry.helper.Events.Content.AssetsInvalidated += ContentInvalidated;
-			CreateFurniture = typeof(ShopBatcher).GetMethod(nameof(CreateAndCache))
-				.CreateDelegate<Func<ParsedItemData, Item>>(ItemRegistry.RequireTypeDefinition("(F)"));
 		}
 
 		public ShopBatcher(params IEnumerable<string> ShopsToUse)
@@ -112,36 +111,60 @@ namespace HappyHomeDesigner.Framework
 			if (data.ItemId.StartsWith("ALL_ITEMS", StringComparison.OrdinalIgnoreCase))
 			{
 				var split = data.ItemId.Split(' ');
-				if (split.Length < 2) // invalid
-					goto Fallback;
-
-				var category = split[1];
-				IItemDataDefinition definition;
-
-				try
-				{
-					definition = ItemRegistry.RequireTypeDefinition(category);
-				} 
-				catch (KeyNotFoundException)
-				{
-					ModEntry.monitor.Log(
-						$"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'."
-					, LogLevel.Info);
-					goto Fallback;
-				}
 
 				// use simple tags-only condition or no filter if possible
-				var tags = data.PerItemCondition is string c && 
+				var tags = data.PerItemCondition is string c &&
 					c.StartsWith("ITEM_CONTEXT_TAG") && !c.Contains(',')
 					? ArgUtility.SplitBySpaceQuoteAware(c) : [];
 
-				var items = LazyResolve(
-					ItemRegistry.RequireTypeDefinition(category),
-					split.Contains("@isRandomSale"),
-					tags,
-					// use cache for furniture; other object types should be fine as-is
-					category.EqualsIgnoreCase("(F)") ? CreateFurniture : definition.CreateItem
-				);
+				IEnumerable<ItemQueryResult> items;
+
+				// single category query
+				if (split.Length >= 2 && !split[1].StartsWith('@'))
+				{
+					var category = split[1];
+					IItemDataDefinition definition;
+
+					try
+					{
+						definition = ItemRegistry.RequireTypeDefinition(category);
+					}
+					catch (KeyNotFoundException)
+					{
+						ModEntry.monitor.Log(
+							$"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'."
+						, LogLevel.Info);
+						goto Fallback;
+					}
+
+					items = LazyResolve(
+						definition,
+						split.Contains("@isRandomSale"),
+						tags,
+						// use cache for furniture; other object types should be fine as-is
+						category.EqualsIgnoreCase("(F)") ? CreateAndCache : definition.CreateItem
+					);
+				}
+
+				// all categories query
+				else
+				{
+					var random = split.Contains("@isRandomSale");
+					items = null!;
+					bool first = true;
+
+					foreach (var type in ItemRegistry.ItemTypes)
+					{
+						var result = LazyResolve(
+							type, random, tags,
+							// use cache for furniture; other object types should be fine as-is
+							type is FurnitureDataDefinition ? CreateAndCache : type.CreateItem
+						);
+
+						items = first ? result : items.Concat(result);
+						first = false;
+					}
+				}
 
 				// complex condition, run full check
 				if (tags.Length is 0 && data.PerItemCondition is string cond)
@@ -157,11 +180,7 @@ namespace HappyHomeDesigner.Framework
 			// single furniture item
 			else if (data.ItemId.StartsWith("(F)", StringComparison.OrdinalIgnoreCase))
 			{
-				Misc.IsLazyFurnitureContext = true;
-				var item = ItemRegistry.Create(data.ItemId);
-				Misc.IsLazyFurnitureContext = false;
-
-				return [new(item)];
+				return [new(CreateAndCache(furnitureDef.GetData(data.ItemId[3..])))];
 			}
 
 		Fallback:
@@ -207,13 +226,13 @@ namespace HappyHomeDesigner.Framework
 				furnitureCache.Clear();
 		}
 
-		public static Item CreateAndCache(FurnitureDataDefinition definition, ParsedItemData data)
+		public static Item CreateAndCache(ParsedItemData data)
 		{
 			if (furnitureCache.TryGetValue(data.ItemId, out var f))
 				return f;
 
 			Misc.IsLazyFurnitureContext = true;
-			f = (Furniture)definition.CreateItem(data);
+			f = (Furniture)furnitureDef.CreateItem(data);
 			Misc.IsLazyFurnitureContext = false;
 
 			furnitureCache[data.ItemId] = f;
