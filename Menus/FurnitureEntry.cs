@@ -52,11 +52,11 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-        public override void Draw(SpriteBatch b, int x, int y)
-        {
+		public override void Draw(SpriteBatch b, int x, int y)
+		{
 			Init();
-            base.Draw(b, x, y);
-        }
+			base.Draw(b, x, y);
+		}
 
 		private void Init()
 		{

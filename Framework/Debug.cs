@@ -53,12 +53,14 @@ namespace HappyHomeDesigner.Framework
             foreach (var times in batches.Chunk(8))
                 ModEntry.monitor.Log($"\t{string.Join('\t', times)}", LogLevel.Info);
 
+            /*
 			const CatalogType Deluxe = CatalogType.Collector | CatalogType.Furniture | CatalogType.Wallpaper;
 			total.Restart();
 			Catalog.ShowCatalog(GenerateCombined(Deluxe), Deluxe.ToString());
             total.Stop();
 
             ModEntry.monitor.Log($"Old Method time: {total.Elapsed}", LogLevel.Info);
+            */
 		}
     }
 }

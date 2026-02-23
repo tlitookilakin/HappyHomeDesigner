@@ -102,7 +102,6 @@ namespace HappyHomeDesigner
 			Misc.Apply(harmony);
 			CraftablePlacement.Apply(harmony);
 			AltTex.Apply(harmony);
-			LazyItemResolver.Apply(harmony);
 		}
 	}
 }
