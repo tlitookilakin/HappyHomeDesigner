@@ -16,7 +16,7 @@ namespace HappyHomeDesigner.Widgets
 		private static readonly Rectangle Spyglass = new(0, 48, 16, 16);
 
 		public event Action OnTextChanged;
-        public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
+		public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
 		public int FullWidth
 		{
@@ -40,9 +40,9 @@ namespace HappyHomeDesigner.Widgets
 			}
 		}
 
-        public IReadOnlyList<IGridItem> Items => filtered ?? source.Items;
+		public IReadOnlyList<IGridItem> Items => filtered ?? source.Items;
 
-        private string[] source_map;
+		private string[] source_map;
 		private IReadOnlyList<string> filtered_map;
 		private IReadOnlyList<IGridItem> filtered;
 		private string LastValue;
@@ -56,15 +56,15 @@ namespace HappyHomeDesigner.Widgets
 		{
 			LastValue = Text;
 			this.source = source;
-            source.ItemPoolChanged += SourceChanged;
+			source.ItemPoolChanged += SourceChanged;
 		}
 
-        private void SourceChanged(object sender, ItemPoolChangedEvent e)
-        {
+		private void SourceChanged(object sender, ItemPoolChangedEvent e)
+		{
 			Filter(true, old: e.OldItems, reset: e.Reset);
-        }
+		}
 
-        public void Reset()
+		public void Reset()
 		{
 			if (Text == string.Empty)
 				return;
@@ -205,7 +205,7 @@ namespace HappyHomeDesigner.Widgets
 			return names;
 		}
 
-        public IGridItem GetFocusedItem()
+		public IGridItem GetFocusedItem()
 			=> source.GetFocusedItem();
-    }
+	}
 }

@@ -31,7 +31,7 @@ namespace HappyHomeDesigner.Menus
 			this.items = items;
 
 			search = new(items, null, Game1.smallFont, Game1.textColor) { TitleText = ModEntry.i18n.Get("ui.search.name") };
-			scrollBar = new(search);
+			scrollBar = new(showSearch ? search : items);
 
 			search_visible = showSearch;
 		}
@@ -48,6 +48,10 @@ namespace HappyHomeDesigner.Menus
 				height + (BORDER_WIDTH * 2 + 4), Color.White, 4f, false);
 
 			int count = Math.Min(displayed.Count - offset, height / CellHeight * cols);
+
+			for (int i = 0; i < count; i++)
+				displayed[i + offset].DrawBackground(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
+
 			for (int i = 0; i < count; i++)
 				displayed[i + offset].Draw(b, CellWidth * (i % cols) + xPositionOnScreen, CellHeight * (i / cols) + yPositionOnScreen);
 

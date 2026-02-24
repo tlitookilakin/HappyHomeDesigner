@@ -1,9 +1,11 @@
-﻿using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Internal;
 using StardewValley.Menus;
 using System.Collections.Generic;
 
@@ -32,6 +34,21 @@ namespace HappyHomeDesigner.Menus
 		public abstract int Count();
 
 		protected ClickableTextureComponent InventoryButton = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(16, 48, 16, 16), 4f, true);
+
+		/// <summary>Process a set of items and possibly add them to the menu</summary>
+		public abstract void AppendItems(List<KeyValuePair<IStyleSet, ItemQueryResult>> Items);
+
+		/// <summary>Called when all items have been added to the menu</summary>
+		public abstract void FinalizeItems();
+
+		/// <summary>Logs processed item counts</summary>
+		protected static void LogLoaded(string name, int count, int removed)
+		{
+			ModEntry.monitor.Log(
+				ModEntry.i18n.Get("logging.pageloaded", new {name = ModEntry.i18n.Get("logging.itemType." + name), count, removed}),
+				LogLevel.Info
+			);
+		}
 
 		public virtual void Resize(Rectangle region)
 		{

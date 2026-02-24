@@ -9,10 +9,13 @@ using StardewValley;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HappyHomeDesigner.Menus
 {
+	// todo add catalogue caching
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
@@ -20,47 +23,20 @@ namespace HappyHomeDesigner.Menus
 		internal static Texture2D OverlayTexture;
 		private static bool WasJustHovered = false;
 
-		/// <summary>Attempts to open the menu from an existing shop</summary>
-		/// <param name="existing">The shop to try and replace</param>
-		/// <returns>whether or not the shop is replaced</returns>
-		public static bool TryShowCatalog(ShopMenu existing)
+		public static void ShowCatalog(params IEnumerable<string> shops)
 		{
-			if (existing is null)
-				return false;
-
-			if (!existing.CountsAsCatalog())
-				return false;
-
-			ShowCatalog(
-				existing.itemPriceAndStock.Keys.GetAdditionalCatalogItems(existing.ShopId),
-				existing.ShopId
-			);
-
-			return true;
-		}
-
-		/// <summary>Opens the menu with an arbitrary list of items</summary>
-		/// <param name="items">The items to display in the menu</param>
-		/// <param name="ID">Used to identify the contents of the menu. May or may not be a shop ID.</param>
-		public static void ShowCatalog(IEnumerable<ISalable> items, string ID)
-		{
-			if (!items.Any())
-			{
-				ModEntry.monitor.Log("Attempted to open catalogue with zero items.", LogLevel.Info);
-				Game1.showRedMessage(ModEntry.i18n.Get("ui.EmptyCatalogue.text"), true);
-				return;
-			}
-
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
 
 			if (ActiveMenu.Value is Catalog catalog)
-				if (catalog.Type == ID)
+				if (catalog.Type.ContainsAll(shops))
 					return;
 				else
 					catalog.exitThisMenuNoSound();
 
-			var menu = new Catalog(items, ID);
+			var watch = Stopwatch.StartNew();
+
+			var menu = new Catalog(shops.ToHashSet(), new(shops), watch);
 			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
@@ -95,19 +71,14 @@ namespace HappyHomeDesigner.Menus
 
 			if (ModEntry.config.OpenMenu.JustPressed())
 			{
-				var catalogues =
-					ModUtilities.CatalogType.Collector |
-					ModUtilities.CatalogType.Furniture |
-					ModUtilities.CatalogType.Wallpaper;
-
-				ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
+				ShowCatalog(ModUtilities.GetCollectorShops("Furniture Catalogue", "Catalogue"));
 				return true;
 			}
 
 			return false;
 		}
 
-		public readonly string Type;
+		public readonly ICollection<string> Type;
 
 		private readonly List<ScreenPage> Pages = [];
 		private readonly List<ClickableTextureComponent> Tabs = [];
@@ -119,32 +90,28 @@ namespace HappyHomeDesigner.Menus
 		private bool Toggled = true;
 		private Point screenSize;
 		private readonly InventoryWrapper PlayerInventory = new();
+		private ShopBatcher batcher;
+		private readonly Stopwatch timer;
+		private int totalItems;
 
 		public ICollection<string> KnownIds
 				=> Pages[tab].KnownIDs;
 
-		private Catalog(IEnumerable<ISalable> items, string id, bool playSound = true)
+		private Catalog(ICollection<string> ids, ShopBatcher batch, Stopwatch watch, bool playSound = true)
 		{
-			Type = id;
+			Type = ids;
+			batcher = batch;
+			timer = watch;
 			AlternativeTextures.UpdateIndex();
 
-			Pages.Add(new FurniturePage(items));
-			Pages.Add(new WallFloorPage(items));
-			Pages.Add(new BigObjectPage(items));
-			Pages.Add(new ItemPage(items));
+			Pages.Add(new FurniturePage());
+			Pages.Add(new WallFloorPage());
+			Pages.Add(new BigObjectPage());
+			Pages.Add(new ItemPage());
 
-			if (Pages.Count is not 1)
-				for (int i = Pages.Count - 1; i >= 0; i--)
-					if (Pages[i].Count() is 0)
-						Pages.RemoveAt(i);
-					else
-						Tabs.Add(Pages[i].GetTab());
-
-			if (Tabs.Count is 1)
-				Tabs.Clear();
-			else
-				Tabs.Reverse();
-
+			foreach (var page in Pages)
+				Tabs.Add(page.GetTab()); 
+			
 			CloseButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(337, 494, 12, 12), 3f, false);
 			ToggleButton = new(new(0, 0, 48, 48), Game1.mouseCursors, new(352, 494, 12, 12), 3f, false);
 
@@ -159,6 +126,8 @@ namespace HappyHomeDesigner.Menus
 
 			if (playSound)
 				Game1.playSound("bigSelect");
+
+			timer.Stop();
 		}
 
 		public bool InventoryOpen
@@ -185,6 +154,35 @@ namespace HappyHomeDesigner.Menus
 				SettingsButton ??= new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
 			else
 				SettingsButton = null;
+		}
+
+		private void TickBatch()
+		{
+			timer.Start();
+			if (batcher.DoBatch(out var data))
+			{
+				totalItems += data.Count;
+
+				foreach (var page in Pages)
+					page.AppendItems(data);
+
+				timer.Stop();
+				ArrangeTabs();
+			}
+			else
+			{
+				timer.Start();
+
+				foreach (var page in Pages)
+					page.FinalizeItems();
+
+				timer.Stop();
+				ModEntry.monitor.Log(
+					ModEntry.i18n.Get("logging.totalTime", new {count = totalItems, time = timer.Elapsed.FormatReadable()}),
+					LogLevel.Info
+				);
+				batcher = null;
+			}
 		}
 
 		protected override void cleanupBeforeExit()
@@ -219,6 +217,13 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.gameWindowSizeChanged(oldBounds, newBounds);
 			Resize(newBounds);
+		}
+
+		public override void update(GameTime time)
+		{
+			base.update(time);
+			if (batcher != null)
+				TickBatch();
 		}
 
 		public override void draw(SpriteBatch b)
@@ -276,7 +281,7 @@ namespace HappyHomeDesigner.Menus
 			Pages[tab].receiveLeftClick(x, y, playSound);
 			for (int i = 0; i < Tabs.Count; i++)
 			{
-				if (Tabs[i].containsPoint(x, y) && i < Pages.Count)
+				if (Tabs[i].visible && Tabs[i].containsPoint(x, y) && i < Pages.Count)
 				{
 					if (playSound && tab != i)
 						Game1.playSound("shwip");
@@ -331,6 +336,21 @@ namespace HappyHomeDesigner.Menus
 				(SettingsButton is not null && SettingsButton.containsPoint(x, y));
 		}
 
+		private void ArrangeTabs()
+		{
+			int tabX = xPositionOnScreen + 48;
+			int tabY = yPositionOnScreen - 80;
+			for (int i = 0; i < Tabs.Count; i++)
+			{
+				var tabComp = Tabs[i];
+				if (!tabComp.visible)
+					continue;
+
+				tabComp.setPosition(tabX, tabY);
+				tabX += tabComp.bounds.Width;
+			}
+		}
+
 		private void Resize(Rectangle bounds)
 		{
 			screenSize = bounds.Size;
@@ -347,14 +367,7 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Resize(region);
 
-			int tabX = xPositionOnScreen + 48;
-			int tabY = yPositionOnScreen - 80;
-			for (int i = 0; i < Tabs.Count; i++)
-			{
-				var tabComp = Tabs[i];
-				tabComp.setPosition(tabX, tabY);
-				tabX += tabComp.bounds.Width;
-			}
+			ArrangeTabs();
 
 			CloseButton.bounds.Location = new(40, 52);
 			ToggleButton.bounds.Location = new(16, bounds.Height - 64);
@@ -366,7 +379,7 @@ namespace HappyHomeDesigner.Menus
 				(ToggleButton.bounds.Bottom - PlayerInventory.height) - PlayerInventory.yPositionOnScreen
 			);
 
-			SettingsButton?.setPosition(currentTab.xPositionOnScreen + currentTab.width, tabY + 16);
+			SettingsButton?.setPosition(currentTab.xPositionOnScreen + currentTab.width, yPositionOnScreen - 64);
 		}
 
 		public override void receiveScrollWheelAction(int direction)

@@ -1,5 +1,4 @@
-﻿using BmFont;
-using HappyHomeDesigner.Integration;
+﻿using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -8,9 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.GameData.Crops;
 using StardewValley.GameData.Shops;
-using StardewValley.Internal;
 using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
@@ -22,14 +19,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text;
 
 namespace HappyHomeDesigner.Framework
 {
 	public static class ModUtilities
 	{
-		[Flags]
-		public enum CatalogType {None = 0, Furniture = 1, Wallpaper = 2, Collector = 4};
-
 		private static readonly AccessTools.FieldRef<MouseWheelScrolledEventArgs, int> ScrollOldValue =
 			GetDirect<MouseWheelScrolledEventArgs, int>(nameof(MouseWheelScrolledEventArgs.OldValue));
 
@@ -58,7 +53,7 @@ namespace HappyHomeDesigner.Framework
 				knownIDs is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 
-		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly? assembly)
+		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
 		{
 			assembly = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name == name).FirstOrDefault();
 			return assembly is not null;
@@ -197,18 +192,6 @@ namespace HappyHomeDesigner.Framework
 			gmcm.AddPage(manifest, name, () => ModEntry.i18n.Get($"config.{name}.name"));
 		}
 
-		public static bool AssertValid(this CodeMatcher matcher, string message, LogLevel level = LogLevel.Debug)
-		{
-			if (message is not null && matcher.IsInvalid)
-				ModEntry.monitor.Log(message, level);
-			return matcher.IsValid;
-		}
-
-		public static void Log(this ITranslationHelper helper, string key, object? args = null, LogLevel level = LogLevel.Debug)
-		{
-			ModEntry.monitor.Log(helper.Get(key, args), level);
-		}
-
 		public static int Find<T>(this IReadOnlyList<T> items, T which) where T : class
 		{
 			int count = items.Count;
@@ -221,29 +204,43 @@ namespace HappyHomeDesigner.Framework
 		public static Rectangle ToRect(this xTile.Dimensions.Rectangle rect)
 			=> new(rect.X, rect.Y, rect.Width, rect.Height);
 
-		public static IEnumerable<ISalable> GetAdditionalCatalogItems(this IEnumerable<ISalable> original, string ID)
+		public static bool CountsAsCatalog(this ShopData shop, string id, bool ignore_config = false)
 		{
-			return original;
-		}
-
-		public static bool CountsAsCatalog(this ShopMenu shop, bool ignore_config = false)
-		{
-			return shop.ShopId switch
+			return id switch
 			{
 				"Furniture Catalogue" => (ignore_config || ModEntry.config.ReplaceFurnitureCatalog),
 				"Catalogue" => (ignore_config || ModEntry.config.ReplaceWallpaperCatalog),
 				_ =>
 					(ignore_config || ModEntry.config.ReplaceRareCatalogs) &&
-					shop.ShopData is ShopData data &&
-					data.CustomFields is Dictionary<string, string> fields &&
+					shop.CustomFields is Dictionary<string, string> fields &&
 					fields.ContainsKey("HappyHomeDesigner/Catalogue")
 			};
 		}
 
-		public static List<string> GetCollectorShops(IDictionary<string, ShopData> shops = null)
+		public static bool ContainsAll<T>(this ICollection<T> source, IEnumerable<T> other)
 		{
-			List<string> ret = [];
-			shops ??= DataLoader.Shops(Game1.content);
+			if (other.TryGetNonEnumeratedCount(out var otherCount) && source.Count != otherCount)
+				return false;
+
+			int i = 0;
+			foreach (var item in other)
+			{
+				if (i > source.Count)
+					return false;
+
+				if (!source.Contains(item))
+					return false;
+
+				i++;
+			}
+
+			return true;
+		}
+
+		public static List<string> GetCollectorShops(params IEnumerable<string> includeShops)
+		{
+			List<string> ret = [..includeShops];
+			var shops = DataLoader.Shops(Game1.content);
 
 			foreach ((var id, var sdata) in shops)
 				if (
@@ -255,35 +252,14 @@ namespace HappyHomeDesigner.Framework
 			return ret;
 		}
 
-		public static IEnumerable<ISalable> GenerateCombined(CatalogType catalog)
+		public static string GetShop(this Item obj, bool allowCustom)
 		{
-			var watch = new Stopwatch();
-			watch.Start();
-
-			IEnumerable<ISalable> output = [];
-			var shopData = DataLoader.Shops(Game1.content);
-
-			if (ModEntry.config.EarlyDeluxe && catalog.HasFlag(CatalogType.Furniture) && catalog.HasFlag(CatalogType.Wallpaper))
-				catalog |= CatalogType.Collector;
-
-			if (catalog.HasFlag(CatalogType.Furniture) && shopData.TryGetValue("Furniture Catalogue", out var data))
-				output = output.Concat(ShopBuilder.GetShopStock("Furniture Catalogue", data).Keys);
-
-			if (catalog.HasFlag(CatalogType.Wallpaper) && shopData.TryGetValue("Catalogue", out data))
-				output = output.Concat(ShopBuilder.GetShopStock("Catalogue", data).Keys);
-
-			if (catalog.HasFlag(CatalogType.Collector))
-				foreach ((var id, var sdata) in shopData)
-					if (
-						sdata.CustomFields is Dictionary<string, string> fields && 
-						fields.ContainsKey("HappyHomeDesigner/Catalogue")
-					)
-						output = output.Concat(ShopBuilder.GetShopStock(id, sdata).Keys);
-
-			watch.Stop();
-			ModEntry.monitor.Log($"Loaded contents in {watch.ElapsedMilliseconds} ms", LogLevel.Debug);
-
-			return output;
+			return obj.QualifiedItemId switch
+			{
+				"(F)1308" => "Catalogue",
+				"(F)1226" => "Furniture Catalogue",
+				_ => null
+			};
 		}
 
 		public static Color Mult(this Color a, Color b)
@@ -369,22 +345,6 @@ namespace HappyHomeDesigner.Framework
 				hoverText = c.hoverText;
 		}
 
-		public static void ArrayAppend<T>(ref T[] values, ref int length, params T[] toAdd)
-		{
-			if (length + toAdd.Length > values.Length)
-			{
-				var old = values;
-				values = new T[Math.Max(length + toAdd.Length, values.Length * 2)];
-				old.CopyTo(values, 0);
-				toAdd.CopyTo(values, old.Length);
-			}
-			else
-			{
-				toAdd.CopyTo(values, length);
-			}
-			length += toAdd.Length;
-		}
-
 		public static CodeInstruction GetStore(this CodeInstruction code)
 		{
 			return code.opcode.Value switch
@@ -397,6 +357,23 @@ namespace HappyHomeDesigner.Framework
 				0x09 => new(OpCodes.Stloc_3),
 				_ => throw new InvalidOperationException("Opcode is not a local loader")
 			};
+		}
+
+		public static string FormatReadable(this TimeSpan span)
+		{
+			var sb = new StringBuilder();
+
+			if (span.Hours > 0)
+				sb.Append(span.Hours).Append("h ");
+
+			if (span.Minutes > 0)
+				sb.Append(span.Minutes).Append("m ");
+
+			if (span.Seconds > 0)
+				sb.Append(span.Seconds).Append("s ");
+
+			sb.Append(span.Milliseconds).Append("ms");
+			return sb.ToString();
 		}
 
 		public static IEnumerable<IEnumerable<T>> TimeChunk<T>(this IEnumerable<T> source, int millis)

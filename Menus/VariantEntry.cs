@@ -55,9 +55,13 @@ namespace HappyHomeDesigner.Menus
 		/// <returns>All variants of this item. Only valid if HasVariants is true</returns>
 		public abstract IReadOnlyList<VariantEntry<T>> GetVariants();
 
+		public void DrawBackground(SpriteBatch batch, int x, int y)
+		{
+			IClickableMenu.drawTextureBox(batch, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
+		}
+
 		public virtual void Draw(SpriteBatch b, int x, int y)
 		{
-			IClickableMenu.drawTextureBox(b, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
 			Item.drawInMenu(b, new(x + 8, y + 8), 1f);
 
 			if (Selected)

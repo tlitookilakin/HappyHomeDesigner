@@ -18,7 +18,6 @@
 	"config.ReplaceWallpaperCatalog.name": "Replace Walls & Floors Catalog",
 	"config.ReplaceWallpaperCatalog.desc": "While enabled, replaces the default wallpaper catalog UI with the new one.",
 	"logging.alternativeTextures.versionWarning": "The current version of Happy Home Designer only supports Alternative Textures {{min}} or newer. You currently have version {{current}}, and Alternative Textures integration will not be applied. Please update Alternative Textures to re-enable integration.",
-	"logging.removedWallsAndFloors": "Found and removed {{walls}} duplicate wallpapers and {{floors}} duplicate floors.",
 	"config.ToggleShortcut.name": "Catalog toggle shortcut",
 	"config.ToggleShortcut.desc": "Keyboard shortcut to show/hide the catalog while it is open.",
 	"ui.search.name": "Search",
@@ -101,5 +100,12 @@
 	"config.SeasonalOverlay.name": "Seasonal Overlay",
 	"config.SeasonalOverlay.desc": "Adds a decorative seasonal overlay to the catalogue menu.",
 	"config.DisableBlueprintChecks.name": "Force Blueprints",
-	"config.DisableBlueprintChecks.desc": "Disables all placement checks when applying blueprints. Enable at own risk. May cause badly-placed furniture."
+	"config.DisableBlueprintChecks.desc": "Disables all placement checks when applying blueprints. Enable at own risk. May cause badly-placed furniture.",
+	"logging.pageloaded": "Populated {{count}} {{name}} and skipped {{removed}} duplicates.",
+	"logging.itemType.furniture": "furniture items",
+	"logging.itemType.craftable": "craftables",
+	"logging.itemType.wallpaper": "walls",
+	"logging.itemType.flooring": "floors",
+	"logging.itemType.items": "general items",
+	"logging.totalTime": "Processed {{count}} total items in {{time}}."
 }

@@ -1,8 +1,8 @@
 ﻿using HappyHomeDesigner.Framework;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -39,8 +39,8 @@ namespace HappyHomeDesigner.Patches
 				new CodeMatch(OpCodes.Leave)
 			);
 
-			if (!il.AssertValid("Fusion patch failed. Could not find match point 1."))
-				return null;
+			if (!il.IsValid)
+				throw new InvalidOperationException("Match 1 failed");
 
 			var leaveTarget = il.Instruction.operand;
 
@@ -62,8 +62,8 @@ namespace HappyHomeDesigner.Patches
 				);
 			}
 
-			if (!il.AssertValid("Fusion patch failed. Could not find match point 2."))
-				return null;
+			if (!il.IsValid)
+				throw new InvalidOperationException("Match 2 failed");
 
 			il.Advance(1)
 			.CreateLabel(out var jump);

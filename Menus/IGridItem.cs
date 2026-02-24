@@ -4,6 +4,8 @@ namespace HappyHomeDesigner.Menus
 {
 	public interface IGridItem
 	{
+		public void DrawBackground(SpriteBatch batch, int x, int y);
+
 		public void Draw(SpriteBatch batch, int x, int y);
 
 		public bool ToggleFavorite(bool playSound);

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Internal;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
@@ -23,21 +24,24 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<WallEntry> floors = [];
 		private readonly List<WallEntry> favoriteWalls = [];
 		private readonly List<WallEntry> favoriteFloors = [];
-		private readonly string[] preservedWallFavorites;
-		private readonly string[] preservedFloorFavorites;
-
+		private readonly HashSet<string> preservedWallFavorites;
+		private readonly HashSet<string> preservedFloorFavorites;
 		private readonly SimpleItemPool WallPool;
 		private readonly SimpleItemPool FloorPool;
 		private readonly GridPanel WallPanel;
 		private readonly GridPanel FloorsPanel;
 		private readonly UndoRedoButton<WallFloorState> undoRedo = new(new(0, 0, 144, 80), "undo_redo");
+		private readonly HashSet<string> WallAndFloorIds = [];
+		private int removedWalls = 0;
+		private int removedFloors = 0;
+		private ClickableTextureComponent Tab;
 
 		// todo add actual storage
-		public override ICollection<string> KnownIDs => [];
+		public override ICollection<string> KnownIDs => WallAndFloorIds;
 
 		private GridPanel ActivePanel;
 
-		public WallFloorPage(IEnumerable<ISalable> items)
+		public WallFloorPage()
 		{
 			WallPool = new(() => null);
 			FloorPool = new(() => null);
@@ -47,63 +51,74 @@ namespace HappyHomeDesigner.Menus
 
 			filter_count = 4;
 
-			var wallFavs = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyWallFav));
-			var floorFavs = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyFloorFav));
+			preservedWallFavorites = [.. DataService.GetFavoritesFor(Game1.player, KeyWallFav)];
+			preservedFloorFavorites = [.. DataService.GetFavoritesFor(Game1.player, KeyFloorFav)];
 
-			var knownWalls = new HashSet<string>();
-			var knownFloors = new HashSet<string>();
+			WallPool.SetItems(walls, true);
+			FloorPool.SetItems(floors, true);
+			ActivePanel = WallPanel;
 
-			int removedWalls = 0;
-			int removedFloors = 0;
+			Tab = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(80, 24, 16, 16), 4f);
+			Tab.visible = false;
+		}
 
-			var timer = Stopwatch.StartNew();
+		/// <inheritdoc/>
+		public override void AppendItems(List<KeyValuePair<IStyleSet, ItemQueryResult>> Items)
+		{
+			bool changedWall = false;
+			bool changedFloor = false;
 
-			foreach (var item in items)
+			foreach ((_, var item) in Items)
 			{
-				if (item is not Wallpaper wall)
+				if (item.Item is not Wallpaper wall)
 					continue;
 
 				if (wall.isFloor.Value)
 				{
-					var entry = new WallEntry(wall, floorFavs);
-					if (knownFloors.Add(entry.ToString()))
+					var entry = new WallEntry(wall, preservedFloorFavorites);
+					if (WallAndFloorIds.Add(wall.QualifiedItemId))
 					{
+						Tab.visible = true;
 						floors.Add(entry);
 						if (entry.Favorited)
 							favoriteFloors.Add(entry);
-					} else
+						changedFloor = true;
+					}
+					else
 					{
 						removedFloors++;
 					}
 				}
 				else
 				{
-					var entry = new WallEntry(wall, wallFavs);
-					if (knownWalls.Add(entry.ToString()))
+					var entry = new WallEntry(wall, preservedWallFavorites);
+					if (WallAndFloorIds.Add(wall.QualifiedItemId))
 					{
+						Tab.visible = true;
 						walls.Add(entry);
 						if (entry.Favorited)
 							favoriteWalls.Add(entry);
-					} else
+						changedWall = true;
+					}
+					else
 					{
 						removedWalls++;
 					}
 				}
 			}
 
-			timer.Stop();
-			ModEntry.monitor.Log($"Populated {floors.Count} floors and {walls.Count} walls in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
+			if (changedWall)
+				WallPool.Update(null, true);
 
-			if (removedFloors is not 0 || removedWalls is not 0)
-				ModEntry.i18n.Log("logging.removedWallsAndFloors", new { walls = removedWalls, floors = removedFloors }, LogLevel.Info);
-			ModEntry.monitor.Log($"removed {removedWalls} duplicate walls and {removedFloors} duplicate floors.", LogLevel.Trace);
+			if (changedFloor)
+				FloorPool.Update(null, true);
+		}
 
-			WallPool.SetItems(walls, true);
-			FloorPool.SetItems(floors, true);
-			ActivePanel = WallPanel;
-
-			preservedWallFavorites = [.. wallFavs];
-			preservedFloorFavorites = [.. floorFavs];
+		/// <inheritdoc/>
+		public override void FinalizeItems()
+		{
+			LogLoaded("wallpaper", walls.Count, removedWalls);
+			LogLoaded("flooring", floors.Count, removedFloors);
 		}
 
 		/// <inheritdoc/>
@@ -223,8 +238,8 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override ClickableTextureComponent GetTab() 
-			=> new(new(0, 0, 64, 64), Catalog.MenuTexture, new(80, 24, 16, 16), 4f);
+		public override ClickableTextureComponent GetTab()
+			=> Tab;
 
 		/// <inheritdoc/>
 		public override void Exit()
@@ -254,5 +269,5 @@ namespace HappyHomeDesigner.Menus
 			if (playSound)
 				Game1.playSound("trashcan");
 		}
-	}
+    }
 }

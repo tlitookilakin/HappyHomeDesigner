@@ -17,9 +17,13 @@ namespace HappyHomeDesigner.Menus
 			this.item = item;
 		}
 
+		public void DrawBackground(SpriteBatch batch, int x, int y)
+		{
+			IClickableMenu.drawTextureBox(batch, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
+		}
+
 		public void Draw(SpriteBatch b, int x, int y)
 		{
-			IClickableMenu.drawTextureBox(b, Game1.menuTexture, background, x, y, CELL_SIZE, CELL_SIZE, Color.White, 1f, false);
 			item.drawInMenu(b, new(x + 8, y + 8), 1f);
 		}
 

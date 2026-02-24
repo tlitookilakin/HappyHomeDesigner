@@ -1,9 +1,8 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Menus;
 using HarmonyLib;
-using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Menus;
+using StardewValley.GameData.Shops;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -20,28 +19,38 @@ namespace HappyHomeDesigner.Patches
 		{
 			var il = new CodeMatcher(src, gen);
 
-			il.MatchStartForward(
-				new CodeMatch(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).SetMethod)
-			);
-
-			if (il.IsInvalid)
-			{
-				ModEntry.monitor.Log($"Failed to patch shop open! Could not find injection point.", LogLevel.Error);
-				return null;
-			}
-
-			il.Insert(
-				new CodeMatch(OpCodes.Call, typeof(ReplaceShop).GetMethod(nameof(CheckAndReplace)))
-			);
+			il
+				.MatchStartForward(
+					new CodeMatch(OpCodes.Call, typeof(Game1).GetProperty(nameof(Game1.activeClickableMenu)).SetMethod)
+				)
+				.MatchStartBackwards(
+					new CodeMatch(OpCodes.Ldarg_0)
+				)
+				.Advance(1)
+				.Insert(
+					new CodeInstruction(OpCodes.Ldarg_0)
+				)
+				.CreateLabel(out var skip)
+				.InsertAndAdvance(
+					new(OpCodes.Ldloc_1),
+					new(OpCodes.Call, typeof(ReplaceShop).GetMethod(nameof(TryReplaceMenu))),
+					new(OpCodes.Brfalse, skip),
+					new(OpCodes.Ldc_I4_1),
+					new(OpCodes.Ret)
+				);
 
 			return il.InstructionEnumeration();
 		}
 
-		public static ShopMenu CheckAndReplace(ShopMenu menu)
+		public static bool TryReplaceMenu(string shopId, ShopData data)
 		{
-			if (Catalog.TryShowCatalog(menu))
-				return null;
-			return menu;
+			if (data.CountsAsCatalog(shopId))
+			{
+				Catalog.ShowCatalog(shopId);
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

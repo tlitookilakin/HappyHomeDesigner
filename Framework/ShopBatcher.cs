@@ -53,56 +53,54 @@ namespace HappyHomeDesigner.Framework
 			var gsq = new GameStateQueryContext(Game1.currentLocation, Game1.player, null, null, Game1.random);
 
 			batch = shopsToUse
-				.SelectMany(id => shops[id].Items, (id, val) => (id, val))
+				.SelectMany(id => shops.TryGetValue(id, out var s) ? s.Items : [], (id, val) => (id, val))
 				.Where(e => e.val.Condition is null || GameStateQuery.CheckConditions(e.val.Condition, gsq))
 				.SelectMany(
 					(item) => GetProvider(item.val, ctx, item.id), 
 					(item, result) => new KeyValuePair<string, ItemQueryResult>(item.id, result)
 				)
-				.TimeChunk(14)
+				.TimeChunk(10)
 				.GetEnumerator();
 		}
 
-		public bool DoBatch(out IDictionary<IStyleSet, List<ISalable>> items)
+		public bool DoBatch(out List<KeyValuePair<IStyleSet, ItemQueryResult>> items)
 		{
 			items = null;
+
 			if (!batch.MoveNext())
 				return false;
 
-			items = new Dictionary<IStyleSet, List<ISalable>>();
-			foreach ((var shop, var entry) in batch.Current)
-			{
-				if (entry.Item is not Item item)
-					continue;
+			items = [.. batch.Current.SelectMany(MapItems)];
+			return true;
+		}
 
-				bool foundCollection = false;
+		private IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> MapItems(KeyValuePair<string, ItemQueryResult> pair)
+		{
+			if (pair.Value.Item is Item item)
+			{
+				var foundCollection = false;
 
 				foreach (var collection in collections)
 				{
 					if (collection.Contains(item))
 					{
 						foundCollection = true;
-
-						if (!items.TryGetValue(collection, out var group))
-							items[collection] = [item];
-						else
-							group.Add(item);
+						yield return new(collection, pair.Value);
 					}
 				}
 
 				if (!foundCollection)
 				{
-					if (Calcifer.Active && Calcifer.TryGetCollection(shop, out var style))
-					{
-						if (!items.TryGetValue(style, out var group))
-							items[style] = [item];
-						else
-							group.Add(item);
-					}
+					if (Calcifer.Active && Calcifer.TryGetCollection(pair.Key, out var style))
+						yield return new(style, pair.Value);
+					else
+						yield return new(null, pair.Value);
 				}
 			}
-
-			return true;
+			else
+			{
+				yield return new(null, pair.Value);
+			}
 		}
 
 		public static IEnumerable<ItemQueryResult> GetProvider(ShopItemData data, ItemQueryContext ctx, string owner)
@@ -133,7 +131,7 @@ namespace HappyHomeDesigner.Framework
 					{
 						ModEntry.monitor.Log(
 							$"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'."
-						, LogLevel.Info);
+						, LogLevel.Debug);
 						goto Fallback;
 					}
 

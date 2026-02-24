@@ -1,13 +1,16 @@
-﻿using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
+using StardewValley.Internal;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
+using static StardewValley.Menus.CharacterCustomization;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -18,27 +21,20 @@ namespace HappyHomeDesigner.Menus
 		private readonly GridPanel Panel;
 		private readonly ClickableTextureComponent TrashSlot
 			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
+		private int skipped;
+		private ClickableTextureComponent Tab;
 
-        public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
+		public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
-        public override ICollection<string> KnownIDs => [];
+		public override ICollection<string> KnownIDs => [];
 
 		public IReadOnlyList<IGridItem> Items => entries;
 
-        public ItemPage(IEnumerable<ISalable> source)
+		public ItemPage()
 		{
 			Panel = new(this, 80, 80, true);
-
-			foreach (var item in source)
-			{
-				if (item is Furniture or Wallpaper or null || item is not Item obj || item.HasTypeBigCraftable())
-					continue;
-
-				if (!knownIDs.Add(item.QualifiedItemId))
-					continue;
-
-				entries.Add(new(obj));
-			}
+			Tab = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 48, 16, 16), 4f);
+			Tab.visible = false;
 		}
 
 		/// <inheritdoc/>
@@ -46,8 +42,8 @@ namespace HappyHomeDesigner.Menus
 			=> entries.Count;
 
 		/// <inheritdoc/>
-		public override ClickableTextureComponent GetTab() 
-			=> new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 48, 16, 16), 4f);
+		public override ClickableTextureComponent GetTab()
+			=> Tab;
 
 		public override void draw(SpriteBatch b)
 		{
@@ -134,9 +130,42 @@ namespace HappyHomeDesigner.Menus
 			Panel.receiveRightClick(x, y, playSound);
 		}
 
-        public IGridItem GetFocusedItem()
-        {
+		public IGridItem GetFocusedItem()
+		{
 			return null;
-        }
-    }
+		}
+
+		/// <inheritdoc/>
+		public override void AppendItems(List<KeyValuePair<IStyleSet, ItemQueryResult>> Items)
+		{
+			bool changed = false;
+			foreach ((_, var res) in Items)
+			{
+				var item = res.Item;
+				if (item is Furniture or Wallpaper || item is not Item obj || item.HasTypeBigCraftable())
+					continue;
+
+				if (knownIDs.Add(item.QualifiedItemId))
+				{
+					changed = true;
+					entries.Add(new(obj));
+					Tab.visible = true;
+				}
+				else
+				{
+					skipped++;
+				}
+
+			}
+
+			if (changed)
+				ItemPoolChanged?.Invoke(this, new(this, null, false));
+		}
+
+		/// <inheritdoc/>
+		public override void FinalizeItems()
+		{
+			LogLoaded("items", entries.Count, skipped);
+		}
+	}
 }

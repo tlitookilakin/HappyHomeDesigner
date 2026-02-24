@@ -40,12 +40,9 @@ namespace HappyHomeDesigner.Patches
 				if (Catalog.MenuVisible())
 					return;
 
-				var catalogues =
-					ModUtilities.CatalogType.Collector |
-					ModUtilities.CatalogType.Furniture |
-					ModUtilities.CatalogType.Wallpaper;
+				var combined = ModUtilities.GetCollectorShops("Furniture Catalogue", "Catalogue");
 
-				Catalog.ShowCatalog(ModUtilities.GenerateCombined(catalogues), catalogues.ToString());
+				Catalog.ShowCatalog(combined);
 				return;
 			}
 

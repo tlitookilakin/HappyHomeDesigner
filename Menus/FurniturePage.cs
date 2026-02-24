@@ -1,5 +1,6 @@
-﻿using StardewValley;
-using StardewValley.Menus;
+﻿using HappyHomeDesigner.Data;
+using StardewValley;
+using StardewValley.Internal;
 using StardewValley.Objects;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,8 +31,7 @@ namespace HappyHomeDesigner.Menus
 		];
 		private string[] FFMap;
 
-		public FurniturePage(IEnumerable<ISalable> items)
-			: base(items, KeyFavs, "furniture") { }
+		public FurniturePage() : base(KeyFavs, "furniture") { }
 
 		/// <inheritdoc/>
 		public override void Init()
@@ -56,17 +56,19 @@ namespace HappyHomeDesigner.Menus
 			for (int i = 0; i < Filters.Length; i++)
 				Filters[i] = [];
 			filter_count += 2;
+
+			Tab = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
 		}
 
 		/// <inheritdoc/>
-		public override IEnumerable<FurnitureEntry> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites)
+		public override IEnumerable<KeyValuePair<IStyleSet, FurnitureEntry>> GetItemsFrom(IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> source, ICollection<string> favorites)
 		{
 			var season = Game1.currentLocation.GetSeason();
 			var seasonName = season.ToString();
 
-			foreach (var item in source)
+			foreach ((var shop, var item) in source)
 			{
-				if (item is Furniture furn && furn.Name != "ErrorItem")
+				if (item.Item is Furniture furn && furn.Name != "ErrorItem")
 				{
 					var entry = new FurnitureEntry(furn, season, seasonName, favorites);
 					var type = furn.furniture_type.Value;
@@ -86,7 +88,7 @@ namespace HappyHomeDesigner.Menus
 					if (entry.Favorited)
 						Favorites.Add(entry);
 
-					yield return entry;
+					yield return new(shop, entry);
 				}
 			}
 		}
@@ -101,9 +103,5 @@ namespace HappyHomeDesigner.Menus
 					// favorites
 					Favorites;
 		}
-
-		/// <inheritdoc/>
-		public override ClickableTextureComponent GetTab() 
-			=> new(new(0, 0, 64, 64), Catalog.MenuTexture, new(64, 24, 16, 16), 4f);
 	}
 }

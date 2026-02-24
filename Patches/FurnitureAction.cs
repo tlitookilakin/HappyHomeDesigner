@@ -3,6 +3,7 @@ using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Objects;
+using System.Collections.Generic;
 using static HappyHomeDesigner.Framework.ModUtilities;
 
 namespace HappyHomeDesigner.Patches
@@ -63,62 +64,64 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
-		private static CatalogType GetCatalogTypeOf(string FurnitureID)
+		private static List<string> GetCatalogues(Item i, bool held)
 		{
-			return FurnitureID switch
+			if (i is null)
+				return [];
+
+			return i.QualifiedItemId switch
 			{
-				"(F)1308" => CatalogType.Wallpaper,
-				"(F)1226" => CatalogType.Furniture,
-				"(F)" + AssetManager.CATALOGUE_ID => CatalogType.Furniture | CatalogType.Wallpaper,
-				"(F)" + AssetManager.COLLECTORS_ID => CatalogType.Collector,
+				"(F)" + AssetManager.CATALOGUE_ID => ["Furniture Catalogue", "Catalogue"],
+				"(F)" + AssetManager.COLLECTORS_ID => GetCollectorShops(),
 				"(F)" + AssetManager.DELUXE_ID or
 				"(O)" + AssetManager.PORTABLE_ID or
 				"(T)" + AssetManager.PORTABLE_ID
-					=> CatalogType.Furniture | CatalogType.Wallpaper | CatalogType.Collector,
-				_ => CatalogType.None
+					=> GetCollectorShops("Furniture Catalogue", "Catalogue"),
+				_ => i.GetShop(held) is string s ? [s] : []
 			};
 		}
 
 		private static bool CheckAction(Furniture __instance, ref bool __result)
 		{
-			const CatalogType Deluxe = CatalogType.Collector | CatalogType.Furniture | CatalogType.Wallpaper;
-
-			var heldType = GetCatalogTypeOf(__instance.heldObject.Value?.QualifiedItemId);
-			var baseType = GetCatalogTypeOf(__instance.QualifiedItemId);
-
-			var combined = baseType | heldType;
+			var heldShop = GetCatalogues(__instance.heldObject.Value, true);
 
 			switch (__instance.ItemId)
 			{
 				// Furniture catalogue
 				case "1226":
-					if (heldType is not CatalogType.None)
-						Catalog.ShowCatalog(GenerateCombined(combined), combined.ToString());
-					else
+					if (heldShop.Count == 0)
 						return true;
+
+					Catalog.ShowCatalog(["Furniture Catalogue", ..heldShop]);
 					break;
 
 				// Wallpaper catalogue
 				case "1308":
-					if (heldType is not CatalogType.None)
-						Catalog.ShowCatalog(GenerateCombined(combined), combined.ToString());
-					else
+					if (heldShop.Count == 0)
 						return true;
+
+					Catalog.ShowCatalog(["Catalogue", .. heldShop]);
 					break;
 
 				// All others
 				default:
-					// one of my catalogues
-					if (baseType is not CatalogType.None)
-						Catalog.ShowCatalog(GenerateCombined(combined), combined.ToString());
 
-					// something else holding the portable catalogue
-					else if (__instance.heldObject.Value?.ItemId == AssetManager.PORTABLE_ID)
-						Catalog.ShowCatalog(GenerateCombined(Deluxe), Deluxe.ToString());
+					// portable catalogue
+					if (__instance.heldObject.Value?.ItemId == AssetManager.PORTABLE_ID)
+					{
+						Catalog.ShowCatalog(heldShop);
+					}
 
-					// other
+					// custom catalogue
 					else
-						return true;
+					{
+						var baseShop = GetCatalogues(__instance, false);
+						if (baseShop.Count <= 0)
+							return true;
+
+						baseShop.AddRange(heldShop);
+						Catalog.ShowCatalog(baseShop);
+					}
 					break;
 			}
 

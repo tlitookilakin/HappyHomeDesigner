@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
@@ -56,14 +57,17 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
+		public void DrawBackground(SpriteBatch batch, int x, int y)
+		{
+			IClickableMenu.drawTextureBox(batch, Game1.menuTexture, background, x, y, CellWidth, CellHeight, Color.White, 1f, false);
+		}
+
 		public void Draw(SpriteBatch batch, int x, int y)
 		{
 			// defer texture load to prevent Lag Spike Of Doom
 			sheet ??= GetTexture();
 
-			//IClickableMenu.drawTextureBox(batch, Game1.menuTexture, background, x, y, 56, CellHeight, Color.White, 1f, false);
 			batch.Draw(sheet, new Vector2(x + 4, y + 4), region, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
-			batch.DrawFrame(Game1.menuTexture, new(x, y, CellWidth, CellHeight), background, 4, 1, Color.White);
 
 			if (Favorited)
 				batch.Draw(Catalog.MenuTexture, new Rectangle(x + 4, y + 4, 18, 18), favRibbon, Color.White);

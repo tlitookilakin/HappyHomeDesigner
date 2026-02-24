@@ -5,11 +5,12 @@ using StardewValley.Menus;
 using StardewValley;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using HappyHomeDesigner.Patches;
 using System.Linq;
 using HappyHomeDesigner.Widgets;
+using StardewValley.Internal;
+using HappyHomeDesigner.Data;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -42,10 +43,10 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 		private T _selected;
-		protected int SelectedIndex;
 		protected TE hovered;
 		protected TE hovered_variant;
 		protected List<T>[] CustomFilters;
+		protected ClickableTextureComponent Tab;
 
 		public IReadOnlyList<IGridItem> Items
 		{
@@ -62,6 +63,8 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 		private IReadOnlyList<IGridItem> _items = [];
+		private int skipped;
+		private readonly string typeName;
 
 		protected int iconRow;
 		protected readonly GridPanel MainPanel;
@@ -72,30 +75,31 @@ namespace HappyHomeDesigner.Menus
 
 		public override ICollection<string> KnownIDs => knownIDs;
 
-		private static string[] preservedFavorites;
+		private static HashSet<string> preservedFavorites;
 
 		public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
 		/// <summary>Create and setup a variant page</summary>
-		/// <param name="existing">A list of items that belong to this page</param>
 		/// <param name="FavoritesKey">The moddata key used to track favorites for this page</param>
 		/// <param name="typeName">Used for logging</param>
-		public VariantPage(IEnumerable<ISalable> existing, string FavoritesKey, string typeName)
+		public VariantPage(string FavoritesKey, string typeName)
 		{
+			this.typeName = typeName;
+
 			KeyFavs = FavoritesKey;
-
-			var favorites = new HashSet<string>(DataService.GetFavoritesFor(Game1.player, KeyFavs));
-
+			preservedFavorites = [.. DataService.GetFavoritesFor(Game1.player, KeyFavs)];
 			knownIDs.Clear();
-			int skipped = 0;
 
-			VariantPool = new(() => Selected);
+			VariantPool = new(() => null);
 			MainPanel = new(this, CELL_SIZE, CELL_SIZE, true);
 			VariantPanel = new(VariantPool, CELL_SIZE, CELL_SIZE, false);
 
 			MainPanel.VisibleItems.ItemPoolChanged += DisplayChanged;
 
 			Init();
+			Tab.visible = false;
+
+			Items = entries;
 
 			if (custom_tabs is not null)
 			{
@@ -108,30 +112,45 @@ namespace HappyHomeDesigner.Menus
 			{
 				CustomFilters = [];
 			}
+		}
 
-			var timer = Stopwatch.StartNew();
-
-			foreach (var item in GetItemsFrom(existing, favorites))
+		/// <inheritdoc/>
+		public override void AppendItems(List<KeyValuePair<IStyleSet, ItemQueryResult>> Items)
+		{
+			bool changed = false;
+			foreach ((_, var item) in GetItemsFrom(Items, preservedFavorites))
 			{
 				if (knownIDs.Add(item.ToString()))
+				{
+					changed = true;
 					entries.Add(item);
+					Tab.visible = true;
+				}
 				else
+				{
 					skipped++;
+				}
 			}
 
-			timer.Stop();
-			ModEntry.monitor.Log($"Populated {entries.Count} {typeName} items in {timer.ElapsedMilliseconds} ms", LogLevel.Debug);
-			if (skipped is not 0)
-				ModEntry.monitor.Log($"Found and skipped {skipped} duplicate {typeName} items", LogLevel.Debug);
+			if (changed)
+				ItemPoolChanged?.Invoke(this, new(this, null, false));
+		}
 
-			preservedFavorites = [.. favorites];
-			Items = entries;
+		/// <inheritdoc/>
+		public override void FinalizeItems()
+		{
+			LogLoaded(typeName, entries.Count, skipped);
 		}
 
 		protected virtual void DisplayChanged(object sender, ItemPoolChangedEvent e)
 		{
 			if (Selected is IGridItem s && !e.Source.Items.Contains(s))
 				Selected = null;
+		}
+
+		public override ClickableTextureComponent GetTab()
+		{
+			return Tab;
 		}
 
 		public bool TrySetCustomFilter(T entry)
@@ -156,7 +175,7 @@ namespace HappyHomeDesigner.Menus
 		/// <param name="source">The raw item list</param>
 		/// <param name="favorites">The favorites list</param>
 		/// <returns>The processed items</returns>
-		public abstract IEnumerable<T> GetItemsFrom(IEnumerable<ISalable> source, ICollection<string> favorites);
+		public abstract IEnumerable<KeyValuePair<IStyleSet, T>> GetItemsFrom(IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> source, ICollection<string> favorites);
 
 		/// <inheritdoc/>
 		public override int Count() 
