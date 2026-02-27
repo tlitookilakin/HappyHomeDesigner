@@ -36,6 +36,7 @@ namespace HappyHomeDesigner
 			helper.Events.Player.Warped += OnWarp;
 
 			AssetManager.Init(Helper);
+			Catalog.Init(Helper);
 			InventoryWatcher.Init(Helper);
 			Commands.BindAll(Helper);
 			Debug.Init(Helper);

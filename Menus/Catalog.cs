@@ -11,35 +11,63 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace HappyHomeDesigner.Menus
 {
-	// todo add catalogue caching
 	public class Catalog : IClickableMenu
 	{
 		public static readonly PerScreen<Catalog> ActiveMenu = new();
 		internal static Texture2D MenuTexture;
 		internal static Texture2D OverlayTexture;
 		private static bool WasJustHovered = false;
+		private static readonly PerScreen<Catalog> LastMenu = new();
+		private static IAssetName FurnitureName;
 
-		/// <summary>Open the catalogue with a list of shop ids</summary>
-		public static void ShowCatalog(params IEnumerable<string> shops)
+		/// <summary>Initialize static data</summary>
+		internal static void Init(IModHelper helper)
+		{
+			FurnitureName = helper.GameContent.ParseAssetName("Data/Furniture");
+
+			helper.Events.Content.AssetsInvalidated += (s, e) =>
+			{
+				if (e.NamesWithoutLocale.Any(n => n.Equals(FurnitureName)))
+					LastMenu.ResetAllScreens();
+			};
+
+			helper.Events.Player.Warped += (s, e) =>
+			{
+				if (e.OldLocation.Name != e.NewLocation.Name)
+					LastMenu.Value = null;
+			};
+		}
+
+        /// <summary>Open the catalogue with a list of shop ids</summary>
+        public static void ShowCatalog(params IEnumerable<string> shops)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
 
-			if (ActiveMenu.Value is Catalog catalog)
+			if (ActiveMenu.Value is Catalog catalog) 
+			{
 				if (catalog.Type.ContainsAll(shops))
 					return;
 				else
-					catalog.exitThisMenuNoSound();
+					catalog.exitThisMenuNoSound(); 
+			}
+			else if (LastMenu.Value is Catalog last && last.Type.ContainsAll(shops))
+			{
+				Game1.onScreenMenus.Insert(0, last);
+				ActiveMenu.Value = last;
+				Game1.playSound("bigSelect");
+				return;
+			}
 
 			var watch = Stopwatch.StartNew();
 
 			var menu = new Catalog(shops.ToHashSet(), new(shops), watch);
 			Game1.onScreenMenus.Insert(0, menu);
 			ActiveMenu.Value = menu;
+			LastMenu.Value = menu;
 			Game1.isTimePaused = ModEntry.config.PauseTime;
 		}
 
