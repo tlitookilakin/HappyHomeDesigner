@@ -43,8 +43,34 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 		private T _selected;
-		protected TE hovered;
-		protected TE hovered_variant;
+		protected T Hovered
+		{
+			get => _hovered;
+			set
+			{
+				if (_hovered == value)
+					return;
+
+				_hovered?.Hovered = false;
+				_hovered = value;
+				_hovered?.Hovered = true;
+			}
+		}
+		private T HoveredVariant
+		{
+			get => _hovered_variant;
+			set
+			{
+				if (_hovered_variant == value)
+					return;
+
+				_hovered_variant?.Hovered = false;
+				_hovered_variant = value;
+				_hovered_variant?.Hovered = true;
+			}
+		}
+		protected T _hovered;
+		private T _hovered_variant;
 		protected List<T>[] CustomFilters;
 		protected ClickableTextureComponent Tab;
 
@@ -201,19 +227,19 @@ namespace HappyHomeDesigner.Menus
 		/// <inheritdoc/>
 		public override void DrawTooltip(SpriteBatch b)
 		{
-			if (hovered is not null)
+			if (Hovered is not null)
 			{
 				if (ModEntry.config.FurnitureTooltips)
-					drawToolTip(b, hovered.getDescription(), hovered.DisplayName, hovered);
+					drawToolTip(b, Hovered.Item.getDescription(), Hovered.Item.DisplayName, Hovered.Item);
 
 				if (ModEntry.config.Magnify)
-					DrawMagnified(b, hovered);
+					DrawMagnified(b, Hovered.Item);
 			}
 
-			if (hovered_variant is not null)
+			if (HoveredVariant is not null)
 			{
 				if (ModEntry.config.Magnify)
-					DrawMagnified(b, hovered_variant);
+					DrawMagnified(b, HoveredVariant.Item);
 			}
 		}
 
@@ -246,12 +272,12 @@ namespace HappyHomeDesigner.Menus
 			MainPanel.performHoverAction(x, y);
 			VariantPanel.performHoverAction(x, y);
 
-			hovered = MainPanel.TrySelect(x, y, out int index) ?
-				(MainPanel.VisibleItems.Items[index] as T).Item :
+			Hovered = MainPanel.TrySelect(x, y, out int index) ?
+				(MainPanel.VisibleItems.Items[index] as T) :
 				null;
 
-			hovered_variant = VariantPanel.TrySelect(x, y, out index) ?
-				(VariantPanel.VisibleItems.Items[index] as T).Item :
+			HoveredVariant = VariantPanel.TrySelect(x, y, out index) ?
+				(VariantPanel.VisibleItems.Items[index] as T) :
 				null;
 		}
 

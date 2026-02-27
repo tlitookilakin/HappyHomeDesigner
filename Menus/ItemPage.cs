@@ -10,7 +10,6 @@ using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
-using static StardewValley.Menus.CharacterCustomization;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -22,13 +21,28 @@ namespace HappyHomeDesigner.Menus
 		private readonly ClickableTextureComponent TrashSlot
 			= new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 		private int skipped;
-		private ClickableTextureComponent Tab;
+		private readonly ClickableTextureComponent Tab;
 
 		public event EventHandler<ItemPoolChangedEvent> ItemPoolChanged;
 
 		public override ICollection<string> KnownIDs => [];
 
 		public IReadOnlyList<IGridItem> Items => entries;
+
+		private ItemEntry Hovered
+		{
+			get => _hovered;
+			set
+			{
+				if (_hovered == value)
+					return;
+
+				_hovered?.Hovered = false;
+				_hovered = value;
+				_hovered?.Hovered = true;
+			}
+		}
+		private ItemEntry _hovered;
 
 		public ItemPage()
 		{
@@ -57,6 +71,8 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.performHoverAction(x, y);
 			Panel.performHoverAction(x, y);
+
+			Hovered = Panel.TrySelect(x, y, out int i) ? (Panel.VisibleItems.Items[i] as ItemEntry) : null;
 		}
 
 		public override void Resize(Rectangle region)

@@ -4,8 +4,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -27,7 +27,22 @@ namespace HappyHomeDesigner.Menus
 		public bool Selected;
 		public readonly T Item;
 
+		public bool Hovered
+		{
+			get => hovered;
+			set
+			{
+				if (value == hovered)
+					return;
+
+				hovered = value;
+				hoverChangedTick = Game1.ticks - (7 - Math.Min(Game1.ticks - hoverChangedTick, 7));
+			}
+		}
+
 		protected readonly Season season = default;
+		protected int hoverChangedTick = 0;
+		private bool hovered;
 
 		/// <summary>Standard constructor. Used for main catalog page.</summary>
 		/// <param name="Item">The contained item.</param>
@@ -62,16 +77,20 @@ namespace HappyHomeDesigner.Menus
 
 		public virtual void Draw(SpriteBatch b, int x, int y)
 		{
-			Item.drawInMenu(b, new(x + 8, y + 8), 1f);
+			float scale = Math.Clamp(Game1.ticks - hoverChangedTick, 0, 7) / 7f;
+			if (!hovered)
+				scale = 1f - scale;
 
 			if (Selected)
 				b.DrawFrame(Game1.menuTexture, new(x - 8, y - 8, CELL_SIZE + 16, CELL_SIZE + 16), FrameSource, 13, 1, Color.White);
 
-			if (HasVariants)
-				b.Draw(Catalog.MenuTexture, new Rectangle(x + CELL_SIZE - 22, y + 1, 21, 21), star, Color.White);
+			Item.drawInMenu(b, new(x + 8, y + 8), 1f + (.3f * scale));
 
 			if (Favorited)
 				b.Draw(Catalog.MenuTexture, new Rectangle(x + 5, y + 5, 18, 18), favRibbon, Color.White);
+
+			if (HasVariants)
+				b.Draw(Catalog.MenuTexture, new Rectangle(x + CELL_SIZE - 22, y + 1, 21, 21), star, Color.White);
 		}
 
 		/// <inheritdoc/>

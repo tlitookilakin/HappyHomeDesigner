@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
+using System;
 
 namespace HappyHomeDesigner.Menus
 {
@@ -11,6 +12,21 @@ namespace HappyHomeDesigner.Menus
 		private static readonly Rectangle background = new(128, 128, 64, 64);
 
 		public Item item;
+
+		public bool Hovered
+		{
+			get => hovered;
+			set
+			{
+				if (value == hovered)
+					return;
+
+				hovered = value;
+				hoverChangedTick = Game1.ticks - (7 - Math.Min(Game1.ticks - hoverChangedTick, 7));
+			}
+		}
+		private bool hovered;
+		private int hoverChangedTick;
 
 		public ItemEntry(Item item)
 		{
@@ -24,7 +40,11 @@ namespace HappyHomeDesigner.Menus
 
 		public void Draw(SpriteBatch b, int x, int y)
 		{
-			item.drawInMenu(b, new(x + 8, y + 8), 1f);
+			float scale = Math.Clamp(Game1.ticks - hoverChangedTick, 0, 7) / 7f;
+			if (!hovered)
+				scale = 1f - scale;
+
+			item.drawInMenu(b, new(x + 8, y + 8), 1f + (scale * .3f));
 		}
 
 		/// <inheritdoc/>
