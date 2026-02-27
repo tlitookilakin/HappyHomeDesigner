@@ -23,6 +23,7 @@ namespace HappyHomeDesigner.Menus
 		internal static Texture2D OverlayTexture;
 		private static bool WasJustHovered = false;
 
+		/// <summary>Open the catalogue with a list of shop ids</summary>
 		public static void ShowCatalog(params IEnumerable<string> shops)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
