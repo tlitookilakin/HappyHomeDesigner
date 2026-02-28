@@ -1,16 +1,54 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
-using HappyHomeDesigner.Menus;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace HappyHomeDesigner.Data
 {
 	public class Config
 	{
+		public event Action<Config> Changed
+		{
+			add
+			{
+				var host = value.Target;
+				if (host is null)
+				{
+					staticHandlers.Add(value);
+				}
+				else
+				{
+					if (handlers.TryGetValue(host, out var handler))
+						handlers.AddOrUpdate(host, handler + value);
+					else
+						handlers.AddOrUpdate(host, value);
+				}
+			}
+
+			remove
+			{
+				if (staticHandlers.Remove(value))
+					return;
+
+				var host = value.Target;
+				if (handlers.TryGetValue(host, out var handler))
+				{
+					handler -= value;
+					if (handler is null)
+						handlers.Remove(host);
+					else
+						handlers.AddOrUpdate(host, handler);
+				}
+			}
+		}
+
+		private readonly ConditionalWeakTable<object, Action<Config>> handlers = [];
+		private readonly List<Action<Config>> staticHandlers = [];
+
 		private static string[] skins;
 		private static string[] skinFiles;
 		private int skindex;
@@ -57,6 +95,12 @@ namespace HappyHomeDesigner.Data
 		public bool ExpandSearch { get; set; }
 		public bool SeasonalOverlay { get; set; }
 		public bool DisableBlueprintChecks { get; set; }
+		public int MenuWidth
+		{
+			get => menuWidth;
+			set => menuWidth = Math.Clamp(value, 400, 800);
+		}
+		private int menuWidth;
 
 		public Config()
 		{
@@ -100,6 +144,13 @@ namespace HappyHomeDesigner.Data
 			);
 			gmcm.QuickBind(man, this, nameof(ExpandSearch));
 			gmcm.QuickBind(man, this, nameof(SeasonalOverlay));
+			gmcm.AddNumberOption(man,
+				() => menuWidth,
+				v => MenuWidth = v,
+				() => ModEntry.i18n.Get("config.MenuWidth.name"),
+				() => ModEntry.i18n.Get("config.MenuWidth.desc"),
+				400, 800, 50
+			);
 
 			gmcm.QuickPage(man, "controls");
 			gmcm.QuickBind(man, this, nameof(GiveModifier));
@@ -140,6 +191,7 @@ namespace HappyHomeDesigner.Data
 			ExpandSearch = true;
 			SeasonalOverlay = true;
 			DisableBlueprintChecks = false;
+			MenuWidth = 400;
 		}
 
 		private void Save()
@@ -147,8 +199,7 @@ namespace HappyHomeDesigner.Data
 			ModEntry.helper.WriteConfig(this);
 			ModEntry.helper.GameContent.InvalidateCache(AssetManager.UI_PATH);
 
-			AssetManager.ReloadIfNecessary();
-			Catalog.UpdateGMCMButton();
+			InvokeChanged();
 		}
 
 		private static void LoadSkins()
@@ -170,6 +221,15 @@ namespace HappyHomeDesigner.Data
 					return skinFiles[i - 1];
 			}
 			return defaultName;
+		}
+
+		private void InvokeChanged()
+		{
+			foreach (var h in staticHandlers)
+				h?.Invoke(this);
+
+			foreach (var p in handlers)
+				p.Value?.Invoke(this);
 		}
 	}
 }

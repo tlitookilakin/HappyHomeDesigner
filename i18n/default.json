@@ -107,5 +107,7 @@
 	"logging.itemType.wallpaper": "walls",
 	"logging.itemType.flooring": "floors",
 	"logging.itemType.items": "general items",
-	"logging.totalTime": "Processed {{count}} total items in {{time}}."
+	"logging.totalTime": "Processed {{count}} total items in {{time}}.",
+	"config.MenuWidth.name": "Menu Width",
+	"config.MenuWidth.desc": "The width of the menu in pixels"
 }

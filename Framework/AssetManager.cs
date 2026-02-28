@@ -55,7 +55,7 @@ namespace HappyHomeDesigner.Framework
 			=> collections ??= gameContent.Load<Dictionary<string, StyleCollection>>(COLLECTIONS);
 		private static Dictionary<string, StyleCollection> collections;
 
-		public static void Init(IModHelper helper)
+		public static void Init(IModHelper helper, Config config)
 		{
 			gameContent = helper.GameContent;
 			ReadLocalData(helper);
@@ -63,6 +63,8 @@ namespace HappyHomeDesigner.Framework
 			IsClientMode = ModEntry.config.ClientMode;
 			helper.Events.Content.AssetRequested += ProvideData;
 			helper.Events.Content.AssetsInvalidated += ReloadCached;
+
+			config.Changed += ReloadIfNecessary;
 		}
 
 		private static void ReloadCached(object sender, AssetsInvalidatedEventArgs e)
@@ -82,12 +84,12 @@ namespace HappyHomeDesigner.Framework
 			localItems = helper.ModContent.Load<Dictionary<string, JToken>>("assets/items.json");
 		}
 
-		public static void ReloadIfNecessary()
+		public static void ReloadIfNecessary(Config cfg)
 		{
-			if (IsClientMode == ModEntry.config.ClientMode)
+			if (IsClientMode == cfg.ClientMode)
 				return; // no change
 
-			IsClientMode = ModEntry.config.ClientMode;
+			IsClientMode = cfg.ClientMode;
 
 			foreach (var item in ServerRequired)
 				ModEntry.helper.GameContent.InvalidateCache(item);

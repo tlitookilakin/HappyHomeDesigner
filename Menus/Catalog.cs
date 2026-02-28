@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Widgets;
 using Microsoft.Xna.Framework;
@@ -41,8 +42,8 @@ namespace HappyHomeDesigner.Menus
 			};
 		}
 
-        /// <summary>Open the catalogue with a list of shop ids</summary>
-        public static void ShowCatalog(params IEnumerable<string> shops)
+		/// <summary>Open the catalogue with a list of shop ids</summary>
+		public static void ShowCatalog(params IEnumerable<string> shops)
 		{
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
@@ -83,13 +84,6 @@ namespace HappyHomeDesigner.Menus
 			return ActiveMenu.Value != null;
 		}
 
-		internal static void UpdateGMCMButton()
-		{
-			var enabled = ModEntry.config.GMCMButton;
-			foreach (var menu in ActiveMenu.GetActiveValues())
-				menu.Value?.UpdateGMCMButton(enabled);
-		}
-
 		/// <summary>Try and do something with a button that was just pressed or released</summary>
 		/// <param name="IsPressed">True if it was just pressed, false if it was just released.</param>
 		/// <returns>True if the button did something and should be suppressed, otherwise false.</returns>
@@ -122,12 +116,16 @@ namespace HappyHomeDesigner.Menus
 		private ShopBatcher batcher;
 		private readonly Stopwatch timer;
 		private int totalItems;
+		private int panelWidth;
 
 		public ICollection<string> KnownIds
 				=> Pages[tab].KnownIDs;
 
 		private Catalog(ICollection<string> ids, ShopBatcher batch, Stopwatch watch, bool playSound = true)
 		{
+			ModEntry.config.Changed += HandleConfigChange;
+			panelWidth = ModEntry.config.MenuWidth;
+
 			Type = ids;
 			batcher = batch;
 			timer = watch;
@@ -174,15 +172,18 @@ namespace HappyHomeDesigner.Menus
 			}
 		}
 
-		private void UpdateGMCMButton(bool enabled)
+		private void HandleConfigChange(Config cfg)
 		{
-			if (!IGMCM.Installed)
-				return;
+			if (IGMCM.Installed)
+			{
+				if (cfg.GMCMButton)
+					SettingsButton ??= new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
+				else
+					SettingsButton = null;
+			}
 
-			if (enabled)
-				SettingsButton ??= new(new(0, 0, 36, 36), MenuTexture, new(48, 97, 12, 12), 3f, true);
-			else
-				SettingsButton = null;
+			panelWidth = cfg.MenuWidth;
+			Resize(Game1.uiViewport.ToRect());
 		}
 
 		private void TickBatch()
@@ -384,7 +385,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			screenSize = bounds.Size;
 
-			Rectangle region = new(32, 96, 400, bounds.Height - 160);
+			Rectangle region = new(32, 96, panelWidth, bounds.Height - 160);
 			if (ModEntry.ANDROID)
 				region.X += 80;
 

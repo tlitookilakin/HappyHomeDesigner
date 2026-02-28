@@ -35,7 +35,7 @@ namespace HappyHomeDesigner
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
 
-			AssetManager.Init(Helper);
+			AssetManager.Init(Helper, config);
 			Catalog.Init(Helper);
 			InventoryWatcher.Init(Helper);
 			Commands.BindAll(Helper);
