@@ -258,8 +258,19 @@ namespace HappyHomeDesigner.Framework
 			{
 				"(F)1308" => "Catalogue",
 				"(F)1226" => "Furniture Catalogue",
-				_ => null
+				_ => allowCustom ? GetModdedShop(obj.QualifiedItemId) : null
 			};
+		}
+
+		// TODO add support for FF and Spacecore
+		private static string GetModdedShop(string id)
+		{
+			string ret;
+
+			if (Calcifer.Active && Calcifer.ShopByCatalogueId.TryGetValue(id, out ret))
+				return ret;
+
+			return null;
 		}
 
 		public static Color Mult(this Color a, Color b)
@@ -324,12 +335,12 @@ namespace HappyHomeDesigner.Framework
 			}
 			else
 			{
-                for (int i = 0; i < ind; i++)
+				for (int i = 0; i < ind; i++)
 					output[i] = source[i];
 
 				for (int i = ind; i < output.Length; i++)
 					output[i] = source[i + 1];
-            }
+			}
 
 			return output;
 		}

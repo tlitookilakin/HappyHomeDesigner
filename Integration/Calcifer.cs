@@ -4,8 +4,10 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.ItemTypeDefinitions;
+using StardewValley.Mods;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 
@@ -66,7 +68,7 @@ namespace HappyHomeDesigner.Integration
 				return;
 			}
 
-			var type = asm.GetType("Calcifer.Calcifer.Features.FrunitureActionData");
+			var type = asm.GetType("Calcifer.Features.FurnitureActionData");
 			if (type is null)
 			{
 				ModEntry.monitor.Log("Could not find Calcifer data model. Calcifer integration failed.", LogLevel.Warn);
@@ -88,7 +90,7 @@ namespace HappyHomeDesigner.Integration
 				return true;
 			}
 
-			if (shopFurnitureLookup.TryGetValue(shopId, out var itemId) && ItemRegistry.GetData(itemId) is ParsedItemData itemData)
+			if (CatalogueByShopName.TryGetValue(shopId, out var itemId) && ItemRegistry.GetData(itemId) is ParsedItemData itemData)
 			{
 				StyleCollection style = new()
 				{
@@ -123,12 +125,9 @@ namespace HappyHomeDesigner.Integration
 			Dictionary<string, string> furnToShop = [];
 			Dictionary<string, string> shopToFurn = [];
 
-			var shops = DataLoader.Shops(Game1.content)
-				.Where(static d => d.Value.CustomFields.ContainsKey(ModEntry.MOD_ID))
-				.Select(static d => d.Key)
-				.ToHashSet();
+			var shops = ModUtilities.GetCollectorShops().ToHashSet();
 
-			foreach(var pair in (IEnumerable<dynamic>)LoadData())
+			foreach(dynamic pair in (IEnumerable)LoadData())
 			{
 				string key = pair.Key;
 				string value = ((IEnumerable<dynamic>)pair.Value.TileActions)
@@ -152,7 +151,7 @@ namespace HappyHomeDesigner.Integration
 
 		private static object LoadAsset<T>(IGameContentHelper helper) where T : class
 		{
-			return helper.Load<T>(ActionsName);
+			return helper.Load<Dictionary<string, T>>(ActionsName);
 		}
 	}
 }
