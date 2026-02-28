@@ -9,8 +9,6 @@ using StardewValley.Menus;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using SObject = StardewValley.Object;
-using Netcode;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyHomeDesigner.Patches
@@ -30,7 +28,8 @@ namespace HappyHomeDesigner.Patches
 				.With<FurnitureDataDefinition>(nameof(FurnitureDataDefinition.CreateItem)).Finalizer(ReplaceInvalidFurniture)
 				.With<Toolbar>(nameof(Toolbar.draw)).Prefix(SkipToolbar)
 				.With(nameof(Toolbar.receiveLeftClick)).Prefix(SkipToolbar)
-				.With(nameof(Toolbar.receiveRightClick)).Prefix(SkipToolbar);
+				.With(nameof(Toolbar.receiveRightClick)).Prefix(SkipToolbar)
+				.With<Game1>("drawHUD").Prefix(HideHudElements);
 
 			if (!ModEntry.ANDROID)
 				helper.With<Game1>(nameof(Game1.drawMouseCursor)).Transpiler(DisableHeldItemDraw);
@@ -126,6 +125,21 @@ namespace HappyHomeDesigner.Patches
 			}
 
 			return true;
+		}
+
+		private static bool HideHudElements()
+		{
+			if (Game1.eventUp || Game1.farmEvent != null || Catalog.ActiveMenu.Value == null)
+				return true;
+
+            for (int i = Game1.onScreenMenus.Count - 1; i >= 0; i--)
+            {
+				var menu = Game1.onScreenMenus[i];
+				menu.update(Game1.currentGameTime);
+				menu.draw(Game1.spriteBatch);
+            }
+
+            return false;
 		}
 	}
 }

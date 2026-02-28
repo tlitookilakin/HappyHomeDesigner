@@ -247,14 +247,13 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.Resize(region);
 
-			int bottom_margin = ModEntry.config.LargeVariants ? 0 : 240;
-			const int top_margin = 256;
+			const int top_margin = 232;
 
 			MainPanel.Resize(width - 36, height - 64, xPositionOnScreen + 55, yPositionOnScreen);
 			VariantPanel.Resize(
-				CELL_SIZE * 3 + 32, 
-				height - (bottom_margin + top_margin), 
-				Game1.uiViewport.Width - CELL_SIZE * 3 - 80, 
+				CELL_SIZE * 3 + 32,
+				height - top_margin, 
+				Game1.uiViewport.Width - CELL_SIZE * 3 - 64, 
 				yPositionOnScreen + top_margin
 			);
 			TrashSlot.setPosition(

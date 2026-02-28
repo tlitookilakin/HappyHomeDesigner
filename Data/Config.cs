@@ -69,7 +69,6 @@ namespace HappyHomeDesigner.Data
 		public bool AlwaysLockScroll { get; set; }
 		public bool ClientMode { get; set; }
 		public bool EarlyDeluxe { get; set; }
-		public bool LargeVariants { get; set; }
 		public KeybindList OpenMenu { get; set; }
 		public string UiSkin
 		{
@@ -129,7 +128,6 @@ namespace HappyHomeDesigner.Data
 				formatValue: s => ModEntry.i18n.Get($"skin.{s}")
 			);
 			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
-			gmcm.QuickBind(man, this, nameof(LargeVariants));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceRareCatalogs));
@@ -179,7 +177,6 @@ namespace HappyHomeDesigner.Data
 			AlwaysLockScroll = false;
 			ClientMode = false;
 			EarlyDeluxe = false;
-			LargeVariants = false;
 			OpenMenu = new(SButton.None);
 			UiSkin = "Auto";
 			EasierTrashCatalogue = true;

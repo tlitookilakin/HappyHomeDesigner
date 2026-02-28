@@ -385,7 +385,7 @@ namespace HappyHomeDesigner.Menus
 		{
 			screenSize = bounds.Size;
 
-			Rectangle region = new(32, 96, panelWidth, bounds.Height - 160);
+			Rectangle region = new(32, 96, panelWidth, bounds.Height - 220);
 			if (ModEntry.ANDROID)
 				region.X += 80;
 
