@@ -20,6 +20,7 @@ namespace HappyHomeDesigner
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
+		internal static API api;
 
 		public override void Entry(IModHelper helper)
 		{
@@ -28,6 +29,7 @@ namespace HappyHomeDesigner
 			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
 			manifest = ModManifest;
+			api = new();
 
 			helper.Events.GameLoop.GameLaunched += Launched;
 			helper.Events.Input.ButtonPressed += OnButtonPressed;
@@ -41,6 +43,11 @@ namespace HappyHomeDesigner
 			Commands.BindAll(Helper);
 			Debug.Init(Helper);
 		}
+
+        public override object GetApi()
+        {
+			return api;
+        }
 
 		private void OnWarp(object sender, WarpedEventArgs e)
 		{

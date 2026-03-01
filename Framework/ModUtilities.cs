@@ -1,4 +1,5 @@
-﻿using HappyHomeDesigner.Integration;
+﻿using HappyHomeDesigner.Data;
+using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -8,6 +9,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.GameData.Shops;
+using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
@@ -262,15 +264,34 @@ namespace HappyHomeDesigner.Framework
 			};
 		}
 
-		// TODO add support for FF and Spacecore
+		// TODO add support for FF
 		private static string GetModdedShop(string id)
 		{
-			string ret;
-
-			if (Calcifer.Active && Calcifer.ShopByCatalogueId.TryGetValue(id, out ret))
+			if (ModEntry.api.ShopsByFurniture.TryGetValue(id, out var ret))
 				return ret;
 
 			return null;
+		}
+
+		public static bool TryGetCollection(string shopId, out IStyleSet collection)
+		{
+			if (ModEntry.api.FurnitureByShops.TryGetValue(shopId, out var itemId) && ItemRegistry.GetData(itemId) is ParsedItemData itemData)
+			{
+				StyleCollection style = new()
+				{
+					DisplayName = itemData.DisplayName,
+					IconTexture = itemData.GetTextureName(),
+					IconSource = itemData.GetSourceRect(),
+					Description = itemData.Description,
+					UnlockItem = itemId
+				};
+
+				collection = style;
+				return true;
+			}
+
+			collection = null;
+			return false;
 		}
 
 		public static Color Mult(this Color a, Color b)

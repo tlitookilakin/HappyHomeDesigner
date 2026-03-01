@@ -1,15 +1,20 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
+using StardewValley;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace HappyHomeDesigner.Integration
 {
-	public static class Spacecore
+	public class Spacecore : IHomeDesignerAPI.ICatalogueProvider
 	{
 		public static Func<string, List<SpaceTab>> GetTabs = (s) => null;
+		private static Func<IEnumerable<KeyValuePair<string, string>>> GetCataloguesImpl;
+		private static IAssetName FurnitureDataName;
 
 		internal static void Init()
 		{
@@ -27,6 +32,25 @@ namespace HappyHomeDesigner.Integration
 			GetTabs = typeof(Spacecore)
 				.GetMethod(nameof(GetTabsFor), BindingFlags.Static | BindingFlags.NonPublic)
 				.MakeGenericMethod(type).CreateDelegate<Func<string, List<SpaceTab>>>();
+
+			type = asm.GetType("SpaceCore.VanillaAssetExpansion.FurnitureExtensionData");
+			if (type is null)
+				return;
+
+			GetCataloguesImpl = typeof(Spacecore)
+				.GetMethod(nameof(ReadFurnitureActions), BindingFlags.Static | BindingFlags.NonPublic)
+				.MakeGenericMethod(type).CreateDelegate<Func<IEnumerable<KeyValuePair<string, string>>>>();
+
+			ModEntry.api.AddCatalogueProvider(new Spacecore());
+
+			FurnitureDataName = ModEntry.helper.GameContent.ParseAssetName("spacechase0.SpaceCore/FurnitureExtensionData");
+			ModEntry.helper.Events.Content.AssetsInvalidated += Invalidated;
+		}
+
+		private static void Invalidated(object sender, AssetsInvalidatedEventArgs e)
+		{
+			if (e.NamesWithoutLocale.Contains(FurnitureDataName))
+				ModEntry.api.InvalidateProviderCache();
 		}
 
 		private static List<SpaceTab> GetTabsFor<T>(string id)
@@ -61,6 +85,36 @@ namespace HappyHomeDesigner.Integration
 			}
 
 			return ret;
+		}
+
+		public IEnumerable<KeyValuePair<string, string>> GetCatalogues()
+		{
+			return GetCataloguesImpl();
+		}
+
+		private static IEnumerable<KeyValuePair<string, string>> ReadFurnitureActions<T>()
+		{
+			var dict = (IEnumerable)Game1.content.Load<Dictionary<string, T>>("spacechase0.SpaceCore/FurnitureExtensionData");
+			List<KeyValuePair<string, string>> pairs = [];
+
+			foreach (dynamic entry in dict)
+			{
+				Dictionary<Vector2, Dictionary<string, Dictionary<string, string>>> props = entry.Value.TileProperties;
+				foreach (var prop in props.Values) 
+				{
+					if (!prop.TryGetValue("Buildings", out var layer) || !layer.TryGetValue("Action", out var action))
+						continue;
+
+					var split = ArgUtility.SplitBySpaceQuoteAware(action);
+					if (split[0] != "OpenShop")
+						continue;
+
+					pairs.Add(new(entry.Key, split[1]));
+					break;
+				}
+			}
+
+			return pairs;
 		}
 	}
 

@@ -91,7 +91,7 @@ namespace HappyHomeDesigner.Framework
 
 				if (!foundCollection)
 				{
-					if (Calcifer.Active && Calcifer.TryGetCollection(pair.Key, out var style))
+					if (ModUtilities.TryGetCollection(pair.Key, out var style))
 						yield return new(style, pair.Value);
 					else
 						yield return new(null, pair.Value);

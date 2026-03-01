@@ -1,10 +1,6 @@
-﻿using HappyHomeDesigner.Data;
-using HappyHomeDesigner.Framework;
+﻿using HappyHomeDesigner.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.ItemTypeDefinitions;
-using StardewValley.Mods;
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -13,7 +9,7 @@ using System.Reflection;
 
 namespace HappyHomeDesigner.Integration
 {
-	internal static class Calcifer
+	internal class Calcifer : IHomeDesignerAPI.ICatalogueProvider
 	{
 		public static bool Active { get; private set; } = false;
 		private const string CALCIFER_ID = "sophie.Calcifer";
@@ -22,31 +18,7 @@ namespace HappyHomeDesigner.Integration
 		private static IAssetName ActionsName;
 		private static Func<object> LoadData;
 
-		public static IReadOnlyDictionary<string, string> CatalogueByShopName
-		{
-			get
-			{
-				if (shopFurnitureLookup is null)
-					RebuildCache();
-				return shopFurnitureLookup;
-			}
-		}
-
-		public static IReadOnlyDictionary<string, string> ShopByCatalogueId
-		{
-			get
-			{
-				if (furnitureShopLookup is null)
-					RebuildCache();
-				return furnitureShopLookup;
-			}
-		}
-
-		private static Dictionary<string, string> furnitureShopLookup;
-		private static Dictionary<string, string> shopFurnitureLookup;
-		private static readonly Dictionary<string, StyleCollection> collectionCache = [];
-
-		internal static void Init(IModHelper helper)
+        internal static void Init(IModHelper helper)
 		{
 			// already initialized
 			if (Active)
@@ -80,51 +52,21 @@ namespace HappyHomeDesigner.Integration
 				.GetMethod(nameof(LoadAsset), BindingFlags.Static | BindingFlags.NonPublic)
 				.MakeGenericMethod(type)
 				.CreateDelegate<Func<object>>(helper.GameContent);
-		}
 
-		public static bool TryGetCollection(string shopId, out IStyleSet collection)
-		{
-			if (collectionCache.TryGetValue(shopId, out var cached))
-			{
-				collection = cached;
-				return true;
-			}
-
-			if (CatalogueByShopName.TryGetValue(shopId, out var itemId) && ItemRegistry.GetData(itemId) is ParsedItemData itemData)
-			{
-				StyleCollection style = new()
-				{
-					DisplayName = itemData.DisplayName,
-					IconTexture = itemData.GetTextureName(),
-					IconSource = itemData.GetSourceRect(),
-					Description = itemData.Description,
-					UnlockItem = itemId
-				};
-
-				collectionCache[shopId] = style;
-				collection = style;
-				return true;
-			}
-
-			collection = null;
-			return false;
+			ModEntry.api.AddCatalogueProvider(new Calcifer());
 		}
 
 		private static void Invalidated(object sender, AssetsInvalidatedEventArgs e)
 		{
 			if (e.Equals(ActionsName))
 			{
-				shopFurnitureLookup = null;
-				furnitureShopLookup = null;
-				collectionCache.Clear();
+				ModEntry.api.InvalidateProviderCache();
 			}
 		}
 
-		private static void RebuildCache()
+		public IEnumerable<KeyValuePair<string, string>> GetCatalogues()
 		{
-			Dictionary<string, string> furnToShop = [];
-			Dictionary<string, string> shopToFurn = [];
-
+			List<KeyValuePair<string, string>> pairs = [];
 			var shops = ModUtilities.GetCollectorShops().ToHashSet();
 
 			foreach(dynamic pair in (IEnumerable)LoadData())
@@ -141,12 +83,10 @@ namespace HappyHomeDesigner.Integration
 				if (!shops.Contains(shopId))
 					continue;
 
-				furnToShop[key] = shopId;
-				shopToFurn[shopId] = key;
+				pairs.Add(new(key, shopId));
 			}
 
-			furnitureShopLookup = furnToShop;
-			shopFurnitureLookup = shopToFurn;
+			return pairs;
 		}
 
 		private static object LoadAsset<T>(IGameContentHelper helper) where T : class
