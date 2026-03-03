@@ -18,7 +18,7 @@ namespace HappyHomeDesigner.Integration
 		private static IAssetName ActionsName;
 		private static Func<object> LoadData;
 
-        internal static void Init(IModHelper helper)
+		internal static void Init(IModHelper helper)
 		{
 			// already initialized
 			if (Active)
@@ -72,8 +72,11 @@ namespace HappyHomeDesigner.Integration
 			foreach(dynamic pair in (IEnumerable)LoadData())
 			{
 				string key = pair.Key;
-				string value = ((IEnumerable<dynamic>)pair.Value.TileActions)
-					.FirstOrDefault(static a => a.TileAction.StartsWith("OpenShop")).TileAction;
+				var actions = (IEnumerable<dynamic>)pair.Value.TileActions;
+				if (actions is null)
+					continue;
+
+				string value = actions.FirstOrDefault(static a => a.TileAction is string s && s.StartsWith("OpenShop")).TileAction;
 
 				var split = value.Split(' ');
 				if (split.Length < 2)
