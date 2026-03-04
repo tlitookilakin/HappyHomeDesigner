@@ -76,7 +76,10 @@ namespace HappyHomeDesigner.Integration
 				if (actions is null)
 					continue;
 
-				string value = actions.FirstOrDefault(static a => a.TileAction is string s && s.StartsWith("OpenShop")).TileAction;
+				string value = actions.FirstOrDefault(static a => a.TileAction is string s && s.StartsWith("OpenShop"))?.TileAction;
+
+				if (value is null)
+					continue;
 
 				var split = value.Split(' ');
 				if (split.Length < 2)
