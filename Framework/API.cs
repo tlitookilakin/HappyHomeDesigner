@@ -56,8 +56,8 @@ namespace HappyHomeDesigner.Framework
 		{
 			var pairs = providers.SelectMany(p => p.GetCatalogues());
 
-			shopsByFurniture = new(pairs);
-			furnitureByShops = new(pairs.Select(p => new KeyValuePair<string, string>(p.Value, p.Key)));
+			shopsByFurniture = pairs.ToDictionary();
+			furnitureByShops = pairs.Select(p => new KeyValuePair<string, string>(p.Value, p.Key)).ToDictionary();
 		}
 	}
 }

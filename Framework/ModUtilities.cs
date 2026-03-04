@@ -264,6 +264,15 @@ namespace HappyHomeDesigner.Framework
 			};
 		}
 
+		public static Dictionary<K, V> ToDictionary<K, V>(this IEnumerable<KeyValuePair<K, V>> pairs)
+		{
+			Dictionary<K, V> dict = [];
+			foreach (var pair in pairs)
+				dict[pair.Key] = pair.Value;
+
+			return dict;
+		}
+
 		// TODO add support for FF
 		private static string GetModdedShop(string id)
 		{
