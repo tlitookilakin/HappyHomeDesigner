@@ -45,6 +45,8 @@ namespace HappyHomeDesigner.Framework
 		{
 			Init();
 
+			ModEntry.monitor.Log($"Opening catalogue with the following shops: {string.Join(", ", ShopsToUse)}");
+
 			shopsToUse = ShopsToUse;
 			shops = DataLoader.Shops(Game1.content);
 			collections = AssetManager.Collections.Values;

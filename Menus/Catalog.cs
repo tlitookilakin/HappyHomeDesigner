@@ -213,6 +213,10 @@ namespace HappyHomeDesigner.Menus
 				);
 				batcher = null;
 			}
+
+			for (; !Tabs[tab].visible && tab < Tabs.Count; tab++);
+			if (tab == Tabs.Count)
+				tab = 0;
 		}
 
 		protected override void cleanupBeforeExit()
