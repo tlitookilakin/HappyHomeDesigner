@@ -183,7 +183,9 @@ namespace HappyHomeDesigner.Framework
 			// single furniture item
 			else if (data.ItemId.StartsWith("(F)", StringComparison.OrdinalIgnoreCase))
 			{
-				return [new(CreateAndCache(furnitureDef.GetData(data.ItemId[3..])))];
+				if (furnitureDef.GetData(data.ItemId[3..]) is ParsedItemData d)
+					return [new(CreateAndCache(d))];
+				return [];
 			}
 
 		Fallback:
@@ -212,7 +214,7 @@ namespace HappyHomeDesigner.Framework
 					ids = ids.Where(id => ItemContextTagManager.DoAllTagsMatch(tags, ItemContextTagManager.GetBaseContextTags(id)));
 			}
 
-			var datas = ids.Select(def.GetData);
+			var datas = ids.Select(def.GetData).Where(d => d != null);
 
 			if (randomSale)
 				datas = datas.Where(d => !d.ExcludeFromRandomSale);
