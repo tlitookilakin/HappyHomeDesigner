@@ -60,6 +60,7 @@ namespace HappyHomeDesigner.Menus
 				Game1.onScreenMenus.Insert(0, last);
 				ActiveMenu.Value = last;
 				Game1.playSound("bigSelect");
+				Game1.isTimePaused = ModEntry.config.PauseTime;
 				return;
 			}
 
