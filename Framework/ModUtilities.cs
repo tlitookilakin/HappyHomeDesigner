@@ -465,16 +465,15 @@ namespace HappyHomeDesigner.Framework
 
 				private IEnumerable<T> GetItems()
 				{
-					EndOfSequence = true;
 					timer.Restart();
 					while (source.MoveNext())
 					{
-						EndOfSequence = false;
-						if (timer.ElapsedTicks > ticks)
-							break;
-
 						yield return source.Current;
+
+						if (timer.ElapsedTicks > ticks)
+							yield break;
 					}
+					EndOfSequence = true;
 				}
 
 				public void Reset()
