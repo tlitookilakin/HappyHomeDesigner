@@ -110,6 +110,7 @@ namespace HappyHomeDesigner
 			Misc.Apply(harmony);
 			CraftablePlacement.Apply(harmony);
 			AltTex.Apply(harmony);
+			ManaBars.Apply(harmony);
 		}
 	}
 }
