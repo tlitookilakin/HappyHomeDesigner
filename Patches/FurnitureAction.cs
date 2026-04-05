@@ -84,23 +84,24 @@ namespace HappyHomeDesigner.Patches
 		private static bool CheckAction(Furniture __instance, ref bool __result)
 		{
 			var heldShop = GetCatalogues(__instance.heldObject.Value, true);
+			List<string> targetShops;
 
-			switch (__instance.ItemId)
+			switch (__instance.QualifiedItemId)
 			{
 				// Furniture catalogue
-				case "1226":
+				case "(F)1226":
 					if (heldShop.Count == 0)
 						return true;
 
-					Catalog.ShowCatalog(["Furniture Catalogue", ..heldShop]);
+					targetShops = ["Furniture Catalogue", .. heldShop];
 					break;
 
 				// Wallpaper catalogue
-				case "1308":
+				case "(F)1308":
 					if (heldShop.Count == 0)
 						return true;
 
-					Catalog.ShowCatalog(["Catalogue", .. heldShop]);
+					targetShops = ["Catalogue", .. heldShop];
 					break;
 
 				// All others
@@ -109,22 +110,39 @@ namespace HappyHomeDesigner.Patches
 					// portable catalogue
 					if (__instance.heldObject.Value?.ItemId == AssetManager.PORTABLE_ID)
 					{
-						Catalog.ShowCatalog(heldShop);
+						targetShops = heldShop;
 					}
 
 					// custom catalogue
 					else
 					{
-						var baseShop = GetCatalogues(__instance, false);
-						if (baseShop.Count <= 0)
+						targetShops = GetCatalogues(__instance, false);
+						if (targetShops.Count <= 0)
 							return true;
 
-						baseShop.AddRange(heldShop);
-						Catalog.ShowCatalog(baseShop);
+						targetShops.AddRange(heldShop);
 					}
 					break;
 			}
 
+			if (
+				ModEntry.config.EarlyDeluxe && targetShops.Count == 2 && 
+				targetShops.Contains("Furniture Catalogue") && targetShops.Contains("Catalogue")
+			)
+			{
+				targetShops = GetCollectorShops("Furniture Catalogue", "Catalogue");
+			}
+			else
+			{
+				int index = targetShops.IndexOf("Furniture Catalogue");
+				if (index >= 0)
+				{
+					targetShops.RemoveAt(index);
+					targetShops.Insert(index, "Furniture Catalogue");
+				}
+			}
+
+			Catalog.ShowCatalog(targetShops);
 			__result = true;
 			return false;
 		}

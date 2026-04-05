@@ -97,9 +97,9 @@ namespace HappyHomeDesigner.Menus
 		protected readonly GridPanel VariantPanel;
 		protected readonly ClickableTextureComponent TrashSlot = new(new(0, 0, 64, 64), Catalog.MenuTexture, new(32, 48, 16, 16), 4f, true);
 
-		internal static HashSet<string> knownIDs = [];
+		private readonly Dictionary<string, T> knownIDs = [];
 
-		public override ICollection<string> KnownIDs => knownIDs;
+		public override ICollection<string> KnownIDs => knownIDs.Keys;
 
 		private static HashSet<string> preservedFavorites;
 
@@ -144,17 +144,33 @@ namespace HappyHomeDesigner.Menus
 		public override void AppendItems(List<KeyValuePair<IStyleSet, ItemQueryResult>> Items)
 		{
 			bool changed = false;
-			foreach ((_, var item) in GetItemsFrom(Items, preservedFavorites))
+			List<ItemQueryResult> ValidItems = new(Items.Count);
+			List<IStyleSet> Sets = new(Items.Count);
+
+			foreach (var item in Items)
 			{
-				if (knownIDs.Add(item.ToString()))
+				if (!CanAddItem(item))
+					continue;
+
+				ValidItems.Add(item.Value);
+				Sets.Add(item.Key);
+			}
+
+			for (int i = 0; i < ValidItems.Count; i++)
+			{
+				var item = ValidItems[i];
+				if (knownIDs.TryGetValue(item.Item.QualifiedItemId, out var existing))
 				{
-					changed = true;
-					entries.Add(item);
-					Tab.visible = true;
+					// TODO add styles
+					skipped++;
 				}
 				else
 				{
-					skipped++;
+					changed = true;
+					var entry = GetItemFrom(item, preservedFavorites);
+					knownIDs.Add(item.Item.QualifiedItemId, entry);
+					entries.Add(entry);
+					Tab.visible = true;
 				}
 			}
 
@@ -201,7 +217,11 @@ namespace HappyHomeDesigner.Menus
 		/// <param name="source">The raw item list</param>
 		/// <param name="favorites">The favorites list</param>
 		/// <returns>The processed items</returns>
-		public abstract IEnumerable<KeyValuePair<IStyleSet, T>> GetItemsFrom(IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> source, ICollection<string> favorites);
+		public abstract T GetItemFrom(ItemQueryResult source, ICollection<string> favorites);
+
+		/// <summary>Determines whether or not the given item is valid for this page</summary>
+		/// <param name="pair">The raw item</param>
+		public abstract bool CanAddItem(KeyValuePair<IStyleSet, ItemQueryResult> pair);
 
 		/// <inheritdoc/>
 		public override int Count() 
@@ -301,7 +321,7 @@ namespace HappyHomeDesigner.Menus
 				HandleGridClick(x, y, playSound, VariantPanel, false);
 
 			if (TrashSlot.containsPoint(x, y))
-				DeleteActiveItem(playSound, knownIDs);
+				DeleteActiveItem(playSound, knownIDs.Keys);
 		}
 
 		public override void receiveScrollWheelAction(int direction)
@@ -365,7 +385,7 @@ namespace HappyHomeDesigner.Menus
 					return;
 				}
 
-				DeleteActiveItem(false, knownIDs);
+				DeleteActiveItem(false, knownIDs.Keys);
 
 				var allowSet = true;
 				if (Game1.player.TemporaryItem is Item current)
@@ -418,7 +438,7 @@ namespace HappyHomeDesigner.Menus
 			{
 				case SButton.Delete:
 					if (IsPressed)
-						DeleteActiveItem(true, knownIDs);
+						DeleteActiveItem(true, knownIDs.Keys);
 					break;
 				default:
 					return false;
@@ -430,7 +450,7 @@ namespace HappyHomeDesigner.Menus
 		/// <inheritdoc/>
 		public override void DeleteActiveItem(bool playSound)
 		{
-			DeleteActiveItem(playSound, knownIDs);
+			DeleteActiveItem(playSound, knownIDs.Keys);
 		}
 
 		public IReadOnlyList<IGridItem> ApplyFilterCustom()

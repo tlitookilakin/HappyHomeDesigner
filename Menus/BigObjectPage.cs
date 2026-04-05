@@ -20,14 +20,17 @@ namespace HappyHomeDesigner.Menus
 			=> current_filter is 0 ? entries : Favorites;
 
 		/// <inheritdoc/>
-		public override IEnumerable<KeyValuePair<IStyleSet, BigObjectEntry>> GetItemsFrom(IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> source, ICollection<string> favorites)
+		public override BigObjectEntry GetItemFrom(ItemQueryResult item, ICollection<string> favorites)
 		{
 			var season = Game1.currentLocation.GetSeason();
 			var seasonName = season.ToString();
 
-			foreach ((var shop, var item) in source)
-				if (item.Item is SObject sobj && sobj.HasTypeBigCraftable())
-					yield return new(shop, new(sobj, season, seasonName, favorites));
+			return new((SObject)item.Item, season, seasonName, favorites);
+		}
+
+		public override bool CanAddItem(KeyValuePair<IStyleSet, ItemQueryResult> pair)
+		{
+			return pair.Value.Item is SObject sobj && sobj.HasTypeBigCraftable();
 		}
 
 		/// <inheritdoc/>

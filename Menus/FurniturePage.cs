@@ -61,36 +61,36 @@ namespace HappyHomeDesigner.Menus
 		}
 
 		/// <inheritdoc/>
-		public override IEnumerable<KeyValuePair<IStyleSet, FurnitureEntry>> GetItemsFrom(IEnumerable<KeyValuePair<IStyleSet, ItemQueryResult>> source, ICollection<string> favorites)
+		public override FurnitureEntry GetItemFrom(ItemQueryResult item, ICollection<string> favorites)
 		{
 			var season = Game1.currentLocation.GetSeason();
 			var seasonName = season.ToString();
+			var furn = (Furniture)item.Item;
 
-			foreach ((var shop, var item) in source)
+			var entry = new FurnitureEntry(furn, season, seasonName, favorites);
+			var type = furn.furniture_type.Value;
+
+			// Furniture Framework
+			if (furn.modData.ContainsKey("FF"))
 			{
-				if (item.Item is Furniture furn && furn.Name != "ErrorItem")
-				{
-					var entry = new FurnitureEntry(furn, season, seasonName, favorites);
-					var type = furn.furniture_type.Value;
-
-					// Furniture Framework
-					if (furn.modData.ContainsKey("FF"))
-					{
-						for (int i = FFMap.Length - 1; i >= 0; i--)
-							if (furn.HasContextTag(FFMap[i]))
-								Filters[i].Add(entry);
-					}
-
-					// everything else
-					else
-						Filters[type is < FURNITURE_MAX and >= 0 ? Map[type] : defaultSlot].Add(entry);
-
-					if (entry.Favorited)
-						Favorites.Add(entry);
-
-					yield return new(shop, entry);
-				}
+				for (int i = FFMap.Length - 1; i >= 0; i--)
+					if (furn.HasContextTag(FFMap[i]))
+						Filters[i].Add(entry);
 			}
+
+			// everything else
+			else
+				Filters[type is < FURNITURE_MAX and >= 0 ? Map[type] : defaultSlot].Add(entry);
+
+			if (entry.Favorited)
+				Favorites.Add(entry);
+
+			return entry;
+		}
+
+        public override bool CanAddItem(KeyValuePair<IStyleSet, ItemQueryResult> pair)
+        {
+			return pair.Value.Item is Furniture furn && furn.Name != "ErrorItem";
 		}
 
 		/// <inheritdoc/>
