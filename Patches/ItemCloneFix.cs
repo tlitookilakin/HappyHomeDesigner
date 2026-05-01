@@ -40,7 +40,7 @@ namespace HappyHomeDesigner.Patches
 
 		private static bool RemoveTempItem(Farmer __instance, Item which)
 		{
-			if (Catalog.ActiveMenu.Value is Catalog catalog && ModEntry.config.GiveModifier.IsDown())
+			if (Catalog.ActiveMenu.Value is Catalog catalog && ModEntry.config.GiveModifier.IsDown() && !Freeplace.IsFreePlacing())
 			{
 				if (__instance.TemporaryItem == which)
 					__instance.TemporaryItem = which.getOne();

@@ -109,8 +109,11 @@ namespace HappyHomeDesigner
 			CatalogFX.Apply(harmony);
 			Misc.Apply(harmony);
 			CraftablePlacement.Apply(harmony);
+			Freeplace.Apply(harmony);
+
 			AltTex.Apply(harmony);
 			ManaBars.Apply(harmony);
+			PreciseFurniture.Apply(harmony);
 		}
 	}
 }

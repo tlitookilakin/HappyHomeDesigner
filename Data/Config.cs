@@ -100,6 +100,8 @@ namespace HappyHomeDesigner.Data
 			set => menuWidth = Math.Clamp(value, 400, 800);
 		}
 		private int menuWidth;
+		public bool EnableFreePlace { get; set; }
+		public KeybindList FreePlaceKeys { get; set; }
 
 		public Config()
 		{
@@ -121,6 +123,7 @@ namespace HappyHomeDesigner.Data
 			gmcm.QuickBind(man, this, nameof(Magnify));
 			gmcm.QuickBind(man, this, nameof(PickupCraftables));
 			gmcm.QuickBind(man, this, nameof(DisableBlueprintChecks));
+			gmcm.QuickBind(man, this, nameof(EnableFreePlace));
 
 			gmcm.QuickPage(man, "tweaks");
 			gmcm.QuickBind(man, this, nameof(UiSkin),
@@ -156,6 +159,7 @@ namespace HappyHomeDesigner.Data
 			gmcm.QuickBind(man, this, nameof(ToggleShortcut));
 			gmcm.QuickBind(man, this, nameof(CloseWithKey));
 			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
+			gmcm.QuickBind(man, this, nameof(FreePlaceKeys));
 
 			gmcm.QuickPage(man, "cheats");
 			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
@@ -189,6 +193,8 @@ namespace HappyHomeDesigner.Data
 			SeasonalOverlay = true;
 			DisableBlueprintChecks = false;
 			MenuWidth = 400;
+			EnableFreePlace = true;
+			FreePlaceKeys = new(SButton.LeftControl);
 		}
 
 		private void Save()
