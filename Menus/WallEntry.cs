@@ -1,5 +1,4 @@
 ﻿using HappyHomeDesigner.Data;
-using HappyHomeDesigner.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -108,11 +107,20 @@ namespace HappyHomeDesigner.Menus
 			} else
 			{
 				string id = where.GetWallpaperID(x, y);
+				string floor = where.GetFloorID(x, y);
 				while (id is null)
 				{
 					y--;
 					if (y is < 0)
 						return false;
+
+					// detect room boundary, search for adjacent walls
+					if (floor != null && where.GetFloorID(x, y) != floor && FindAdjacentWalls(x, y - 1, where) is string s)
+					{
+						id = s;
+						break;
+					}
+
 					id = where.GetWallpaperID(x, y);
 				}
 
@@ -124,7 +132,7 @@ namespace HappyHomeDesigner.Menus
 					$"{modData.Id}:{item.ParentSheetIndex}";
 
 				if (existing == name)
-					return false;
+					return true;
 
 				where.SetWallpaper(name, id);
 
@@ -180,6 +188,28 @@ namespace HappyHomeDesigner.Menus
 				}
 			}
 			return ModEntry.helper.GameContent.Load<Texture2D>("Maps/walls_and_floors");
+		}
+
+		private static string FindAdjacentWalls(int x, int y, DecoratableLocation where)
+		{
+			Queue<int> toCheck = [];
+			toCheck.Enqueue(x);
+			int c = x;
+			int w = where.Map.GetLayer("Back").LayerWidth - 1;
+
+			while (toCheck.TryDequeue(out x))
+			{
+				if (where.GetWallpaperID(x, y) is string s)
+					return s;
+
+				if (x > 0 && x <= c)
+					toCheck.Enqueue(x - 1);
+
+				if (x < w && x >= c)
+					toCheck.Enqueue(x + 1);
+			}
+
+			return null;
 		}
 	}
 }
