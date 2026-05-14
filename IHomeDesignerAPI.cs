@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace HappyHomeDesigner;
 
+#nullable enable
 public interface IHomeDesignerAPI
 {
 	/// <summary>Whether or not a catalogue is open on the current screen</summary>
@@ -18,9 +20,32 @@ public interface IHomeDesignerAPI
 	/// <summary>Call this when a provider's catalogue list changes</summary>
 	public void InvalidateProviderCache();
 
+	/// <summary>The currently enabled sharing service, if any.</summary>
+	public IShareService? CurrentSharingService { get; set; }
+
+	/// <summary>
+	/// Provides information about which objects are linked to which catalogues. <br/>
+	/// Use this if your mod provides a framework for turning objects into furniture catalogues.
+	/// </summary>
 	public interface ICatalogueProvider
 	{
 		/// <summary>Returns a sequence of pairs, where the key is the qualified item ID and the value is the shop id associated with the catalogue item.</summary>
-		IEnumerable<KeyValuePair<string, string>> GetCatalogues();
+		public IEnumerable<KeyValuePair<string, string>> GetCatalogues();
+	}
+
+	/// <summary>Entry point for a sharing service for blueprints</summary>
+	public interface IShareService
+	{
+		/// <summary>Shows a blueprint save GUI</summary>
+		/// <param name="jstring">The json string represnting the selected blueprint</param>
+		/// <param name="onSelected">The callback used when sharing is selected/completed</param>
+		public void ShowSave(bool playSound, string jstring, Action<bool> onSelected);
+
+		/// <summary>Shows a blueprint load gui</summary>
+		/// <param name="onSelected">
+		/// The callback used when a blueprint is selected.<br/> 
+		/// The string should be a valid json blueprint string.
+		/// </param>
+		public void ShowLoad(bool playSound, Action<string?> onSelected);
 	}
 }

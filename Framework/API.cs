@@ -31,7 +31,9 @@ namespace HappyHomeDesigner.Framework
 
 		public bool IsCatalogOpen => Catalog.ActiveMenu.Value != null;
 
-		public void AddCatalogueProvider(IHomeDesignerAPI.ICatalogueProvider provider)
+        public IHomeDesignerAPI.IShareService CurrentSharingService { get; set; }
+
+        public void AddCatalogueProvider(IHomeDesignerAPI.ICatalogueProvider provider)
 		{
 			providers.Add(provider);
 		}

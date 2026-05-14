@@ -25,6 +25,7 @@ namespace HappyHomeDesigner.Menus
 		private readonly List<BlueprintEntry> Entries = [];
 		private readonly ScrollBar Scroll = new();
 		private readonly TextBox NameBox;
+		private readonly IHomeDesignerAPI.IShareService share;
 
 		public const string DROPBOX_ID = ModEntry.MOD_ID + "_BPDropbox";
 
@@ -88,6 +89,13 @@ namespace HappyHomeDesigner.Menus
 			];
 			// loadimage 32, 97, 16, 16
 			// saveimage 16, 97, 16, 16
+
+			share = ModEntry.api.CurrentSharingService;
+			if (share != null)
+			{
+				BottomButtons.Add(new("upload", new(150, 0, 6, 64), null, ModEntry.i18n.Get("ui.sharing.upload"), uiTexture, new(16, 97, 16, 16), 4f, true));
+				BottomButtons.Add(new("download", new(150, 0, 6, 64), null, ModEntry.i18n.Get("ui.sharing.download"), uiTexture, new(32, 97, 16, 16), 4f, true));
+			}
 
 			AllButtons = [.. BottomButtons, .. TopButtons, .. RightButtons];
 			allClickableComponents = [upperRightCloseButton, AddButton, .. AllButtons];
@@ -222,7 +230,54 @@ namespace HappyHomeDesigner.Menus
 				case "save": Update(sound); break;
 				case "delete": Delete(sound); break;
 				case "dropbox": DisplayDropbox(); break;
+				case "download": ShowDownload(sound); break;
+				case "upload":ShowUpload(sound); break;
 			}
+		}
+
+		private void ShowUpload(bool sound)
+		{
+			if (Selected < 0 || share is null)
+				return;
+
+			share.ShowSave(sound, JsonConvert.SerializeObject(layouts[Selected]), (success) =>
+			{
+				if (Game1.activeClickableMenu != this)
+				{
+					Game1.activeClickableMenu?.exitThisMenu(sound);
+					Game1.activeClickableMenu = this;
+				}
+
+				if (success)
+					ShowOverlayText(ModEntry.i18n.Get("ui.sharing.uploaded"));
+			});
+		}
+
+		private void ShowDownload(bool sound)
+		{
+			if (Selected < 0 || share is null)
+				return;
+
+			share.ShowLoad(sound, (json) => 
+			{
+				if (json is null)
+					return;
+
+				try
+				{
+					var layout = JsonConvert.DeserializeObject<RoomLayoutData>(json);
+					layouts.Add(layout);
+				}
+				catch (Exception ex)
+				{
+					ShowOverlayText(ModEntry.i18n.Get("ui.sharing.downloadFailed"));
+					ModEntry.monitor.Log($"Failed to get blueprint from sharing service; json was not valid: \n\t{ex}", StardewModdingAPI.LogLevel.Debug);
+					return;
+				}
+
+				Selected = layouts.Count - 1;
+				ShowOverlayText(ModEntry.i18n.Get("ui.sharing.downloaded"));
+			});
 		}
 
 		public override void draw(SpriteBatch b)

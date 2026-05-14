@@ -107,5 +107,14 @@
 	"logging.itemType.items": "general items",
 	"logging.totalTime": "Processed {{count}} total items in {{time}}.",
 	"config.MenuWidth.name": "Menu Width",
-	"config.MenuWidth.desc": "The width of the menu in pixels"
+	"config.MenuWidth.desc": "The width of the menu in pixels",
+	"ui.sharing.upload": "Share",
+	"ui.sharing.uploaded": "Shared blueprint!",
+	"ui.sharing.download": "Browse",
+	"ui.sharing.downloaded": "Imported blueprint!",
+	"ui.sharing.downloadFailed": "Error importing blueprint",
+	"config.EnableFreePlace.name": "Precise Placement",
+	"config.EnableFreePlace.desc": "Allows freely placing off-grid furniture when the modifier key is down.",
+	"config.FreePlaceKeys.name": "Precise Placement Modifier",
+	"config.FreePlaceKeys.desc": "When precise placement is enabled, holding down this key will allow placing off-grid."
 }
