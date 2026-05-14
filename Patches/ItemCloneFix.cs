@@ -73,7 +73,7 @@ namespace HappyHomeDesigner.Patches
 				{
 					if (
 						Catalog.ActiveMenu.Value is Catalog catalog &&
-						ModEntry.config.GiveModifier.IsDown() &&
+						ModEntry.config.GiveModifier.IsDown() && !Freeplace.IsFreePlacing() &&
 						catalog.KnownIds.Contains(__instance.TemporaryItem.QualifiedItemId)
 					)
 					{

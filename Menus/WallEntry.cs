@@ -115,7 +115,7 @@ namespace HappyHomeDesigner.Menus
 						return false;
 
 					// detect room boundary, search for adjacent walls
-					if (floor != null && where.GetFloorID(x, y) != floor && FindAdjacentWalls(x, y - 1, where) is string s)
+					if (floor != null && where.GetFloorID(x, y) != floor && FindAdjacentWalls(x, y - 1, where, floor) is string s)
 					{
 						id = s;
 						break;
@@ -190,7 +190,7 @@ namespace HappyHomeDesigner.Menus
 			return ModEntry.helper.GameContent.Load<Texture2D>("Maps/walls_and_floors");
 		}
 
-		private static string FindAdjacentWalls(int x, int y, DecoratableLocation where)
+		private static string FindAdjacentWalls(int x, int y, DecoratableLocation where, string originalFloor)
 		{
 			Queue<int> toCheck = [];
 			toCheck.Enqueue(x);
@@ -199,6 +199,9 @@ namespace HappyHomeDesigner.Menus
 
 			while (toCheck.TryDequeue(out x))
 			{
+				if (originalFloor != where.GetFloorID(x, y + 2))
+					continue;
+
 				if (where.GetWallpaperID(x, y) is string s)
 					return s;
 
