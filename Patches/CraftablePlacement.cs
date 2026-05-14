@@ -154,6 +154,7 @@ namespace HappyHomeDesigner.Patches
 			if (obj is Mannequin mann)
 			{
 				result = (SObject)mann.getOne();
+				result.modData[UNIQUE_ITEM_FLAG] = "T";
 				return true;
 			}
 
