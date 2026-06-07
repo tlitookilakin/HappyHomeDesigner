@@ -46,7 +46,8 @@ public record struct Glyph(Vector2 Position, Rectangle Source, Texture2D Texture
 					cum += ' ' + s;
 				}
 			}
-			if (lines[^1] != cum)
+
+			if (lines.Count is 0 || lines[^1] != cum)
 				lines.Add(cum);
 		}
 		else
