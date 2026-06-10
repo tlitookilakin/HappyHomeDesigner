@@ -132,14 +132,14 @@ namespace HappyHomeDesigner.Patches
 			if (Game1.eventUp || Game1.farmEvent != null || Catalog.ActiveMenu.Value == null)
 				return true;
 
-            for (int i = Game1.onScreenMenus.Count - 1; i >= 0; i--)
-            {
+			for (int i = Game1.onScreenMenus.Count - 1; i >= 0; i--)
+			{
 				var menu = Game1.onScreenMenus[i];
 				menu.update(Game1.currentGameTime);
 				menu.draw(Game1.spriteBatch);
-            }
+			}
 
-            return false;
+			return false;
 		}
 	}
 }

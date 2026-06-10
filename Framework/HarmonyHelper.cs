@@ -33,6 +33,12 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 		=> WithImpl(name, false, typeof(T));
 
 	/// <summary>Set the method to patch and use the current type.</summary>
+	/// <param name="t">The target type</param>
+	/// <param name="name">Method name</param>
+	public HarmonyHelper With(Type t, string name)
+		=> WithImpl(name, false, t);
+
+	/// <summary>Set the method to patch and use the current type.</summary>
 	/// <param name="name">Method name</param>
 	public HarmonyHelper With(string name)
 		=> WithImpl(name, false);

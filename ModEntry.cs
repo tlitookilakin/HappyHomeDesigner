@@ -112,7 +112,7 @@ namespace HappyHomeDesigner
 			Freeplace.Apply(harmony);
 
 			AltTex.Apply(harmony);
-			ManaBars.Apply(harmony);
+			Compat.Apply(harmony);
 			PreciseFurniture.Apply(harmony);
 		}
 	}

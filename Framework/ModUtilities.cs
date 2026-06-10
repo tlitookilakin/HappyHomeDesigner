@@ -483,5 +483,31 @@ namespace HappyHomeDesigner.Framework
 				}
 			}
 		}
+
+		public static bool TryGetType(string asm, string type, [NotNullWhen(true)] out Type target)
+		{
+			target = Type.GetType($"{type}, {asm}");
+
+			if (target is null)
+			{
+				ModEntry.monitor.Log($"Failed to find target type {asm}:{type}.");
+				return false;
+			}
+
+			return true;
+		}
+
+		public static bool TryGetMethod(string asm, string type, string method, [NotNullWhen(true)] out MethodInfo target)
+		{
+			target = Type.GetType($"{type}, {asm}")?.GetMethod(method, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+			if (target is null)
+			{
+				ModEntry.monitor.Log($"Failed to find target method {asm}:{type}:{method}.");
+				return false;
+			}
+
+			return true;
+		}
 	}
 }
