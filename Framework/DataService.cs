@@ -15,7 +15,7 @@ namespace HappyHomeDesigner.Framework
 			List<RoomLayoutData> entries = null;
 			try
 			{
-				entries = ModEntry.helper.Data.ReadGlobalData<List<RoomLayoutData>>($"{PATH}_{where.Name.Replace(' ', '_')}");
+				entries = ModEntry.helper.Data.ReadGlobalData<List<RoomLayoutData>>($"{PATH}_{where.Name.SanitizeFilename()}");
 			}
 			catch (Exception e)
 			{
@@ -28,7 +28,7 @@ namespace HappyHomeDesigner.Framework
 		{
 			try
 			{
-				ModEntry.helper.Data.WriteGlobalData($"{PATH}_{where.Name.Replace(' ', '_')}", data);
+				ModEntry.helper.Data.WriteGlobalData($"{PATH}_{where.Name.SanitizeFilename()}", data);
 			}
 			catch(Exception e)
 			{

@@ -54,15 +54,17 @@ namespace HappyHomeDesigner.Patches
 				return;
 			}
 
-			var flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+			helper
+				.With(objectPatcher, "DrawPlacementBoundsPrefix").Prefix(SkipNameCaching)
+				.With("PlacementActionPostfix").Prefix(PreventRandomVariant)
+				.With(furniturePatcher, "DrawPrefix").Transpiler(FixFurniturePreview)
+				.With("DrawInMenuPrefix").Transpiler(MenuDraw)
+				.With(bedPatcher, "DrawPrefix").Transpiler(FixBedPreview);
 
 			try
 			{
-				harmony.Patch(objectPatcher.GetMethod("DrawPlacementBoundsPrefix", flag), prefix: new(typeof(AltTex), nameof(SkipNameCaching)));
-				harmony.Patch(furniturePatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixFurniturePreview)));
-				harmony.Patch(objectPatcher.GetMethod("PlacementActionPostfix", flag), prefix: new(typeof(AltTex), nameof(PreventRandomVariant)));
-				harmony.Patch(bedPatcher.GetMethod("DrawPrefix", flag), transpiler: new(typeof(AltTex), nameof(FixBedPreview)));
-				harmony.Patch(furniturePatcher.GetMethod("DrawInMenuPrefix", flag), transpiler: new(typeof(AltTex), nameof(MenuDraw)));
+				const BindingFlags flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
 				harmony.CreateReversePatcher(objectPatcher.GetMethod("DrawPrefix", flag), new(typeof(AltTex), nameof(ObjectDraw))).Patch();
 				harmony.Patch(
 					typeof(SObject).GetMethod(nameof(SObject.drawInMenu), 
@@ -99,6 +101,7 @@ namespace HappyHomeDesigner.Patches
 			return false;
 		}
 
+#pragma warning disable IDE0060
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private static bool ObjectDraw(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha = 1f)
 		{
@@ -137,14 +140,14 @@ namespace HappyHomeDesigner.Patches
 					.MatchStartForward(
 						new(OpCodes.Ldarg_0),
 						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.bigCraftable))),
-						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<bool, NetBool>.Value))!.GetMethod)
+						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<,>.Value))!.GetMethod)
 					);
 					int start = il.Pos;
 				il
 					.MatchStartForward(
 						new(OpCodes.Ldarg_0),
 						new(OpCodes.Ldfld, typeof(SObject).GetField(nameof(SObject.readyForHarvest))),
-						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<bool, NetBool>.Value))!.GetMethod)
+						new(OpCodes.Callvirt, typeof(NetFieldBase<bool, NetBool>).GetProperty(nameof(NetFieldBase<,>.Value))!.GetMethod)
 					);
 				il
 					.MatchEndForward(
@@ -198,6 +201,7 @@ namespace HappyHomeDesigner.Patches
 			_ = Transpiler(null, null);
 			return true;
 		}
+#pragma warning restore IDE0060
 
 		public static void DrawItemIcon(SpriteBatch batch, Texture2D texture, Rectangle source, int x, int y, float alpha)
 		{
