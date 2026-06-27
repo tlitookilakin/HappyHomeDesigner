@@ -104,7 +104,7 @@ namespace HappyHomeDesigner.Patches
 				$"{modName}! Report it to that mod, not to Happy Home Designer!\nError: {__exception.Message}",
 				StardewModdingAPI.LogLevel.Error
 			);
-			__result = __instance.CreateItem(__instance.GetErrorData(data.ItemId));
+			__result = __instance.CreateItem(__instance.GetErrorData($"{data.ItemId}(Broken)"));
 			return null;
 		}
 

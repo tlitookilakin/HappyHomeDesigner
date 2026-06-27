@@ -221,7 +221,7 @@ namespace HappyHomeDesigner.Framework
 
 			return datas
 				.Select(factory)
-				.Where(f => f.Name is not "ErrorItem")
+				.Where(f => f != null && f.Name is not "ErrorItem")
 				.Select(f => new ItemQueryResult(f));
 		}
 

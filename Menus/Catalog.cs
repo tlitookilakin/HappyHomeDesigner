@@ -202,8 +202,6 @@ namespace HappyHomeDesigner.Menus
 			}
 			else
 			{
-				timer.Start();
-
 				foreach (var page in Pages)
 					page.FinalizeItems();
 
@@ -258,7 +256,17 @@ namespace HappyHomeDesigner.Menus
 		{
 			base.update(time);
 			if (batcher != null)
-				TickBatch();
+			{
+				try
+				{
+					TickBatch();
+				}
+				catch
+				{
+					ModEntry.monitor.Log("Item retrieval failed! Check logs for errors.", LogLevel.Warn);
+					exitThisMenu();
+				}
+			}
 		}
 
 		public override void draw(SpriteBatch b)
