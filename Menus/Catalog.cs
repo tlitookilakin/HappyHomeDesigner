@@ -398,9 +398,12 @@ namespace HappyHomeDesigner.Menus
 		{
 			screenSize = bounds.Size;
 
-			Rectangle region = new(32, 96, panelWidth, bounds.Height - 220);
+			Rectangle region = new(32, 88, panelWidth, bounds.Height - 220);
 			if (ModEntry.ANDROID)
-				region.X += 80;
+			{
+				region.X += 112;
+				region.Height = bounds.Height - 120;
+			}
 
 			xPositionOnScreen = region.X;
 			yPositionOnScreen = region.Y;
@@ -411,11 +414,13 @@ namespace HappyHomeDesigner.Menus
 				Pages[i].Resize(region);
 
 			ArrangeTabs();
-
-			CloseButton.bounds.Location = new(40, 52);
-			ToggleButton.bounds.Location = new(16, bounds.Height - 64);
-
 			var currentTab = Pages[tab];
+
+			CloseButton.bounds.Location = ModEntry.ANDROID
+				? new(currentTab.width + currentTab.xPositionOnScreen, currentTab.height + currentTab.yPositionOnScreen - 32)
+				: new(region.X + 12, region.Y - 44);
+
+			ToggleButton.bounds.Location = new(region.X - 16, bounds.Height - 64);
 
 			PlayerInventory.movePosition(
 				Math.Max(currentTab.width + currentTab.xPositionOnScreen + 48 + 3 + 3, (bounds.Width - PlayerInventory.width) / 2) - PlayerInventory.xPositionOnScreen, 
