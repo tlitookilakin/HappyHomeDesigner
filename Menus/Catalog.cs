@@ -221,15 +221,16 @@ namespace HappyHomeDesigner.Menus
 		protected override void cleanupBeforeExit()
 		{
 			base.cleanupBeforeExit();
-			Game1.onScreenMenus.Remove(this);
 			Game1.player.TemporaryItem = null;
 			ActiveMenu.Value = null!;
 			Game1.isTimePaused = false;
-			for (int i = 0;i < Pages.Count; i++)
+			for (int i = 0; i < Pages.Count; i++)
 				Pages[i].Exit();
 
 			if (Game1.keyboardDispatcher.Subscriber is SearchBox)
 				Game1.keyboardDispatcher.Subscriber = null;
+
+			DelayedAction.functionAfterDelay(() => Game1.onScreenMenus.Remove(this), 0);
 		}
 
 		public override void performHoverAction(int x, int y)
