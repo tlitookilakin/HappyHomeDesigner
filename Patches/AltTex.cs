@@ -75,6 +75,7 @@ namespace HappyHomeDesigner.Patches
 				);
 
 				IsApplied = true;
+				ModEntry.monitor.Log("Successfully applied all AT patches!");
 			} 
 			catch (Exception ex)
 			{
@@ -107,6 +108,7 @@ namespace HappyHomeDesigner.Patches
 		{
 			// Reverse patch of AT's object draw patch
 			// adjusts method for menu draw instead of world draw
+			[MethodImpl(MethodImplOptions.NoInlining)]
 			static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> source, ILGenerator gen)
 			{
 				var il = new CodeMatcher(source, gen);
@@ -197,8 +199,16 @@ namespace HappyHomeDesigner.Patches
 				return d;
 			}
 
+
 			// junk code to make the compiler happy
-			_ = Transpiler(null, null);
+			if (IsApplied)
+				_ = Transpiler(null, null);
+			else
+				ModEntry.monitor.LogOnce(
+					"Alternative Textures patch state is corrupted; compat is marked as applied but reverse patcher is not valid! " +
+					"This should never happen and something is very wrong with your game!",
+					LogLevel.Error
+				);
 			return true;
 		}
 #pragma warning restore IDE0060
