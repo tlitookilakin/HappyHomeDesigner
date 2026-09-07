@@ -199,16 +199,26 @@ namespace HappyHomeDesigner.Patches
 				return d;
 			}
 
-
-			// junk code to make the compiler happy
 			if (IsApplied)
-				_ = Transpiler(null, null);
-			else
+			{
 				ModEntry.monitor.LogOnce(
 					"Alternative Textures patch state is corrupted; compat is marked as applied but reverse patcher is not valid! " +
 					"This should never happen and something is very wrong with your game!",
 					LogLevel.Error
 				);
+				new Harmony(ModEntry.manifest.UniqueID).Unpatch(
+					typeof(SObject).GetMethod(nameof(SObject.drawInMenu),
+						[typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float),
+						typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)]
+					),
+					typeof(AltTex).GetMethod(nameof(ObjectMenuPrefix), BindingFlags.Static | BindingFlags.NonPublic)
+				);
+			}
+			else
+			{
+				// junk code to make the compiler happy
+				_ = Transpiler(null, null);
+			}
 			return true;
 		}
 #pragma warning restore IDE0060
