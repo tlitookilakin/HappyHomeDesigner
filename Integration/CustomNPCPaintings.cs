@@ -16,19 +16,10 @@ namespace HappyHomeDesigner.Integration
 
 		internal static void Init()
 		{
-			if (!ModEntry.helper.ModRegistry.IsLoaded(ID))
+			if (!ModEntry.helper.ModRegistry.TryGetMod(ID, out var mod))
 				return;
 
-			if (!ModUtilities.TryFindAssembly("CustomNPCPaintings", out var asm))
-			{
-				ModEntry.monitor.Log(ModEntry.i18n.Get("logging.cnpcp.noload"), LogLevel.Warn);
-				ModEntry.monitor.Log("CNPC: no assembly", LogLevel.Trace);
-				return;
-			}
-
-			var type = asm.GetType("DynamicNPCPaintings.UI.Customiser");
-
-			if (type == null)
+			if (!mod.Manifest.TryGetType("DynamicNPCPaintings.UI.Customiser", out var type))
 			{
 				ModEntry.monitor.Log(ModEntry.i18n.Get("logging.cnpcp.notype"), LogLevel.Warn);
 				ModEntry.monitor.Log("CNPC: no menu type", LogLevel.Trace);

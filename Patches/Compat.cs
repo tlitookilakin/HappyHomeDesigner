@@ -8,16 +8,15 @@ namespace HappyHomeDesigner.Patches
 	{
 		public static void Apply(HarmonyHelper harmony)
 		{
-			if (ModEntry.helper.ModRegistry.IsLoaded("Zexu2K.MagicStardew.C") && TryGetType("MagicStardew", "MagicStardew.ManaBar", out var t))
+			if (ModEntry.helper.ModRegistry.TryGetMod("Zexu2K.MagicStardew.C", out var mod) && mod.Manifest.TryGetType("MagicStardew.ManaBar", out var t))
 				harmony.With(t, "OnRenderedHud").Prefix(SkipIfHidden);
 
-			if (ModEntry.helper.ModRegistry.IsLoaded("moonslime.ManaBarAPI") && TryGetType("ManaBarAPI", "WizardryManaBar.Core.Events", out t))
+			if (ModEntry.helper.ModRegistry.TryGetMod("moonslime.ManaBarAPI", out mod) && mod.Manifest.TryGetType("WizardryManaBar.Core.Events", out t))
 				harmony.With(t, "OnRenderedHud").Prefix(SkipIfHidden);
 
-			if (ModEntry.helper.ModRegistry.IsLoaded("lucaskfreitas.ImmersiveScarecrows"))
+			if (ModEntry.helper.ModRegistry.TryGetMod("lucaskfreitas.ImmersiveScarecrows", out mod))
 			{
-				if(TryGetType(
-					"ImmersiveScarecrows", 
+				if(mod.Manifest.TryGetType(
 					"ImmersiveScarecrows.ModEntry+Utility_playerCanPlaceItemHere_Patch",
 					out t
 				))

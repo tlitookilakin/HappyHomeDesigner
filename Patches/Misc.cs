@@ -97,7 +97,7 @@ namespace HappyHomeDesigner.Patches
 			if (__exception is null || data.IsErrorItem)
 				return null;
 
-			var modName = data.ItemId.TryGetModInfo(out var mod) ? mod.Manifest.Name : "the mod that adds that furniture";
+			var modName = ModUtilities.TryGetModSource(data.ItemId, out var mod) ? mod.Manifest.Name : "the mod that adds that furniture";
 
 			ModEntry.monitor.Log(
 				$"Furniture item {data.ItemId} is invalid! It could not be instantiated, and may cause crashes!\nThis is an issue with " +

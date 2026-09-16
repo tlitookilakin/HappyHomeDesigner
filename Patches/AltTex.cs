@@ -19,7 +19,6 @@ namespace HappyHomeDesigner.Patches
 	internal class AltTex
 	{
 		internal static bool IsApplied = false;
-		internal static Assembly asm;
 
 		private const string MINIMUM_VERSION = "6.10.4";
 
@@ -27,28 +26,28 @@ namespace HappyHomeDesigner.Patches
 
 		internal static void Apply(HarmonyHelper helper)
 		{
-			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out asm))
+			if (!ModEntry.helper.ModRegistry.TryGetMod("PeacefulEnd.AlternativeTextures", out var mod))
 				return;
 
+			var man = mod.Manifest;
 			var harmony = helper.Patcher;
-			var min_version = new Version(MINIMUM_VERSION);
-			var current_version = asm.GetName().Version;
+			var current_version = man.Version;
 
-			if (current_version < min_version)
+			if (current_version.IsOlderThan(MINIMUM_VERSION))
 			{
 				ModEntry.monitor.Log(
 					ModEntry.i18n.Get("logging.alternativeTextures.versionWarning",
-					new { min = min_version, current = current_version }),
+					new { min = MINIMUM_VERSION, current = current_version }),
 					LogLevel.Warn
 				);
 				return;
 			}
 
-			var furniturePatcher = asm.GetType("AlternativeTextures.Framework.Patches.StandardObjects.FurniturePatch");
-			var objectPatcher = asm.GetType("AlternativeTextures.Framework.Patches.StandardObjects.ObjectPatch");
-			var bedPatcher = asm.GetType("AlternativeTextures.Framework.Patches.StandardObjects.BedFurniturePatch");
-
-			if (furniturePatcher is null || objectPatcher is null || bedPatcher is null)
+			if (
+				!man.TryGetType("AlternativeTextures.Framework.Patches.StandardObjects.FurniturePatch", out var furniturePatcher) ||
+				!man.TryGetType("AlternativeTextures.Framework.Patches.StandardObjects.ObjectPatch", out var objectPatcher) ||
+				!man.TryGetType("AlternativeTextures.Framework.Patches.StandardObjects.BedFurniturePatch", out var bedPatcher)
+			)
 			{
 				ModEntry.monitor.Log("Failed to find one or more Alternative Textures patch targets", LogLevel.Warn);
 				return;
@@ -59,24 +58,22 @@ namespace HappyHomeDesigner.Patches
 				.With("PlacementActionPostfix").Prefix(PreventRandomVariant)
 				.With(furniturePatcher, "DrawPrefix").Transpiler(FixFurniturePreview)
 				.With("DrawInMenuPrefix").Transpiler(MenuDraw)
-				.With(bedPatcher, "DrawPrefix").Transpiler(FixBedPreview);
+				.With(bedPatcher, "DrawPrefix").Transpiler(FixBedPreview)
+				.With<SObject>(
+					nameof(SObject.drawInMenu),
+					[typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float),
+					typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)]
+				).Prefix(ObjectMenuPrefix);
 
 			try
 			{
 				const BindingFlags flag = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
 				harmony.CreateReversePatcher(objectPatcher.GetMethod("DrawPrefix", flag), new(typeof(AltTex), nameof(ObjectDraw))).Patch();
-				harmony.Patch(
-					typeof(SObject).GetMethod(nameof(SObject.drawInMenu), 
-						[typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), 
-						typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)]
-					), 
-					prefix: new(typeof(AltTex), nameof(ObjectMenuPrefix))
-				);
 
 				IsApplied = true;
 				ModEntry.monitor.Log("Successfully applied all AT patches!");
-			} 
+			}
 			catch (Exception ex)
 			{
 				ModEntry.monitor.Log($"Failed to patch AT: {ex}", LogLevel.Warn);

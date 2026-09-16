@@ -1,5 +1,7 @@
 ﻿using HappyHomeDesigner.Framework;
 using HarmonyLib;
+using StardewModdingAPI;
+using System;
 using System.Reflection;
 
 namespace HappyHomeDesigner.Patches
@@ -8,56 +10,38 @@ namespace HappyHomeDesigner.Patches
 	{
 		public static void Apply(HarmonyHelper harmony)
 		{
-			if (!ModEntry.helper.ModRegistry.IsLoaded("Espy.PreciseFurniture"))
+			if (!ModEntry.helper.ModRegistry.TryGetMod("Espy.PreciseFurniture", out var mod))
 				return;
 
-			ModEntry.monitor.Log("Integrating Precise Furniture...", StardewModdingAPI.LogLevel.Debug);
-
-			if(!ModUtilities.TryFindAssembly("PreciseFurniture", out var asm))
-			{
-				ModEntry.monitor.Log("Failed to find precise furniture assembly, some things may be weird...", StardewModdingAPI.LogLevel.Warn);
-				return;
-			}
-
-			bool failed = false;
-			var patcher = harmony.Patcher;
-			var patch = new HarmonyMethod(typeof(PreciseFurniture), nameof(IgnorePatch));
-
-			if (
-				asm.GetType("PreciseFurniture.Framework.Patches.StandardObjects.FishTankFurniturePatch")?
-				.GetMethod("GetTankBoundsPostfix", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-				is MethodBase method
-			)
-			{
-				patcher.Patch(method, prefix: patch);
-			}
-			else
-			{
-				failed = true;
-			}
-
-			if (
-				asm.GetType("PreciseFurniture.Framework.Patches.StandardObjects.FurniturePatch")?
-				.GetMethod("GetSeatPositionsPrefix", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-				is MethodBase method2
-			)
-			{
-				patcher.Patch(method2, prefix: patch);
-			}
-			else
-			{
-				failed = true;
-			}
-
-			if (failed)
+			if (!TryPatch(harmony, mod.Manifest))
 				ModEntry.monitor.Log("Some patches for Precise Furniture failed, some things may be weird...", StardewModdingAPI.LogLevel.Warn);
 			else
 				ModEntry.monitor.Log("All patches for Precise Furniture applied.", StardewModdingAPI.LogLevel.Trace);
 		}
 
-		private static bool IgnorePatch(out bool __result)
+		private static bool TryPatch(HarmonyHelper harmony, IManifest mod)
+		{
+			if (mod.TryGetType("PreciseFurniture.Framework.Patches.StandardObjects.FishTankFurniturePatch", out Type target))
+				harmony.With(target, "GetTankBoundsPostfix").Prefix(IgnorePostfix);
+			else
+				return false;
+
+			if (mod.TryGetType("PreciseFurniture.Framework.Patches.StandardObjects.FurniturePatch", out target))
+				harmony.With(target, "GetSeatPositionsPrefix").Prefix(IgnorePrefix);
+			else
+				return false;
+
+			return true;
+		}
+
+		private static bool IgnorePrefix(out bool __result)
 		{
 			__result = true;
+			return false;
+		}
+
+		private static bool IgnorePostfix()
+		{
 			return false;
 		}
 	}

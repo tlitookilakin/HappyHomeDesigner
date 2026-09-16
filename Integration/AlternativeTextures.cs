@@ -37,23 +37,18 @@ namespace HappyHomeDesigner.Integration
 		internal static void Init(IModHelper helper)
 		{
 			Installed = false;
-			if (!helper.ModRegistry.IsLoaded("PeacefulEnd.AlternativeTextures") || !AltTex.IsApplied)
+			if (!helper.ModRegistry.TryGetMod("PeacefulEnd.AlternativeTextures", out var mod) || !AltTex.IsApplied)
 				return;
 
 			ModEntry.monitor.Log("Alternative Textures detected! Integrating...", LogLevel.Debug);
+			var man = mod.Manifest;
 
 			const BindingFlags STATIC = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 			string error = null;
-			Type entry;
 			FieldInfo manager;
 
-
-			// Find assembly
-			if (!ModUtilities.TryFindAssembly("AlternativeTextures", out var asm))
-				error = "Failed to find AT assembly, could not integrate.";
-
 			// Find mod entry
-			else if ((entry = asm.GetType("AlternativeTextures.AlternativeTextures")) is null)
+			if (!mod.Manifest.TryGetType("AlternativeTextures.AlternativeTextures", out var entry))
 				error = "Failed to find entry point for Alternative Textures.";
 
 			// Get handle for texture manager

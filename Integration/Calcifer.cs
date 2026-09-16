@@ -24,7 +24,7 @@ namespace HappyHomeDesigner.Integration
 			if (Active)
 				return;
 
-			Active = helper.ModRegistry.IsLoaded(CALCIFER_ID);
+			Active = helper.ModRegistry.TryGetMod(CALCIFER_ID, out var mod);
 
 			// mod not loaded
 			if (!Active)
@@ -33,15 +33,7 @@ namespace HappyHomeDesigner.Integration
 			ActionsName = helper.GameContent.ParseAssetName(ACTIONS_PATH);
 			helper.Events.Content.AssetsInvalidated += Invalidated;
 
-			if(!ModUtilities.TryFindAssembly("Calcifer", out var asm))
-			{
-				ModEntry.monitor.Log("Could not find Calcifer assembly. Calcifer integration failed.", LogLevel.Warn);
-				Active = false;
-				return;
-			}
-
-			var type = asm.GetType("Calcifer.Features.FurnitureActionData");
-			if (type is null)
+			if (!mod.Manifest.TryGetType("Calcifer.Features.FurnitureActionData", out var type))
 			{
 				ModEntry.monitor.Log("Could not find Calcifer data model. Calcifer integration failed.", LogLevel.Warn);
 				Active = false;

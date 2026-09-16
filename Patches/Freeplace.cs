@@ -4,6 +4,7 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 using System;
@@ -27,27 +28,12 @@ namespace HappyHomeDesigner.Patches
 				.With<FishTankFurniture>(nameof(FishTankFurniture.GetTankBounds)).Postfix(ModifyBounds)
 				.With<Furniture>(nameof(Furniture.GetSeatPositions)).Postfix(ModifySeats);
 
-			if (ModEntry.helper.ModRegistry.IsLoaded("leroymilo.FurnitureFramework"))
+			if (ModEntry.helper.ModRegistry.TryGetMod("leroymilo.FurnitureFramework", out var mod))
 			{
-				if (ModUtilities.TryFindAssembly("FurnitureFramework", out var asm))
-				{
-					try
-					{
-						var type = asm.GetType("FurnitureFramework.Data.FType.FType");
-						harmony.Patcher.Patch(
-							type.GetMethod("IsClicked", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, [typeof(Furniture), typeof(int), typeof(int)]),
-							transpiler: new(typeof(Freeplace), nameof(FixInteractionsFF))
-						);
-					}
-					catch (Exception ex)
-					{
-						ModEntry.monitor.Log($"Error patching Furniture Framework: {ex}", StardewModdingAPI.LogLevel.Warn);
-					}
-				}
+				if (mod.Manifest.TryGetType("FurnitureFramework.Data.FType.FType", out var type))
+					harmony.With(type, "IsClicked", [typeof(Furniture), typeof(int), typeof(int)]).Transpiler(FixInteractionsFF);
 				else
-				{
-					ModEntry.monitor.Log("Failed to find assembly for Furniture Framework");
-				}
+					ModEntry.monitor.Log("Failed to find assembly for Furniture Framework", LogLevel.Warn);
 			}
 			else
 			{

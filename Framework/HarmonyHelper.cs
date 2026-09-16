@@ -43,6 +43,25 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 	public HarmonyHelper With(string name)
 		=> WithImpl(name, false);
 
+	/// <summary>Set the method to patch and use the current type.</summary>
+	/// <param name="name">Method name</param>
+	/// <param name="parameters">parameter types</param>
+	public HarmonyHelper With(string name, Type[] parameters)
+		=> WithParams(name, parameters);
+
+	/// <summary>Set the method to patch and  type to use.</summary>
+	/// <param name="name">Method name</param>
+	/// <param name="parameters">parameter types</param>
+	public HarmonyHelper With<T>(string name, Type[] parameters)
+		=> WithParams(name, parameters, typeof(T));
+
+	/// <summary>Set the method to patch and  type to use.</summary>
+	/// <param name="type">Target type</param>
+	/// <param name="name">Method name</param>
+	/// <param name="parameters">parameter types</param>
+	public HarmonyHelper With(Type type, string name, Type[] parameters)
+		=> WithParams(name, parameters, type);
+
 	/// <summary>Set the property and type to patch.</summary>
 	/// <param name="name">property name</param>
 	/// <param name="getter">true to patch the getter, false to patch the setter</param>
@@ -86,6 +105,17 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 	/// <param name="use">The method to patch with</param>
 	public HarmonyHelper Finalizer(Delegate use)
 		=> PatchImpl(new(use.Method), 3);
+
+	private HarmonyHelper WithParams(string name, Type[] parameters, Type? target = null)
+	{
+		target ??= targetType;
+		if (target is null)
+			throw new InvalidOperationException("Must specify target type.");
+
+		var targ = target.GetMethod(name, AnyDeclared | BindingFlags.Instance | BindingFlags.Static, parameters);
+
+		return new(Harmony, Monitor, targ is null ? [] : [targ], target);
+	}
 
 	private HarmonyHelper WithImpl(string name, bool all, Type? target = null, Func<MethodInfo, bool>? predicate = null)
 	{

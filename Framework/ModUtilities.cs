@@ -55,12 +55,6 @@ namespace HappyHomeDesigner.Framework
 				knownIDs is not null && knownIDs.Contains(item.QualifiedItemId);
 		}
 
-		public static bool TryFindAssembly(string name, [NotNullWhen(true)] out Assembly assembly)
-		{
-			assembly = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name == name).FirstOrDefault();
-			return assembly is not null;
-		}
-
 		public static void Suppress(this MouseWheelScrolledEventArgs e)
 		{
 			// suppress game
@@ -139,9 +133,6 @@ namespace HappyHomeDesigner.Framework
 				);
 		}
 
-		public static T ToDelegate<T>(this MethodInfo method, object target) where T : Delegate
-			=> (T)Delegate.CreateDelegate(typeof(T), target, method);
-
 		public static void QuickBind(this IGMCM gmcm, IManifest manifest, object config, string name, 
 			bool titleOnly = false, string[] allowedValues = null, Func<string, string> formatValue = null)
 		{
@@ -157,22 +148,22 @@ namespace HappyHomeDesigner.Framework
 
 			if (type == typeof(bool))
 				gmcm.AddBoolOption(manifest,
-				prop.GetMethod!.ToDelegate<Func<bool>>(config),
-				prop.SetMethod!.ToDelegate<Action<bool>>(config),
+				prop.GetMethod!.CreateDelegate<Func<bool>>(config),
+				prop.SetMethod!.CreateDelegate<Action<bool>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc));
 
 			else if (type == typeof(KeybindList))
 				gmcm.AddKeybindList(manifest,
-				prop.GetMethod!.ToDelegate<Func<KeybindList>>(config),
-				prop.SetMethod!.ToDelegate<Action<KeybindList>>(config),
+				prop.GetMethod!.CreateDelegate<Func<KeybindList>>(config),
+				prop.SetMethod!.CreateDelegate<Action<KeybindList>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc));
 
 			else if (type == typeof(string))
 				gmcm.AddTextOption(manifest,
-				prop.GetMethod!.ToDelegate<Func<string>>(config),
-				prop.SetMethod!.ToDelegate<Action<string>>(config),
+				prop.GetMethod!.CreateDelegate<Func<string>>(config),
+				prop.SetMethod!.CreateDelegate<Action<string>>(config),
 				() => ModEntry.i18n.Get(title),
 				() => ModEntry.i18n.Get(desc),
 				allowedValues, formatValue);
@@ -264,15 +255,6 @@ namespace HappyHomeDesigner.Framework
 			};
 		}
 
-		public static Dictionary<K, V> ToDictionary<K, V>(this IEnumerable<KeyValuePair<K, V>> pairs)
-		{
-			Dictionary<K, V> dict = [];
-			foreach (var pair in pairs)
-				dict[pair.Key] = pair.Value;
-
-			return dict;
-		}
-
 		// TODO add support for FF
 		private static string GetModdedShop(string id)
 		{
@@ -310,24 +292,6 @@ namespace HappyHomeDesigner.Framework
 				(a.B / 255f) * (b.B / 255f),
 				(a.A / 255f) * (b.A / 255f)
 			);
-
-		public static bool TryGetModInfo(this string ID, out IModInfo info)
-		{
-			for (int i = 0; i < ID.Length; i++)
-			{
-				if (ID[i] == '_')
-				{
-					var id = ID[..i];
-					if (ModEntry.helper.ModRegistry.IsLoaded(id))
-					{
-						info = ModEntry.helper.ModRegistry.Get(id);
-						return true;
-					}
-				}
-			}
-			info = null;
-			return false;
-		}
 
 		public static string SanitizeFilename(this string fname)
 		{
@@ -484,30 +448,48 @@ namespace HappyHomeDesigner.Framework
 			}
 		}
 
-		public static bool TryGetType(string asm, string type, [NotNullWhen(true)] out Type target)
+		public static bool TryGetType(this IManifest mod, string type, [NotNullWhen(true)] out Type target)
 		{
-			target = Type.GetType($"{type}, {asm}");
+			target = null;
 
-			if (target is null)
-			{
-				ModEntry.monitor.Log($"Failed to find target type {asm}:{type}.");
+			if (mod.EntryDll is not string dll)
 				return false;
-			}
 
-			return true;
+			if (dll.EndsWith(".dll"))
+				dll = dll[..^4];
+
+			target = Type.GetType($"{type}, {dll}") ?? Type.GetType($"{dll}.{type}, {dll}");
+			return target != null;
 		}
 
-		public static bool TryGetMethod(string asm, string type, string method, [NotNullWhen(true)] out MethodInfo target)
+		public static bool TryGetMod(this IModRegistry registry, string id, [NotNullWhen(true)] out IModInfo mod)
 		{
-			target = Type.GetType($"{type}, {asm}")?.GetMethod(method, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-
-			if (target is null)
+			if (registry.IsLoaded(id))
 			{
-				ModEntry.monitor.Log($"Failed to find target method {asm}:{type}:{method}.");
-				return false;
+				mod = registry.Get(id);
+				return true;
 			}
-
-			return true;
+			mod = null;
+			return false;
 		}
+
+		public static bool TryGetModSource(string ID, out IModInfo info)
+		{
+			for (int i = 0; i < ID.Length; i++)
+			{
+				if (ID[i] == '_')
+				{
+					var id = ID[..i];
+					if (ModEntry.helper.ModRegistry.IsLoaded(id))
+					{
+						info = ModEntry.helper.ModRegistry.Get(id);
+						return true;
+					}
+				}
+			}
+			info = null;
+			return false;
+		}
+
 	}
 }
