@@ -262,9 +262,9 @@ namespace HappyHomeDesigner.Menus
 				{
 					TickBatch();
 				}
-				catch
+				catch (Exception ex)
 				{
-					ModEntry.monitor.Log("Item retrieval failed! Check logs for errors.", LogLevel.Warn);
+					ModEntry.monitor.Log($"Item retrieval failed! Exception:\n{ex}.", LogLevel.Warn);
 					exitThisMenu();
 				}
 			}
