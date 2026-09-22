@@ -31,9 +31,9 @@ namespace HappyHomeDesigner.Framework
 
 		public bool IsCatalogOpen => Catalog.ActiveMenu.Value != null;
 
-        public IHomeDesignerAPI.IShareService CurrentSharingService { get; set; }
+		public IHomeDesignerAPI.IShareService CurrentSharingService { get; set; }
 
-        public void AddCatalogueProvider(IHomeDesignerAPI.ICatalogueProvider provider)
+		public void AddCatalogueProvider(IHomeDesignerAPI.ICatalogueProvider provider)
 		{
 			providers.Add(provider);
 		}
@@ -58,8 +58,16 @@ namespace HappyHomeDesigner.Framework
 		{
 			var pairs = providers.SelectMany(p => p.GetCatalogues());
 
-			shopsByFurniture = new(pairs);
-			furnitureByShops = new(pairs.Select(p => new KeyValuePair<string, string>(p.Value, p.Key)));
+			shopsByFurniture = [];
+			furnitureByShops = [];
+
+			// can't use constructor because it will throw on duplicate
+			// overwriting may cause some oddness but should be okay
+			foreach (var (item, shop) in pairs)
+			{
+				shopsByFurniture[item] = shop;
+				furnitureByShops[shop] = item;
+			}
 		}
 	}
 }
