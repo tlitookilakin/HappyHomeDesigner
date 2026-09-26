@@ -42,16 +42,15 @@ namespace HappyHomeDesigner.Data
 				}
 
 				bool ground = placer.isGroundFurniture();
-				Vector2 tile2 = tile;
+				Vector2 tileSnap = new(MathF.Round(tile.X), MathF.Round(tile.Y));
 				if (!ground)
-					tile2.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
+					tileSnap.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
 
 				int width = placer.getTilesWide();
 				int height = placer.getTilesHigh();
 				bool passable = placer.isPassable();
 				int type = placer.furniture_type.Value;
 
-				Vector2 tileSnap = new(MathF.Floor(tile.X), MathF.Floor(tile.Y));
 				for (int x = 0; x < width; x++)
 				{
 					for (int y = 0; y < height; y++)
