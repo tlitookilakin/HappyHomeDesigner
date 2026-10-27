@@ -135,6 +135,9 @@ namespace HappyHomeDesigner.Patches
 			for (int i = Game1.onScreenMenus.Count - 1; i >= 0; i--)
 			{
 				var menu = Game1.onScreenMenus[i];
+				if (menu == Game1.chatBox)
+					continue;
+
 				menu.update(Game1.currentGameTime);
 				menu.draw(Game1.spriteBatch);
 			}
