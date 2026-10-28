@@ -15,9 +15,7 @@ using StardewValley.Menus;
 using StardewValley.Mods;
 using StardewValley.Objects;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -231,6 +229,35 @@ namespace HappyHomeDesigner.Framework
 			return true;
 		}
 
+		public static bool Matches<T>(this ICollection<T> source, IEnumerable<T> other)
+		{
+			if (source == null)
+				return other == null;
+
+			if (source.Equals(other))
+				return true;
+
+			if (other.TryGetNonEnumeratedCount(out var otherCount) && source.Count != otherCount)
+				return false;
+
+			HashSet<T> matched = [];
+			foreach (var item in other)
+			{
+				if (!source.Contains(item))
+					return false;
+				
+				matched.Add(item);
+			}
+
+			foreach (var item in source)
+			{
+				if (!matched.Contains(item))
+					return false;
+			}
+
+			return true;
+		}
+
 		public static List<string> GetCollectorShops(params IEnumerable<string> includeShops)
 		{
 			List<string> ret = [..includeShops];
@@ -345,7 +372,7 @@ namespace HappyHomeDesigner.Framework
 			return new Dictionary<string, string>(dict.Pairs);
 		}
 
-		public static void tryHover(this ClickableTextureComponent c, int x, int y, ref string hoverText)
+		public static void TryHover(this ClickableTextureComponent c, int x, int y, ref string hoverText)
 		{
 			if (c.visible && c.containsPoint(x, y))
 				hoverText = c.hoverText;
@@ -380,73 +407,6 @@ namespace HappyHomeDesigner.Framework
 
 			sb.Append(span.Milliseconds).Append("ms");
 			return sb.ToString();
-		}
-
-		public static IEnumerable<IEnumerable<T>> TimeChunk<T>(this IEnumerable<T> source, int millis)
-		{
-			return new TimeChunker<T>(source, millis);
-		}
-
-		private class TimeChunker<T>(IEnumerable<T> source, int millis) : IEnumerable<IEnumerable<T>>
-		{
-			public IEnumerator<IEnumerable<T>> GetEnumerator()
-			{
-				return new TimeChunk(source.GetEnumerator(), millis);
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
-
-			private class TimeChunk(IEnumerator<T> source, int millis) : IEnumerator<IEnumerable<T>>
-			{
-				private readonly Stopwatch timer = new();
-				private bool disposed = false;
-				private readonly long ticks = millis * TimeSpan.TicksPerMillisecond;
-				private bool EndOfSequence = false;
-
-				public IEnumerable<T> Current { get; private set; }
-
-				object IEnumerator.Current => Current;
-
-				public void Dispose()
-				{
-					if (disposed)
-						return;
-
-					disposed = true;
-					source.Dispose();
-				}
-
-				public bool MoveNext()
-				{
-					if (disposed || EndOfSequence)
-						return false;
-
-					Current = GetItems();
-					return !EndOfSequence;
-				}
-
-				private IEnumerable<T> GetItems()
-				{
-					timer.Restart();
-					while (source.MoveNext())
-					{
-						yield return source.Current;
-
-						if (timer.ElapsedTicks > ticks)
-							yield break;
-					}
-					EndOfSequence = true;
-				}
-
-				public void Reset()
-				{
-					source.Reset();
-					EndOfSequence = false;
-				}
-			}
 		}
 
 		public static bool TryGetType(this IManifest mod, string type, [NotNullWhen(true)] out Type target)

@@ -15,9 +15,11 @@ using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
+	// TODO apply pickup patches
 	internal static class Freeplace
 	{
 		private static int layerOffset = 0;
+		private static bool isInPlacement = false;
 
 		private static readonly AccessTools.FieldRef<Furniture, NetVector2> DrawPosition
 			= AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
@@ -26,9 +28,10 @@ namespace HappyHomeDesigner.Patches
 		{
 			harmony
 				.With<SObject>(nameof(SObject.drawPlacementBounds)).Transpiler(ModifyPreview)
-				.With(nameof(SObject.placementAction)).Transpiler(ModifyPlacement)
+				.With(nameof(SObject.placementAction)).Prefix(BeforePlace).Postfix(AfterPlace)
 				.With<FishTankFurniture>(nameof(FishTankFurniture.GetTankBounds)).Postfix(ModifyBounds)
 				.With<Furniture>(nameof(Furniture.GetSeatPositions)).Postfix(ModifySeats)
+				.With(nameof(Furniture.OnAdded)).Postfix(NudgeBoundingBox)
 				.With(nameof(Furniture.draw)).Transpiler(InjectDepth)
 				.With(nameof(Furniture.AllowPlacementOnThisTile)).Postfix(ForcePlacement);
 
@@ -50,6 +53,7 @@ namespace HappyHomeDesigner.Patches
 		private static void ResetLayer(object sender, RenderingWorldEventArgs e)
 		{
 			layerOffset = 0;
+			isInPlacement = false;
 		}
 
 		private static bool ForcePlacement(bool allowed, Furniture __instance)
@@ -65,7 +69,8 @@ namespace HappyHomeDesigner.Patches
 			);
 		}
 
-		private static IEnumerable<CodeInstruction> InjectDepth(IEnumerable<CodeInstruction> source)
+		// TODO apply to AT prefix as well
+		internal static IEnumerable<CodeInstruction> InjectDepth(IEnumerable<CodeInstruction> source)
 		{
 			var il = new CodeMatcher(source);
 
@@ -92,7 +97,7 @@ namespace HappyHomeDesigner.Patches
 				.AddLabelsAt(il.Pos - 2, il.Instruction.ExtractLabels());
 
 			return il.InstructionEnumeration();
-		} 
+		}
 
 		public static float ModifyDepth(float value, Furniture furn)
 		{
@@ -110,34 +115,6 @@ namespace HappyHomeDesigner.Patches
 				layerOffset++;
 			}
 			return value;
-		}
-
-		public static void ApplyFreePlaceIfNeeded(SObject instance)
-		{
-			if (instance is not Furniture furn || !IsFreePlacing())
-				return;
-
-			Furniture.isDrawingLocationFurniture = true;
-			var pos = Game1.GetPlacementGrabTile() * 64f;
-			var yOffset = furn.sourceRect.Height * 4 - furn.boundingBox.Height;
-
-			pos = new(MathF.Floor((pos.X - 32f) / 4f) * 4f, MathF.Floor((pos.Y - 32f - yOffset) / 4f) * 4f); // snap to world pixel
-
-			var bounds = furn.boundingBox.Value;
-			bounds.X = (int)pos.X;
-			bounds.Y = (int)pos.Y + yOffset;
-			furn.boundingBox.Value = bounds;
-
-			DrawPosition(furn).Value = pos;
-		}
-
-		public static bool IsFreePlacing()
-		{
-			return
-				!Game1.isCheckingNonMousePlacement &&
-				ModEntry.config.EnableFreePlace &&
-				Catalog.ActiveMenu.Value != null &&
-				ModEntry.config.FreePlaceKeys.IsDown();
 		}
 
 		private static IEnumerable<CodeInstruction> ModifyPreview(IEnumerable<CodeInstruction> codes, ILGenerator gen)
@@ -167,43 +144,52 @@ namespace HappyHomeDesigner.Patches
 				.InsertAndAdvance(
 					new(OpCodes.Ldsfld, typeof(Furniture).GetField(nameof(Furniture.isDrawingLocationFurniture))),
 					new(OpCodes.Stloc, furnitureState),
-					new(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(ApplyFreePlaceIfNeeded))),
+					new(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(FreePlacePreviewDraw))),
 					new(OpCodes.Ldarg_0)
 				);
 
 			return il.InstructionEnumeration();
 		}
 
-		private static IEnumerable<CodeInstruction> ModifyPlacement(IEnumerable<CodeInstruction> codes, ILGenerator gen)
+
+		public static void FreePlacePreviewDraw(SObject obj)
 		{
-			var il = new CodeMatcher(codes, gen);
+			if (obj is not Furniture furn || !IsFreePlacing())
+				return;
 
-			il
-				.MatchStartForward(
-					new CodeMatch(OpCodes.Call, typeof(Furniture).GetMethod(nameof(Furniture.GetFurnitureInstance)))
-				)
-				.MatchStartForward(
-					new CodeMatch(OpCodes.Callvirt, typeof(NetCollection<Furniture>).GetMethod(nameof(NetCollection<>.Add)))
-				)
-				.InsertAndAdvance(
-					new CodeInstruction(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(NudgeBeforePlacement)))
-				)
-				.Advance(1)
-				.MatchStartForward(
-					new CodeMatch(OpCodes.Callvirt, typeof(NetCollection<Furniture>).GetMethod(nameof(NetCollection<>.Add)))
-				)
-				.InsertAndAdvance(
-					new CodeInstruction(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(NudgeBeforePlacement)))
-				);
+			Furniture.isDrawingLocationFurniture = true;
+			var pos = Game1.GetPlacementGrabTile() * 64f;
+			var yOffset = furn.sourceRect.Height * 4 - furn.boundingBox.Height;
 
-			return il.InstructionEnumeration();
+			pos = new(MathF.Floor((pos.X - 32f) / 4f) * 4f, MathF.Floor((pos.Y - 32f - yOffset) / 4f) * 4f); // snap to world pixel
+
+			var bounds = furn.boundingBox.Value;
+			bounds.X = (int)pos.X;
+			bounds.Y = (int)pos.Y + yOffset;
+			furn.boundingBox.Value = bounds;
+			furn.updateDrawPosition();
 		}
 
-		public static Furniture NudgeBeforePlacement(Furniture furn)
+		public static bool IsFreePlacing()
 		{
-			if (furn is null || !IsFreePlacing())
-				return furn;
+			return
+				!Game1.isCheckingNonMousePlacement &&
+				ModEntry.config.EnableFreePlace &&
+				Catalog.ActiveMenu.Value != null &&
+				ModEntry.config.FreePlaceKeys.IsDown();
+		}
 
+		private static void BeforePlace()
+			=> isInPlacement = true;
+		private static void AfterPlace()
+			=> isInPlacement = false;
+
+		private static void NudgeBoundingBox(Furniture __instance, Vector2 tilePos)
+		{
+			if (!isInPlacement || !IsFreePlacing())
+				return;
+
+			var furn = __instance;
 			var raw = Game1.GetPlacementGrabTile() * 64f - new Vector2(32f, 32f);
 
 			int x = ((int)raw.X) - (((int)raw.X) % 4);
@@ -211,17 +197,16 @@ namespace HappyHomeDesigner.Patches
 
 			// already grid-aligned
 			if (x % 64 == 0 && y % 64 == 0)
-				return furn;
-
-			furn.removeLights();
-			furn.RemoveLightGlow();
+				return;
 
 			var bounds = furn.boundingBox.Value;
 
+			// possible jank depth fix for wall items
+			if (furn.IsWallItem())
+				bounds.Height = 48 - (y - (int)tilePos.Y * 64);
+
 			furn.boundingBox.Value = new(x, y, bounds.Width, bounds.Height);
 			furn.updateDrawPosition();
-
-			return furn;
 		}
 
 		public static Rectangle ModifyBounds(Rectangle original, FishTankFurniture __instance)

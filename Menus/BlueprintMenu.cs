@@ -187,9 +187,9 @@ namespace HappyHomeDesigner.Menus
 			hoverText = null;
 
 			foreach (var c in AllButtons)
-				c.tryHover(x, y, ref hoverText);
+				c.TryHover(x, y, ref hoverText);
 
-			AddButton.tryHover(x, y, ref hoverText);
+			AddButton.TryHover(x, y, ref hoverText);
 
 			NameBox.Hover(x, y);
 			NameBox.Update();

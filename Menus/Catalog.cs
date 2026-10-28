@@ -50,12 +50,14 @@ namespace HappyHomeDesigner.Menus
 
 			if (ActiveMenu.Value is Catalog catalog) 
 			{
-				if (catalog.Type.ContainsAll(shops))
+				if (!Game1.onScreenMenus.Contains(catalog))
+					catalog.exitThisMenuNoSound();
+				else if (catalog.Type.ContainsAll(shops))
 					return;
 				else
-					catalog.exitThisMenuNoSound(); 
+					catalog.exitThisMenuNoSound();
 			}
-			else if (LastMenu.Value is Catalog last && last.Type.ContainsAll(shops))
+			else if (LastMenu.Value is Catalog last && last.Type.Matches(shops))
 			{
 				Game1.onScreenMenus.Insert(0, last);
 				ActiveMenu.Value = last;
