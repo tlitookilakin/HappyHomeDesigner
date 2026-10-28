@@ -5,18 +5,20 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
-	internal class Freeplace
+	internal static class Freeplace
 	{
+		private static int layerOffset = 0;
+
 		private static readonly AccessTools.FieldRef<Furniture, NetVector2> DrawPosition
 			= AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
 
@@ -26,7 +28,11 @@ namespace HappyHomeDesigner.Patches
 				.With<SObject>(nameof(SObject.drawPlacementBounds)).Transpiler(ModifyPreview)
 				.With(nameof(SObject.placementAction)).Transpiler(ModifyPlacement)
 				.With<FishTankFurniture>(nameof(FishTankFurniture.GetTankBounds)).Postfix(ModifyBounds)
-				.With<Furniture>(nameof(Furniture.GetSeatPositions)).Postfix(ModifySeats);
+				.With<Furniture>(nameof(Furniture.GetSeatPositions)).Postfix(ModifySeats)
+				.With(nameof(Furniture.draw)).Transpiler(InjectDepth)
+				.With(nameof(Furniture.AllowPlacementOnThisTile)).Postfix(ForcePlacement);
+
+			ModEntry.helper.Events.Display.RenderingWorld += ResetLayer;
 
 			if (ModEntry.helper.ModRegistry.TryGetMod("leroymilo.FurnitureFramework", out var mod))
 			{
@@ -39,6 +45,71 @@ namespace HappyHomeDesigner.Patches
 			{
 				harmony.With<GameLocation>(nameof(GameLocation.checkAction)).Transpiler(FixInteractions);
 			}
+		}
+
+		private static void ResetLayer(object sender, RenderingWorldEventArgs e)
+		{
+			layerOffset = 0;
+		}
+
+		private static bool ForcePlacement(bool allowed, Furniture __instance)
+		{
+			return allowed || (
+				ModEntry.config.AllowOverlap && 
+				(Catalog.ActiveMenu.Value != null || Game1.activeClickableMenu is BlueprintMenu) &&
+				(
+					__instance.furniture_type.Value is 12 ||
+					__instance.HasContextTag("ff_category_floor") ||
+					__instance.IsWallItem()
+				)
+			);
+		}
+
+		private static IEnumerable<CodeInstruction> InjectDepth(IEnumerable<CodeInstruction> source)
+		{
+			var il = new CodeMatcher(source);
+
+			il
+				.MatchStartForward(
+					new CodeMatch(OpCodes.Ldc_R4, 2E-09f)
+				)
+				.MatchStartForward(
+					new CodeMatch(
+						OpCodes.Callvirt,
+						typeof(SpriteBatch).GetMethod(
+							nameof(SpriteBatch.Draw),
+							[
+								typeof(Texture2D), typeof(Vector2), typeof(Rectangle), typeof(Color),
+								typeof(float), typeof(Vector2), typeof(float), typeof(SpriteEffects), typeof(float)
+							]
+						)
+					)
+				)
+				.InsertAndAdvance(
+					new(OpCodes.Ldarg_0),
+					new(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(ModifyDepth)))
+				)
+				.AddLabelsAt(il.Pos - 2, il.Instruction.ExtractLabels());
+
+			return il.InstructionEnumeration();
+		} 
+
+		public static float ModifyDepth(float value, Furniture furn)
+		{
+			if (!ModEntry.config.AllowOverlap)
+				return value;
+
+			if (furn.IsWallItem(true))
+			{
+				value += layerOffset / 1_000_000f;
+				layerOffset++;
+			}
+			else if (furn.furniture_type.Value is 12)
+			{
+				value = (layerOffset / 100_000f) + 2E-09f;
+				layerOffset++;
+			}
+			return value;
 		}
 
 		public static void ApplyFreePlaceIfNeeded(SObject instance)
@@ -146,6 +217,7 @@ namespace HappyHomeDesigner.Patches
 			furn.RemoveLightGlow();
 
 			var bounds = furn.boundingBox.Value;
+
 			furn.boundingBox.Value = new(x, y, bounds.Width, bounds.Height);
 			furn.updateDrawPosition();
 
@@ -194,7 +266,7 @@ namespace HappyHomeDesigner.Patches
 						new(OpCodes.Ldfld, typeof(GameLocation).GetField(nameof(GameLocation.furniture)))
 					);
 
-			ModifyCheck(il, 63);
+			ModifyCheck(il, 32);
 
 			return il.InstructionEnumeration();
 		}

@@ -471,6 +471,21 @@ namespace HappyHomeDesigner.Menus
 				return true;
 			}
 
+			if (ModEntry.config.AllowOverlap)
+			{
+				if (ModEntry.config.MoveBack.JustPressed())
+				{
+					RearrangeFurniture(false);
+					return true;
+				}
+
+				if (ModEntry.config.MoveFront.JustPressed())
+				{
+					RearrangeFurniture(true);
+					return true;
+				}
+			}
+
 			if (ModEntry.config.CloseWithKey && Game1.activeClickableMenu is null && IsPressed)
 			{
 				var binds = Game1.options.menuButton;
@@ -487,6 +502,13 @@ namespace HappyHomeDesigner.Menus
 			// TODO controller inputs
 
 			return Pages[tab].TryApplyButton(button, IsPressed);
+		}
+
+		private static void RearrangeFurniture(bool up)
+		{
+			var mouse = Game1.getMousePosition(false);
+			mouse += Game1.viewport.ToRect().Location;
+			ModUtilities.ChangeFurnitureOrder(Game1.currentLocation.furniture, mouse.X, mouse.Y, up);
 		}
 	}
 }

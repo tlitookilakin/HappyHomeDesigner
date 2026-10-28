@@ -4,6 +4,7 @@ using HappyHomeDesigner.Patches;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -491,5 +492,72 @@ namespace HappyHomeDesigner.Framework
 			return false;
 		}
 
+		public static bool IsWallItem(this Furniture f, bool ignore_ff = false)
+		{
+			return 
+				f.furniture_type.Value is 6 or 17 or 13 || 
+				(!ignore_ff && f.HasContextTag("ff_category_wall"));
+		}
+
+		public static void MoveItem<T>(this NetCollection<T> items, int from, int to) where T : class, INetObject<INetSerializable>
+		{
+			// no need to move
+			if (from == to)
+				return;
+
+			// no need to insert
+			if (to == items.Count - 1)
+			{
+				var removed = items[from];
+				items.RemoveAt(from);
+				items.Add(removed);
+				return;
+			}
+
+			if (Math.Max(from, to) >= items.Count || Math.Min(from, to) < 0)
+				throw new IndexOutOfRangeException();
+
+			// iterate in the reverse direction of item movement
+			bool iterForward = to < from;
+			int incr = iterForward ? 1 : -1;
+			var item = items[from];
+
+			for (int i = to; (iterForward && i < from) || (!iterForward && i > from); i += incr)
+				items[i + incr] = items[i];
+
+			items[to] = item;
+		}
+
+		public static void ChangeFurnitureOrder(NetCollection<Furniture> items, int x, int y, bool up)
+		{
+			Furniture target = null;
+			int target_index = -1;
+
+			for (int i = items.Count - 1; i >= 0; i--)
+			{
+				if (!items[i].boundingBox.Value.Contains(x, y))
+					continue;
+
+				target = items[i];
+				target_index = i;
+				break;
+			}
+
+			if (target == null)
+				return;
+
+			var bounds = target.boundingBox.Value;
+			int count = items.Count;
+			int incr = up ? 1 : -1;
+
+			for (int i = target_index + incr; i < count && i >= 0; i += incr)
+			{
+				if (items[i].boundingBox.Value.Intersects(bounds))
+				{
+					items.MoveItem(target_index, i);
+					return;
+				}
+			}
+		}
 	}
 }

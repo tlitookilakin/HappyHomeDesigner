@@ -102,6 +102,9 @@ namespace HappyHomeDesigner.Data
 		private int menuWidth;
 		public bool EnableFreePlace { get; set; }
 		public KeybindList FreePlaceKeys { get; set; }
+		public KeybindList MoveFront { get; set; }
+		public KeybindList MoveBack { get; set; }
+		public bool AllowOverlap { get; set; }
 
 		public Config()
 		{
@@ -130,6 +133,7 @@ namespace HappyHomeDesigner.Data
 				allowedValues: skins,
 				formatValue: s => ModEntry.i18n.Get($"skin.{s}")
 			);
+			gmcm.QuickBind(man, this, nameof(AllowOverlap));
 			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
 			gmcm.QuickBind(man, this, nameof(ReplaceWallpaperCatalog));
@@ -160,6 +164,8 @@ namespace HappyHomeDesigner.Data
 			gmcm.QuickBind(man, this, nameof(CloseWithKey));
 			gmcm.QuickBind(man, this, nameof(AlwaysLockScroll));
 			gmcm.QuickBind(man, this, nameof(FreePlaceKeys));
+			gmcm.QuickBind(man, this, nameof(MoveBack));
+			gmcm.QuickBind(man, this, nameof(MoveFront));
 
 			gmcm.QuickPage(man, "cheats");
 			gmcm.QuickBind(man, this, nameof(EarlyDeluxe));
@@ -195,6 +201,9 @@ namespace HappyHomeDesigner.Data
 			MenuWidth = 400;
 			EnableFreePlace = true;
 			FreePlaceKeys = new(SButton.LeftControl);
+			MoveFront = new(SButton.OemCloseBrackets);
+			MoveBack = new(SButton.OemOpenBrackets);
+			AllowOverlap = true;
 		}
 
 		private void Save()

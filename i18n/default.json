@@ -116,5 +116,11 @@
 	"config.EnableFreePlace.name": "Precise Placement",
 	"config.EnableFreePlace.desc": "Allows freely placing off-grid furniture when the modifier key is down.",
 	"config.FreePlaceKeys.name": "Precise Placement Modifier",
-	"config.FreePlaceKeys.desc": "When precise placement is enabled, holding down this key will allow placing off-grid."
+	"config.FreePlaceKeys.desc": "When precise placement is enabled, holding down this key will allow placing off-grid.",
+	"config.MoveFront.name": "Move Forward",
+	"config.MoveFront.desc": "When furniture is overlapping, moves it up one layer if possible.",
+	"config.MoveBack.name": "Move Backward",
+	"config.MoveBack.desc": "When furniture is overlapping, moves it down one layer if possible.",
+	"config.AllowOverlap.name": "Allow Overlap",
+	"config.AllowOverlap.desc": "When enabled, allows overlapping furniture and layer rugs and wall decor."
 }
