@@ -40,6 +40,11 @@ namespace HappyHomeDesigner.Menus
 				if (e.OldLocation.Name != e.NewLocation.Name)
 					LastMenu.Value = null;
 			};
+
+			helper.Events.GameLoop.ReturnedToTitle += (s, e) =>
+			{
+				ActiveMenu.Value?.exitThisMenuNoSound();
+			};
 		}
 
 		/// <summary>Open the catalogue with a list of shop ids</summary>
@@ -48,16 +53,15 @@ namespace HappyHomeDesigner.Menus
 			MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.UI_PATH);
 			OverlayTexture = ModEntry.helper.GameContent.Load<Texture2D>(AssetManager.OVERLAY_TEXTURE);
 
-			if (ActiveMenu.Value is Catalog catalog) 
+			if (ActiveMenu.Value is Catalog catalog && Game1.onScreenMenus.Contains(catalog)) 
 			{
-				if (!Game1.onScreenMenus.Contains(catalog))
-					catalog.exitThisMenuNoSound();
-				else if (catalog.Type.ContainsAll(shops))
+				if (catalog.Type.ContainsAll(shops))
 					return;
 				else
 					catalog.exitThisMenuNoSound();
 			}
-			else if (LastMenu.Value is Catalog last && last.Type.Matches(shops))
+
+			if (LastMenu.Value is Catalog last && last.Type.Matches(shops))
 			{
 				Game1.onScreenMenus.Insert(0, last);
 				ActiveMenu.Value = last;
@@ -84,7 +88,7 @@ namespace HappyHomeDesigner.Menus
 		/// <returns>True if the menu is on screen</returns>
 		public static bool MenuVisible()
 		{
-			return ActiveMenu.Value != null;
+			return ActiveMenu.Value is Catalog c && Game1.onScreenMenus.Contains(c);
 		}
 
 		/// <summary>Try and do something with a button that was just pressed or released</summary>
@@ -112,6 +116,7 @@ namespace HappyHomeDesigner.Menus
 		private ClickableTextureComponent SettingsButton;
 		private readonly ClickableTextureComponent CNPButton;
 		private readonly ClickableTextureComponent ToggleButton;
+		private bool IsCacheDirty = false;
 		private int tab = 0;
 		private bool Toggled = true;
 		private Point screenSize;
@@ -318,7 +323,7 @@ namespace HappyHomeDesigner.Menus
 			if (!Toggled)
 				return;
 
-			if (PlayerInventory.isWithinBounds(x, y))
+			if (PlayerInventory.isWithinBounds(x, y) && PlayerInventory.Visible)
 			{
 				PlayerInventory.receiveLeftClick(x, y);
 				return;

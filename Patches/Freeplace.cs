@@ -21,9 +21,6 @@ namespace HappyHomeDesigner.Patches
 		private static int layerOffset = 0;
 		private static bool isInPlacement = false;
 
-		private static readonly AccessTools.FieldRef<Furniture, NetVector2> DrawPosition
-			= AccessTools.FieldRefAccess<Furniture, NetVector2>("drawPosition");
-
 		internal static void Apply(HarmonyHelper harmony)
 		{
 			harmony

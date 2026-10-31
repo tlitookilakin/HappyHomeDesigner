@@ -36,10 +36,6 @@ namespace HappyHomeDesigner.Patches
 
 			if (__instance.QualifiedItemId == "(T)" + AssetManager.PORTABLE_ID)
 			{
-
-				if (Catalog.MenuVisible())
-					return;
-
 				var combined = ModUtilities.GetCollectorShops("Furniture Catalogue", "Catalogue");
 
 				Catalog.ShowCatalog(combined);

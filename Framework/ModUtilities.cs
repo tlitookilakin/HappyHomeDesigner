@@ -211,7 +211,7 @@ namespace HappyHomeDesigner.Framework
 
 		public static bool ContainsAll<T>(this ICollection<T> source, IEnumerable<T> other)
 		{
-			if (other.TryGetNonEnumeratedCount(out var otherCount) && source.Count != otherCount)
+			if (other.TryGetNonEnumeratedCount(out var otherCount) && source.Count < otherCount)
 				return false;
 
 			int i = 0;
