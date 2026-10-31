@@ -44,7 +44,7 @@ namespace HappyHomeDesigner.Data
 				bool ground = placer.isGroundFurniture();
 				Vector2 tileSnap = new(MathF.Round(tile.X), MathF.Round(tile.Y));
 				if (!ground)
-					tileSnap.Y = placer.GetModifiedWallTilePosition(where, (int)tile.X, (int)tile.Y);
+					tileSnap.Y = placer.GetModifiedWallTilePosition(where, (int)tileSnap.X, (int)tileSnap.Y);
 
 				int width = placer.getTilesWide();
 				int height = placer.getTilesHigh();
@@ -92,7 +92,7 @@ namespace HappyHomeDesigner.Data
 					}
 				}
 
-				switch (placer.GetAdditionalFurniturePlacementStatus(where, (int)tile.X * 64, (int)tile.Y * 64))
+				switch (placer.GetAdditionalFurniturePlacementStatus(where, (int)tileSnap.X * 64, (int)tileSnap.Y * 64))
 				{
 					case 0:
 						return true;
@@ -123,7 +123,12 @@ namespace HappyHomeDesigner.Data
 			public void Place(GameLocation where)
 			{
 				var placer = Create();
-				placer.TileLocation = tile;
+
+				Vector2 tileSnap = new(MathF.Round(tile.X), MathF.Round(tile.Y));
+				if (!placer.isGroundFurniture())
+					tileSnap.Y = placer.GetModifiedWallTilePosition(where, (int)tileSnap.X, (int)tileSnap.Y);
+
+				placer.TileLocation = tileSnap;
 				placer.currentRotation.Value = rotation;
 				placer.updateRotation();
 				where.furniture.Add(placer);
@@ -131,7 +136,9 @@ namespace HappyHomeDesigner.Data
 				// kills tile snapping from TileLocation
 				// needed because placement code breaks precise placement
 				var bb = placer.boundingBox.Value;
+				placer.defaultBoundingBox.Value = bb;
 				placer.boundingBox.Value = new((int)(tile.X * 64f), (int)(tile.Y * 64f), bb.Width, bb.Height);
+				placer.updateDrawPosition();
 			}
 
 			public Furniture Create()
