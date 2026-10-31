@@ -478,12 +478,12 @@ namespace HappyHomeDesigner.Framework
 				throw new IndexOutOfRangeException();
 
 			// iterate in the reverse direction of item movement
-			bool iterForward = to < from;
+			bool iterForward = to > from;
 			int incr = iterForward ? 1 : -1;
 			var item = items[from];
 
-			for (int i = to; (iterForward && i < from) || (!iterForward && i > from); i += incr)
-				items[i + incr] = items[i];
+			for (int i = from; (iterForward && i < to) || (!iterForward && i > to); i += incr)
+				items[i] = items[i + incr];
 
 			items[to] = item;
 		}
