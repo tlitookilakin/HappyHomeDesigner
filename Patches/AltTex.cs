@@ -354,6 +354,10 @@ namespace HappyHomeDesigner.Patches
 				.InsertAndAdvance(
 					new CodeInstruction(OpCodes.Ldloc_S, sourceRect)
 				);
+
+			il.Start();
+			Freeplace.ApplyDepthInjection(il);
+
 			return il.InstructionEnumeration();
 		}
 		private static IEnumerable<CodeInstruction> FixBedPreview(IEnumerable<CodeInstruction> source, ILGenerator gen)

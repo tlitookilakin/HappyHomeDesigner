@@ -15,11 +15,11 @@ using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
-	// TODO apply pickup patches
 	internal static class Freeplace
 	{
 		private static int layerOffset = 0;
 		private static bool isInPlacement = false;
+		private static bool isInRemove = false;
 
 		internal static void Apply(HarmonyHelper harmony)
 		{
@@ -27,10 +27,12 @@ namespace HappyHomeDesigner.Patches
 				.With<SObject>(nameof(SObject.drawPlacementBounds)).Transpiler(ModifyPreview)
 				.With(nameof(SObject.placementAction)).Prefix(BeforePlace).Postfix(AfterPlace)
 				.With<FishTankFurniture>(nameof(FishTankFurniture.GetTankBounds)).Postfix(ModifyBounds)
+				.With<GameLocation>(nameof(GameLocation.GetFurnitureAt)).Postfix(HideIfOverlapped)
 				.With<Furniture>(nameof(Furniture.GetSeatPositions)).Postfix(ModifySeats)
 				.With(nameof(Furniture.OnAdded)).Postfix(NudgeBoundingBox)
 				.With(nameof(Furniture.draw)).Transpiler(InjectDepth)
-				.With(nameof(Furniture.AllowPlacementOnThisTile)).Postfix(ForcePlacement);
+				.With(nameof(Furniture.AllowPlacementOnThisTile)).Postfix(ForcePlacement)
+				.With(nameof(Furniture.canBeRemoved)).Prefix(BeforeRemove).Postfix(AfterRemove);
 
 			ModEntry.helper.Events.Display.RenderingWorld += ResetLayer;
 
@@ -51,6 +53,7 @@ namespace HappyHomeDesigner.Patches
 		{
 			layerOffset = 0;
 			isInPlacement = false;
+			isInRemove = false;
 		}
 
 		private static bool ForcePlacement(bool allowed, Furniture __instance)
@@ -66,11 +69,17 @@ namespace HappyHomeDesigner.Patches
 			);
 		}
 
-		// TODO apply to AT prefix as well
-		internal static IEnumerable<CodeInstruction> InjectDepth(IEnumerable<CodeInstruction> source)
+		private static IEnumerable<CodeInstruction> InjectDepth(IEnumerable<CodeInstruction> source)
 		{
 			var il = new CodeMatcher(source);
 
+			ApplyDepthInjection(il);
+
+			return il.InstructionEnumeration();
+		}
+
+		internal static void ApplyDepthInjection(CodeMatcher il)
+		{
 			il
 				.MatchStartForward(
 					new CodeMatch(OpCodes.Ldc_R4, 2E-09f)
@@ -92,8 +101,6 @@ namespace HappyHomeDesigner.Patches
 					new(OpCodes.Call, typeof(Freeplace).GetMethod(nameof(ModifyDepth)))
 				)
 				.AddLabelsAt(il.Pos - 2, il.Instruction.ExtractLabels());
-
-			return il.InstructionEnumeration();
 		}
 
 		public static float ModifyDepth(float value, Furniture furn)
@@ -103,7 +110,7 @@ namespace HappyHomeDesigner.Patches
 
 			if (furn.IsWallItem(true))
 			{
-				value += layerOffset / 1_000_000f;
+				value = (furn.defaultBoundingBox.Bottom - 48) / 10_000f + layerOffset / 1_000_000f;
 				layerOffset++;
 			}
 			else if (furn.furniture_type.Value is 12)
@@ -112,6 +119,27 @@ namespace HappyHomeDesigner.Patches
 				layerOffset++;
 			}
 			return value;
+		}
+
+		private static void BeforeRemove()
+		{
+			isInRemove = true;
+		}
+
+		private static void AfterRemove()
+		{
+			isInRemove = false;
+		}
+
+		private static Furniture HideIfOverlapped(Furniture furn)
+		{
+			if (!isInRemove || !ModEntry.config.AllowOverlap || furn is null)
+				return furn;
+
+			if (furn.IsWallItem() || furn.furniture_type.Value is 12 || furn.HasContextTag("ff_category_floor"))
+				return null;
+
+			return furn;
 		}
 
 		private static IEnumerable<CodeInstruction> ModifyPreview(IEnumerable<CodeInstruction> codes, ILGenerator gen)
@@ -193,15 +221,12 @@ namespace HappyHomeDesigner.Patches
 			int y = ((int)raw.Y) - (((int)raw.Y) % 4);
 
 			// already grid-aligned
-			if (x % 64 == 0 && y % 64 == 0)
+			if (x % 64 == 0 && y % 64 == 0 && y == tilePos.Y * 64f)
 				return;
 
 			var bounds = furn.boundingBox.Value;
 
-			// possible jank depth fix for wall items
-			if (furn.IsWallItem())
-				bounds.Height = 48 - (y - (int)tilePos.Y * 64);
-
+			furn.defaultBoundingBox.Value = bounds;
 			furn.boundingBox.Value = new(x, y, bounds.Width, bounds.Height);
 			furn.updateDrawPosition();
 		}
