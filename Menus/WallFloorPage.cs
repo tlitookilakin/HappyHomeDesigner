@@ -35,8 +35,6 @@ namespace HappyHomeDesigner.Menus
 		private int removedWalls = 0;
 		private int removedFloors = 0;
 		private ClickableTextureComponent Tab;
-
-		// todo add actual storage
 		public override ICollection<string> KnownIDs => WallAndFloorIds;
 
 		private GridPanel ActivePanel;

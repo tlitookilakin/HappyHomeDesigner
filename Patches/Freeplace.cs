@@ -15,6 +15,7 @@ using SObject = StardewValley.Object;
 
 namespace HappyHomeDesigner.Patches
 {
+	// TODO fix weird fucking left click jank
 	internal static class Freeplace
 	{
 		private static int layerOffset = 0;
@@ -273,7 +274,7 @@ namespace HappyHomeDesigner.Patches
 						new(OpCodes.Ldfld, typeof(GameLocation).GetField(nameof(GameLocation.furniture)))
 					);
 
-			ModifyCheck(il, 32);
+			ModifyCheck(il, 63);
 
 			return il.InstructionEnumeration();
 		}

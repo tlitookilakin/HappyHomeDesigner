@@ -64,7 +64,6 @@ namespace HappyHomeDesigner.Menus
 		private const int LEFT = 32;
 		private const int MARGIN = 32;
 
-		// TODO add image stuff
 		public BlueprintMenu(GameLocation location) : base()
 		{
 			this.location = location;
