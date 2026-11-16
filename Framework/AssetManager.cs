@@ -73,6 +73,8 @@ namespace HappyHomeDesigner.Framework
 			{
 				if (name.IsEquivalentTo("LooseSprites/Book_Animation"))
 					bookSprite = null;
+				else if (name.IsEquivalentTo("Data/Furniture"))
+					Catalog.EmptyMenuCache(true);
 				else if (name.IsEquivalentTo(UI_PATH) && Catalog.HasAnyActive())
 					Catalog.MenuTexture = ModEntry.helper.GameContent.Load<Texture2D>(UI_PATH);
 			}

@@ -36,23 +36,28 @@ namespace HappyHomeDesigner
 			helper.Events.Input.ButtonReleased += OnButtonReleased;
 			helper.Events.Input.MouseWheelScrolled += OnMouseScroll;
 			helper.Events.Player.Warped += OnWarp;
+			helper.Events.GameLoop.ReturnedToTitle += OnReturnToTitle;
 
 			AssetManager.Init(Helper, config);
-			Catalog.Init(Helper);
 			InventoryWatcher.Init(Helper);
 			Commands.BindAll(Helper);
 			Debug.Init(Helper);
 		}
 
-        public override object GetApi()
-        {
+		private void OnReturnToTitle(object sender, ReturnedToTitleEventArgs e)
+		{
+			Catalog.ActiveMenu.Value?.exitThisMenuNoSound();
+		}
+
+		public override object GetApi()
+		{
 			return api;
-        }
+		}
 
 		private void OnWarp(object sender, WarpedEventArgs e)
 		{
 			if (Catalog.ActiveMenu.Value is Catalog catalog)
-				catalog.exitThisMenuNoSound();
+				catalog.CloseAndDestroy();
 		}
 
 		private void OnMouseScroll(object sender, MouseWheelScrolledEventArgs e)

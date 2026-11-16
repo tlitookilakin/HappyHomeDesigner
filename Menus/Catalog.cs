@@ -22,29 +22,14 @@ namespace HappyHomeDesigner.Menus
 		internal static Texture2D OverlayTexture;
 		private static bool WasJustHovered = false;
 		private static readonly PerScreen<Catalog> LastMenu = new();
-		private static IAssetName FurnitureName;
 
-		/// <summary>Initialize static data</summary>
-		internal static void Init(IModHelper helper)
+		/// <summary>Removes the cached catalog menu.</summary>
+		internal static void EmptyMenuCache(bool all = false)
 		{
-			FurnitureName = helper.GameContent.ParseAssetName("Data/Furniture");
-
-			helper.Events.Content.AssetsInvalidated += (s, e) =>
-			{
-				if (e.NamesWithoutLocale.Any(n => n.Equals(FurnitureName)))
-					LastMenu.ResetAllScreens();
-			};
-
-			helper.Events.Player.Warped += (s, e) =>
-			{
-				if (e.OldLocation.Name != e.NewLocation.Name)
-					LastMenu.Value = null;
-			};
-
-			helper.Events.GameLoop.ReturnedToTitle += (s, e) =>
-			{
-				ActiveMenu.Value?.exitThisMenuNoSound();
-			};
+			if (all)
+				LastMenu.ResetAllScreens();
+			else
+				LastMenu.Value = null;
 		}
 
 		/// <summary>Open the catalogue with a list of shop ids</summary>
@@ -116,7 +101,6 @@ namespace HappyHomeDesigner.Menus
 		private ClickableTextureComponent SettingsButton;
 		private readonly ClickableTextureComponent CNPButton;
 		private readonly ClickableTextureComponent ToggleButton;
-		private bool IsCacheDirty = false;
 		private int tab = 0;
 		private bool Toggled = true;
 		private Point screenSize;
@@ -220,9 +204,23 @@ namespace HappyHomeDesigner.Menus
 				batcher = null;
 			}
 
-			for (; !Tabs[tab].visible && tab < Tabs.Count; tab++);
-			if (tab == Tabs.Count)
+			for (; tab < Tabs.Count && !Tabs[tab].visible; tab++);
+			if (tab >= Tabs.Count)
+			{
 				tab = 0;
+
+				if (batcher == null)
+				{
+					ModEntry.monitor.Log("No items, closing menu now.", LogLevel.Debug);
+					CloseAndDestroy();
+				}
+			}
+		}
+
+		public void CloseAndDestroy()
+		{
+			LastMenu.Value = null;
+			exitThisMenuNoSound();
 		}
 
 		protected override void cleanupBeforeExit()
@@ -272,7 +270,7 @@ namespace HappyHomeDesigner.Menus
 				catch (Exception ex)
 				{
 					ModEntry.monitor.Log($"Item retrieval failed! Exception:\n{ex}.", LogLevel.Warn);
-					exitThisMenu();
+					CloseAndDestroy();
 				}
 			}
 		}
