@@ -162,22 +162,38 @@ namespace HappyHomeDesigner.Patches
 
 		internal static void DrawInWorld(Item held, SpriteBatch batch, Vector2 position, float depth)
 		{
-			const int startLoop = 8;
-			const int endLoop = 37;
-			const int pause = 20;
-			const float closeOffset = -3.5f * 4f;
-			const float offset = -2.5f * 4f;
 
 			var localPos = Game1.GlobalToLocal(Game1.viewport, position);
 			var texture = AssetManager.BookSpriteSheet;
 
 			if (!frameData.TryGetValue(held, out var fdata))
 				frameData.Add(held, fdata = new(-1));
-			var frame = fdata.Frame;
 
-			if (fdata.LastTickedAt != Game1.ticks)
+			localPos += GetAnimationFrameAndOffset(
+				ref fdata.Frame, 
+				DistanceToNearestPlayer(position) < 200f, 
+				fdata.LastTickedAt == Game1.ticks
+			);
+			fdata.LastTickedAt = Game1.ticks;
+
+			batch.Draw(texture, localPos, new Rectangle(fdata.Frame * 20, 0, 20, 20), Color.White, 
+				0f, Vector2.Zero, 4f, SpriteEffects.None, depth + DISCRIMINATOR);
+
+			batch.Draw(texture, localPos, new Rectangle(fdata.Frame * 20, 20, 20, 20), Utility.GetPrismaticColor(5), 
+				0f, Vector2.Zero, 4f, SpriteEffects.None, depth + DISCRIMINATOR * 2f);
+		}
+
+		private static Vector2 GetAnimationFrameAndOffset(ref int frame, bool on, bool offsetOnly)
+		{
+			const int startLoop = 8;
+			const int endLoop = 37;
+			const int pause = 20;
+			const float closeOffset = -3.5f * 4f;
+			const float offset = -2.5f * 4f;
+
+			if (!offsetOnly)
 			{
-				if (DistanceToNearestPlayer(position) < 200f)
+				if (on)
 					frame++;
 				else
 					frame--;
@@ -190,21 +206,14 @@ namespace HappyHomeDesigner.Patches
 
 				else if (frame > endLoop)
 					frame = ((frame - startLoop) % (endLoop - startLoop)) + startLoop;
-
-				fdata.Frame = frame;
-				fdata.LastTickedAt = Game1.ticks;
 			}
 
+			Vector2 ret = new(offset);
+
 			if (frame < startLoop)
-				localPos.X += closeOffset * (startLoop - frame) / startLoop;
-			localPos.X += offset;
-			localPos.Y += offset;
+				ret.X = closeOffset * (startLoop - frame) / startLoop;
 
-			batch.Draw(texture, localPos, new Rectangle(frame * 20, 0, 20, 20), Color.White, 
-				0f, Vector2.Zero, 4f, SpriteEffects.None, depth + DISCRIMINATOR);
-
-			batch.Draw(texture, localPos, new Rectangle(frame * 20, 20, 20, 20), Utility.GetPrismaticColor(5), 
-				0f, Vector2.Zero, 4f, SpriteEffects.None, depth + DISCRIMINATOR * 2f);
+			return ret;
 		}
 
 		private static float DistanceToNearestPlayer(Vector2 where)
