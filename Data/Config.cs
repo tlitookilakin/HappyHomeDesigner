@@ -105,6 +105,7 @@ namespace HappyHomeDesigner.Data
 		public KeybindList MoveFront { get; set; }
 		public KeybindList MoveBack { get; set; }
 		public bool AllowOverlap { get; set; }
+		public bool ReduceMotion { get; set; }
 
 		public Config()
 		{
@@ -133,6 +134,7 @@ namespace HappyHomeDesigner.Data
 				allowedValues: skins,
 				formatValue: s => ModEntry.i18n.Get($"skin.{s}")
 			);
+			gmcm.QuickBind(man, this, nameof(ReduceMotion));
 			gmcm.QuickBind(man, this, nameof(AllowOverlap));
 			gmcm.QuickBind(man, this, nameof(FurnitureTooltips));
 			gmcm.QuickBind(man, this, nameof(ReplaceFurnitureCatalog));
@@ -204,6 +206,7 @@ namespace HappyHomeDesigner.Data
 			MoveFront = new(SButton.OemCloseBrackets);
 			MoveBack = new(SButton.OemOpenBrackets);
 			AllowOverlap = true;
+			ReduceMotion = false;
 		}
 
 		private void Save()

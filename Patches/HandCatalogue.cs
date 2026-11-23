@@ -164,6 +164,7 @@ namespace HappyHomeDesigner.Patches
 		{
 			const int startLoop = 8;
 			const int endLoop = 37;
+			const int pause = 20;
 			const float closeOffset = -3.5f * 4f;
 			const float offset = -2.5f * 4f;
 
@@ -183,6 +184,10 @@ namespace HappyHomeDesigner.Patches
 
 				if (frame < 0)
 					frame = 0;
+
+				else if (ModEntry.config.ReduceMotion && frame > pause)
+					frame = pause;
+
 				else if (frame > endLoop)
 					frame = ((frame - startLoop) % (endLoop - startLoop)) + startLoop;
 
