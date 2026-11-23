@@ -19,7 +19,7 @@ namespace HappyHomeDesigner.Framework
 			}
 			catch (Exception e)
 			{
-				ModEntry.monitor.Log($"Error loading layouts for location '{where.Name}':\n{e}", LogLevel.Warn);
+				LogWarn($"Error loading layouts for location '{where.Name}':\n{e}");
 			}
 			return entries ?? [];
 		}
@@ -32,7 +32,7 @@ namespace HappyHomeDesigner.Framework
 			}
 			catch(Exception e)
 			{
-				ModEntry.monitor.Log($"Error saving layouts for location '{where.Name}':\n{e}", LogLevel.Warn);
+				LogWarn($"Error saving layouts for location '{where.Name}':\n{e}");
 			}
 		}
 

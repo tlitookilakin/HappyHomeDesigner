@@ -15,8 +15,6 @@ namespace HappyHomeDesigner
 		public const string MOD_ID = "tlitookilakin.HappyHomeDesigner";
 		public static readonly bool ANDROID = Constants.TargetPlatform is GamePlatform.Android;
 
-		internal static IMonitor monitor;
-		internal static IManifest manifest;
 		internal static IModHelper helper;
 		internal static Config config;
 		internal static ITranslationHelper i18n;
@@ -24,11 +22,11 @@ namespace HappyHomeDesigner
 
 		public override void Entry(IModHelper helper)
 		{
-			monitor = Monitor;
+			LoggerInstanceInitialize(Monitor);
+
 			ModEntry.helper = helper;
 			i18n = Helper.Translation;
 			config = Helper.ReadConfig<Config>();
-			manifest = ModManifest;
 			api = new();
 
 			helper.Events.GameLoop.GameLaunched += Launched;
@@ -87,14 +85,8 @@ namespace HappyHomeDesigner
 
 		private void Launched(object sender, GameLaunchedEventArgs e)
 		{
-			if (Helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
-			{
-				IGMCM.API = Helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");
-				IGMCM.Installed = true;
-				config.Register(IGMCM.API, ModManifest);
-			}
-
-			Patch(new(new(ModManifest.UniqueID), Monitor));
+			IGMCM.Init(ModManifest, Helper);
+			Patch(new(new(ModManifest.UniqueID)));
 
 			AlternativeTextures.Init(Helper);
 			CustomNPCPaintings.Init();

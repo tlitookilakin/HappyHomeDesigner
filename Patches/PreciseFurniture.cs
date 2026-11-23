@@ -14,9 +14,9 @@ namespace HappyHomeDesigner.Patches
 				return;
 
 			if (!TryPatch(harmony, mod.Manifest))
-				ModEntry.monitor.Log("Some patches for Precise Furniture failed, some things may be weird...", StardewModdingAPI.LogLevel.Warn);
+				LogWarn("Some patches for Precise Furniture failed, some things may be weird...");
 			else
-				ModEntry.monitor.Log("All patches for Precise Furniture applied.", StardewModdingAPI.LogLevel.Trace);
+				LogTrace("All patches for Precise Furniture applied.");
 		}
 
 		private static bool TryPatch(HarmonyHelper harmony, IManifest mod)

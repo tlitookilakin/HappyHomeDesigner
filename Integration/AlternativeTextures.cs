@@ -40,7 +40,7 @@ namespace HappyHomeDesigner.Integration
 			if (!helper.ModRegistry.TryGetMod("PeacefulEnd.AlternativeTextures", out var mod) || !AltTex.IsApplied)
 				return;
 
-			ModEntry.monitor.Log("Alternative Textures detected! Integrating...", LogLevel.Debug);
+			LogDebug("Alternative Textures detected! Integrating...");
 			var man = mod.Manifest;
 
 			const BindingFlags STATIC = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
@@ -78,12 +78,12 @@ namespace HappyHomeDesigner.Integration
 
 			if (error is null)
 			{
-				ModEntry.monitor.Log("Integration successful.", LogLevel.Debug);
+				LogDebug("Integration successful.");
 				Installed = true;
 			} 
 			else
 			{
-				ModEntry.monitor.Log("Error integrating Alternative Textures: " + error, LogLevel.Error);
+				LogError("Error integrating Alternative Textures: " + error);
 				Installed = false;
 			}
 		}
@@ -97,7 +97,7 @@ namespace HappyHomeDesigner.Integration
 			TextureIndex = CreateIndexImpl();
 			timer.Stop();
 
-			ModEntry.monitor.Log($"Indexed {TextureIndex.Count} alternative textures in {timer.ElapsedMilliseconds} ms.", LogLevel.Debug);
+			LogDebug($"Indexed {TextureIndex.Count} alternative textures in {timer.ElapsedMilliseconds} ms.");
 		}
 
 		public static bool HasVariant(string id, string name, string season)
@@ -191,7 +191,7 @@ namespace HappyHomeDesigner.Integration
 
 			catch (Exception ex)
 			{
-				ModEntry.monitor.Log(ex.ToString(), LogLevel.Trace);
+				LogTrace(ex.ToString());
 				return false;
 			}
 
@@ -270,7 +270,7 @@ namespace HappyHomeDesigner.Integration
 				GetTextureSource = Expression.Lambda<TextureSourceGetter>(body, data, defaultRect, texture, source).Compile();
 			} catch (Exception ex)
 			{
-				ModEntry.monitor.Log(ex.ToString(), LogLevel.Trace);
+				LogTrace(ex.ToString());
 				return false;
 			}
 

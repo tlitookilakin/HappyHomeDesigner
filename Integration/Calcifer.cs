@@ -35,7 +35,7 @@ namespace HappyHomeDesigner.Integration
 
 			if (!mod.Manifest.TryGetType("Calcifer.Features.FurnitureActionData", out var type))
 			{
-				ModEntry.monitor.Log("Could not find Calcifer data model. Calcifer integration failed.", LogLevel.Warn);
+				LogWarn("Could not find Calcifer data model. Calcifer integration failed.");
 				Active = false;
 				return;
 			}

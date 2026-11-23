@@ -74,7 +74,7 @@ namespace HappyHomeDesigner.Patches
 			}
 			else
 			{
-				ModEntry.monitor.Log("Failed to update placed unique object: ID mismatch", StardewModdingAPI.LogLevel.Warn);
+				LogWarn("Failed to update placed unique object: ID mismatch");
 				Game1.createItemDebris(__instance, tile * 64f, -1, location);
 			}
 		}
@@ -128,7 +128,7 @@ namespace HappyHomeDesigner.Patches
 			}
 			catch (Exception ex)
 			{
-				ModEntry.monitor.Log($"Could not clone object: {ex}", StardewModdingAPI.LogLevel.Debug);
+				LogDebug($"Could not clone object: {ex}");
 				return null;
 			}
 

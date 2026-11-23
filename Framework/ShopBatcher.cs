@@ -45,7 +45,7 @@ namespace HappyHomeDesigner.Framework
 		{
 			Init();
 
-			ModEntry.monitor.Log($"Opening catalogue with the following shops: {string.Join(", ", ShopsToUse)}");
+			LogTrace($"Opening catalogue with the following shops: {string.Join(", ", ShopsToUse)}");
 
 			shopsToUse = ShopsToUse;
 			shops = DataLoader.Shops(Game1.content);
@@ -131,9 +131,7 @@ namespace HappyHomeDesigner.Framework
 					}
 					catch (KeyNotFoundException)
 					{
-						ModEntry.monitor.Log(
-							$"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'."
-						, LogLevel.Debug);
+						LogDebug($"Possibly broken item query '{data.ItemId}'; type qualifier '{category}' is unknown. Found in shop entry '{owner}' -> '{data.Id}'.");
 						goto Fallback;
 					}
 
@@ -195,7 +193,7 @@ namespace HappyHomeDesigner.Framework
 				perItemCondition: data.PerItemCondition,
 				maxItems: data.MaxItems,
 				avoidRepeat: data.AvoidRepeat,
-				logError: static (q, e) => ModEntry.monitor.Log($"Error checking query '{q}': {e}", LogLevel.Warn)
+				logError: static (q, e) => LogWarn($"Error checking query '{q}': {e}")
 			);
 		}
 

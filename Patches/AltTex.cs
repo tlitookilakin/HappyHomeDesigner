@@ -35,10 +35,9 @@ namespace HappyHomeDesigner.Patches
 
 			if (current_version.IsOlderThan(MINIMUM_VERSION))
 			{
-				ModEntry.monitor.Log(
+				LogWarn(
 					ModEntry.i18n.Get("logging.alternativeTextures.versionWarning",
-					new { min = MINIMUM_VERSION, current = current_version }),
-					LogLevel.Warn
+					new { min = MINIMUM_VERSION, current = current_version })
 				);
 				return;
 			}
@@ -49,7 +48,7 @@ namespace HappyHomeDesigner.Patches
 				!man.TryGetType("AlternativeTextures.Framework.Patches.StandardObjects.BedFurniturePatch", out var bedPatcher)
 			)
 			{
-				ModEntry.monitor.Log("Failed to find one or more Alternative Textures patch targets", LogLevel.Warn);
+				LogWarn("Failed to find one or more Alternative Textures patch targets");
 				return;
 			}
 
@@ -72,11 +71,11 @@ namespace HappyHomeDesigner.Patches
 				harmony.CreateReversePatcher(objectPatcher.GetMethod("DrawPrefix", flag), new(typeof(AltTex), nameof(ObjectDraw))).Patch();
 
 				IsApplied = true;
-				ModEntry.monitor.Log("Successfully applied all AT patches!");
+				LogTrace("Successfully applied all AT patches!");
 			}
 			catch (Exception ex)
 			{
-				ModEntry.monitor.Log($"Failed to patch AT: {ex}", LogLevel.Warn);
+				LogWarn($"Failed to patch AT: {ex}");
 			}
 		}
 
@@ -198,12 +197,11 @@ namespace HappyHomeDesigner.Patches
 
 			if (IsApplied)
 			{
-				ModEntry.monitor.LogOnce(
+				LogError(
 					"Alternative Textures patch state is corrupted; compat is marked as applied but reverse patcher is not valid! " +
-					"This should never happen and something is very wrong with your game!",
-					LogLevel.Error
+					"This should never happen and something is very wrong with your game!"
 				);
-				new Harmony(ModEntry.manifest.UniqueID).Unpatch(
+				new Harmony(ModEntry.MOD_ID).Unpatch(
 					typeof(SObject).GetMethod(nameof(SObject.drawInMenu),
 						[typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float),
 						typeof(float), typeof(StackDrawType), typeof(Color), typeof(bool)]

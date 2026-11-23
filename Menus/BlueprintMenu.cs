@@ -270,7 +270,7 @@ namespace HappyHomeDesigner.Menus
 				catch (Exception ex)
 				{
 					ShowOverlayText(ModEntry.i18n.Get("ui.sharing.downloadFailed"));
-					ModEntry.monitor.Log($"Failed to get blueprint from sharing service; json was not valid: \n\t{ex}", StardewModdingAPI.LogLevel.Debug);
+					LogDebug($"Failed to get blueprint from sharing service; json was not valid: \n\t{ex}");
 					return;
 				}
 
@@ -479,7 +479,7 @@ namespace HappyHomeDesigner.Menus
 				}
 				catch (Exception ex)
 				{
-					ModEntry.monitor.Log($"Error reading layout from clipboard:\n{ex}", StardewModdingAPI.LogLevel.Trace);
+					LogTrace($"Error reading layout from clipboard:\n{ex}");
 				}
 			}
 

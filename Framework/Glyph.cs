@@ -17,8 +17,8 @@ public record struct Glyph(Vector2 Position, Rectangle Source, Texture2D Texture
 	{
 		if (text is null || text.Trim().Length == 0)
 		{
-			ModEntry.monitor.Log("Attempted to display empty text! Your language file is broken!", StardewModdingAPI.LogLevel.Warn);
-			ModEntry.monitor.Log("Your translation is bad and you should feel bad.");
+			LogWarn("Attempted to display empty text! Your language file is broken!");
+			LogTrace("Your translation is bad and you should feel bad.");
 			return [];
 		}
 

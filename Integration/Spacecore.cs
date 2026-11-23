@@ -80,7 +80,7 @@ namespace HappyHomeDesigner.Integration
 			}
 			catch (Exception ex)
 			{
-				ModEntry.monitor.Log($"Error loading texture for custom tab: {ex}", LogLevel.Error);
+				LogError($"Error loading texture for custom tab: {ex}");
 				return null;
 			}
 

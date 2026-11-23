@@ -31,10 +31,7 @@ namespace HappyHomeDesigner.Framework
 			var txt = sb.ToString();
 			DesktopClipboard.SetText(txt);
 
-			ModEntry.monitor.Log(
-				$"Wallpaper: ${where.appliedWallpaper.Values.FirstOrDefault()}\nFlooring: ${where.appliedFloor.Values.FirstOrDefault()}",
-				LogLevel.Info
-			);
+			LogInfo($"Wallpaper: ${where.appliedWallpaper.Values.FirstOrDefault()}\nFlooring: ${where.appliedFloor.Values.FirstOrDefault()}");
 		}
 	}
 }

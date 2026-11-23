@@ -197,9 +197,8 @@ namespace HappyHomeDesigner.Menus
 					page.FinalizeItems();
 
 				timer.Stop();
-				ModEntry.monitor.Log(
-					ModEntry.i18n.Get("logging.totalTime", new {count = totalItems, time = timer.Elapsed.FormatReadable()}),
-					LogLevel.Info
+				LogInfo(
+					ModEntry.i18n.Get("logging.totalTime", new {count = totalItems, time = timer.Elapsed.FormatReadable()})
 				);
 				batcher = null;
 			}
@@ -211,7 +210,7 @@ namespace HappyHomeDesigner.Menus
 
 				if (batcher == null)
 				{
-					ModEntry.monitor.Log("No items, closing menu now.", LogLevel.Debug);
+					LogDebug("No items, closing menu now.");
 					CloseAndDestroy();
 				}
 			}
@@ -269,7 +268,7 @@ namespace HappyHomeDesigner.Menus
 				}
 				catch (Exception ex)
 				{
-					ModEntry.monitor.Log($"Item retrieval failed! Exception:\n{ex}.", LogLevel.Warn);
+					LogWarn($"Item retrieval failed! Exception:\n{ex}.");
 					CloseAndDestroy();
 				}
 			}
@@ -344,7 +343,7 @@ namespace HappyHomeDesigner.Menus
 
 			if (SettingsButton is not null && SettingsButton.containsPoint(x, y))
 			{
-				IGMCM.API.OpenModMenu(ModEntry.manifest);
+				IGMCM.OpenMenu();
 				if (playSound)
 					Game1.playSound("bigSelect");
 

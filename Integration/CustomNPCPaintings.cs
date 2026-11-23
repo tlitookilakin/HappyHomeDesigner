@@ -1,6 +1,5 @@
 ﻿using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Menus;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using System;
@@ -21,8 +20,8 @@ namespace HappyHomeDesigner.Integration
 
 			if (!mod.Manifest.TryGetType("DynamicNPCPaintings.UI.Customiser", out var type))
 			{
-				ModEntry.monitor.Log(ModEntry.i18n.Get("logging.cnpcp.notype"), LogLevel.Warn);
-				ModEntry.monitor.Log("CNPC: no menu type", LogLevel.Trace);
+				LogWarn(ModEntry.i18n.Get("logging.cnpcp.notype"));
+				LogTrace("CNPC: no menu type");
 				return;
 
 			}

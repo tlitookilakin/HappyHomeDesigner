@@ -39,7 +39,7 @@ namespace HappyHomeDesigner.Menus
 				return true;
 			}
 
-			ModEntry.monitor.Log((forward ? "Redo" : "Undo") + " failed: could not apply.");
+			LogTrace((forward ? "Redo" : "Undo") + " failed: could not apply.");
 			from.Push(state);
 			return false;
 		}

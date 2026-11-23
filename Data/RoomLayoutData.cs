@@ -165,10 +165,7 @@ namespace HappyHomeDesigner.Data
 
 				if (errors.Count > 0)
 				{
-					ModEntry.monitor.Log(
-						$"Could not place {errors.Count} furniture items in layout: {string.Join('\n', [.. errors])}",
-						StardewModdingAPI.LogLevel.Debug
-					);
+					LogDebug($"Could not place {errors.Count} furniture items in layout: {string.Join('\n', [.. errors])}");
 					return false;
 				}
 			}

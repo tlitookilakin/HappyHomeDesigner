@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using StardewModdingAPI;
 using StardewValley;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ namespace HappyHomeDesigner.Framework;
 /// </summary>
 /// <param name="Harmony">The harmony instance to use</param>
 /// <param name="Monitor">The mod's monitor</param>
-public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
+public class HarmonyHelper(Harmony Harmony)
 {
 	public const BindingFlags AnyDeclared = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic;
 	private static readonly string[] patchTypeNames = ["prefix", "postfix", "transpiler", "finalizer"];
@@ -23,7 +22,7 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 	private readonly MethodInfo[] targets = [];
 	private readonly Type targetType;
 
-	private HarmonyHelper(Harmony h, IMonitor m, MethodInfo[] methods, Type type) : this(h, m)
+	private HarmonyHelper(Harmony h, MethodInfo[] methods, Type type) : this(h)
 	{
 		targets = methods;
 		targetType = type;
@@ -118,7 +117,7 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 
 		var targ = target.GetMethod(name, AnyDeclared | BindingFlags.Instance | BindingFlags.Static, parameters);
 
-		return new(Harmony, Monitor, targ is null ? [] : [targ], target);
+		return new(Harmony, targ is null ? [] : [targ], target);
 	}
 
 	private HarmonyHelper WithImpl(string name, bool all, Type? target = null, Func<MethodInfo, bool>? predicate = null)
@@ -142,9 +141,9 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 		}
 
 		if (targs.Length is 0)
-			Monitor.Log($"No method with name '{name}' is declared by type '{target}'.", LogLevel.Error);
+			LogError($"No method with name '{name}' is declared by type '{target}'.");
 
-		return new(Harmony, Monitor, targs, target);
+		return new(Harmony, targs, target);
 	}
 
 	private HarmonyHelper WithPropertyImpl(string name, bool getter, bool all, Type? target = null)
@@ -172,9 +171,9 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 			impls[i] = getter ? targs[i].GetMethod! : targs[i].SetMethod!;
 
 		if (impls.Length is 0)
-			Monitor.Log($"No property with name '{name}' is declared by type '{target}'.", LogLevel.Error);
+			LogError($"No property with name '{name}' is declared by type '{target}'.");
 
-		return new(Harmony, Monitor, impls, target);
+		return new(Harmony, impls, target);
 	}
 
 	private HarmonyHelper PatchImpl(HarmonyMethod use, int type)
@@ -193,8 +192,8 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 			}
 			catch (Exception e)
 			{
-				Monitor.Log($"Failed to apply {patchTypeNames[type]} '{use.method}' to '{targets[i]}'. More information in the log!", LogLevel.Error);
-				Monitor.Log($"Patch error: {e}");
+				LogError($"Failed to apply {patchTypeNames[type]} '{use.method}' to '{targets[i]}'. More information in the log!");
+				LogTrace($"Patch error: {e}");
 				if (type is 2)
 					QueueMissedPatch(targets[i]);
 			}
@@ -203,7 +202,7 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 		return this;
 	}
 
-	private void QueueMissedPatch(MethodInfo m)
+	private static void QueueMissedPatch(MethodInfo m)
 	{
 		missedPatchTargets.Enqueue(m);
 		if (!loggingDebounce)
@@ -213,7 +212,7 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 		}
 	}
 
-	private void LogMissedPatches()
+	private static void LogMissedPatches()
 	{
 		loggingDebounce = false;
 		while (missedPatchTargets.TryDequeue(out var missed))
@@ -223,7 +222,7 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 				.GroupBy(p => p.owner)
 				.Select(g => $"['{g.Key}': {string.Join(", ", g)}]");
 
-			Monitor.Log($"Transpiler for {missed.FullDescription()} failed. Possible patch conflicts:\n\t{string.Join("\n\t", patches)}", LogLevel.Trace);
+			LogTrace($"Transpiler for {missed.FullDescription()} failed. Possible patch conflicts:\n\t{string.Join("\n\t", patches)}");
 		}
 	}
 }

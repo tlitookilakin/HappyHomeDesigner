@@ -44,9 +44,8 @@ namespace HappyHomeDesigner.Menus
 		/// <summary>Logs processed item counts</summary>
 		protected static void LogLoaded(string name, int count, int removed)
 		{
-			ModEntry.monitor.Log(
-				ModEntry.i18n.Get("logging.pageloaded", new {name = ModEntry.i18n.Get("logging.itemType." + name), count, removed}),
-				LogLevel.Info
+			LogInfo(
+				ModEntry.i18n.Get("logging.pageloaded", new {name = ModEntry.i18n.Get("logging.itemType." + name), count, removed})
 			);
 		}
 

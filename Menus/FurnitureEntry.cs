@@ -70,7 +70,7 @@ namespace HappyHomeDesigner.Menus
 				}
 				catch (ContentLoadException ex)
 				{
-					ModEntry.monitor.Log($"Failed to load texture for furniture '{Item.ItemId}': {ex}", LogLevel.Warn);
+					LogWarn($"Failed to load texture for furniture '{Item.ItemId}': {ex}");
 				}
 			}
 		}

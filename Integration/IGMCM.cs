@@ -10,8 +10,19 @@ namespace HappyHomeDesigner.Integration
 	/// <summary>The API which lets other mods add a config UI through Generic Mod Config Menu.</summary>
 	public interface IGMCM
 	{
-		internal static IGMCM API;
-		internal static bool Installed;
+		internal static IGMCM API { get; private set; }
+		internal static bool Installed { get; private set; }
+		internal static Action OpenMenu { get; private set; } = () => { };
+
+		internal static void Init(IManifest man, IModHelper helper)
+		{
+			if (!helper.ModRegistry.IsLoaded("spacechase0.GenericModConfigMenu"))
+				return;
+
+			API = helper.ModRegistry.GetApi<IGMCM>("spacechase0.GenericModConfigMenu");
+			OpenMenu = () => API.OpenModMenu(man);
+			ModEntry.config.Register(API, man);
+		}
 
 		/*********
 		** Methods

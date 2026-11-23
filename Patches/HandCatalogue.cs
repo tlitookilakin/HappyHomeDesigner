@@ -95,7 +95,7 @@ namespace HappyHomeDesigner.Patches
 
 			if (il.IsInvalid)
 			{
-				ModEntry.monitor.Log("Failed to find injection point for catalogue placement", LogLevel.Error);
+				LogError("Failed to find injection point for catalogue placement");
 				return null;
 			}
 
@@ -107,7 +107,7 @@ namespace HappyHomeDesigner.Patches
 
 			if (il.IsInvalid)
 			{
-				ModEntry.monitor.Log("Failed to find furniture local for catalogue placement", LogLevel.Error);
+				LogError("Failed to find furniture local for catalogue placement");
 				return null;
 			}
 
@@ -125,7 +125,7 @@ namespace HappyHomeDesigner.Patches
 
 			if (il.IsInvalid)
 			{
-				ModEntry.monitor.Log("Failed to find return point for catalogue placement", LogLevel.Error);
+				LogError("Failed to find return point for catalogue placement");
 				return null;
 			}
 

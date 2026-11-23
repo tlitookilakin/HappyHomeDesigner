@@ -42,7 +42,7 @@ namespace HappyHomeDesigner.Patches
 				if (mod.Manifest.TryGetType("FurnitureFramework.Data.FType.FType", out var type))
 					harmony.With(type, "IsClicked", [typeof(Furniture), typeof(int), typeof(int)]).Transpiler(FixInteractionsFF);
 				else
-					ModEntry.monitor.Log("Failed to find assembly for Furniture Framework", LogLevel.Warn);
+					LogWarn("Failed to find assembly for Furniture Framework");
 			}
 			else
 			{
