@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>2.7.0</Version>
+		<Version>2.7.1</Version>
 		<Authors>tlitookilakin</Authors>
 		<Name>Happy Home Designer</Name>
 		<UniqueID>tlitookilakin.HappyHomeDesigner</UniqueID>
@@ -22,7 +22,7 @@
 		<PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.3.1" />
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1" />
 		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\smapi-internal\Newtonsoft.Json.dll" private="false" />
-		<Reference Include="Newtonsoft.Json" HintPath="$(GamePath)\BmFont.dll" private="false" />
+		<Reference Include="BmFont" HintPath="$(GamePath)\BmFont.dll" private="false" />
 		<SMAPIDependency Include="PeacefulEnd.AlternativeTextures" Required="false" />
 	</ItemGroup>
 </Project>
