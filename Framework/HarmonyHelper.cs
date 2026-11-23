@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using StardewModdingAPI;
+using StardewValley;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -15,6 +17,8 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 {
 	public const BindingFlags AnyDeclared = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic;
 	private static readonly string[] patchTypeNames = ["prefix", "postfix", "transpiler", "finalizer"];
+	private static readonly Queue<MethodInfo> missedPatchTargets = [];
+	private static bool loggingDebounce = false;
 
 	private readonly MethodInfo[] targets = [];
 	private readonly Type targetType;
@@ -189,10 +193,37 @@ public class HarmonyHelper(Harmony Harmony, IMonitor Monitor)
 			}
 			catch (Exception e)
 			{
-				Monitor.Log($"Failed to apply {patchTypeNames[type]} '{use.method}' to '{targets[i]}':\n{e}", LogLevel.Error);
+				Monitor.Log($"Failed to apply {patchTypeNames[type]} '{use.method}' to '{targets[i]}'. More information in the log!", LogLevel.Error);
+				Monitor.Log($"Patch error: {e}");
+				if (type is 2)
+					QueueMissedPatch(targets[i]);
 			}
 		}
 
 		return this;
+	}
+
+	private void QueueMissedPatch(MethodInfo m)
+	{
+		missedPatchTargets.Enqueue(m);
+		if (!loggingDebounce)
+		{
+			DelayedAction.functionAfterDelay(LogMissedPatches, 1);
+			loggingDebounce = true;
+		}
+	}
+
+	private void LogMissedPatches()
+	{
+		loggingDebounce = false;
+		while (missedPatchTargets.TryDequeue(out var missed))
+		{
+			var patches = Harmony.GetPatchInfo(missed).Transpilers
+				.Where(p => p.owner != ModEntry.MOD_ID)
+				.GroupBy(p => p.owner)
+				.Select(g => $"['{g.Key}': {string.Join(", ", g)}]");
+
+			Monitor.Log($"Transpiler for {missed.FullDescription()} failed. Possible patch conflicts:\n\t{string.Join("\n\t", patches)}", LogLevel.Trace);
+		}
 	}
 }
