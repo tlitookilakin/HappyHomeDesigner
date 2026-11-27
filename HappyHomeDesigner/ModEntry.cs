@@ -3,6 +3,7 @@ using HappyHomeDesigner.Framework;
 using HappyHomeDesigner.Integration;
 using HappyHomeDesigner.Menus;
 using HappyHomeDesigner.Patches;
+using HappyHomeDesigner.Widgets;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -92,6 +93,9 @@ namespace HappyHomeDesigner
 			CustomNPCPaintings.Init();
 			Spacecore.Init();
 			Calcifer.Init(helper);
+
+			if (Helper.ModRegistry.IsLoaded("spacechase0.BiggerBackpack"))
+				InventoryWrapper.modified_capacity = 48;
 		}
 
 		private static void Patch(HarmonyHelper harmony)

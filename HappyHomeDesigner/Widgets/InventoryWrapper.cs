@@ -11,10 +11,12 @@ namespace HappyHomeDesigner.Widgets
 		public const int MARGIN_BOTTOM = 8;
 		private static readonly Rectangle BackgroundSource = new(384, 373, 18, 18);
 
+		internal static int modified_capacity = -1;
+
 		private bool wasInside = false;
 		private Item hovered = null;
 
-		public InventoryWrapper() : base(0, 0, true)
+		public InventoryWrapper() : base(0, 0, true, capacity: modified_capacity)
 		{
 
 		}

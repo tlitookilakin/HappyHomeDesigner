@@ -16,8 +16,9 @@ internal class Logger(IMonitor monitor)
 
 	public static void LogError(string message)
 		=> inst.LogImpl(message, LogLevel.Error);
+
 	public static void LogTrace(string message)
-		=> inst.LogImpl(message, LogLevel.Error);
+		=> inst.LogImpl(message, LogLevel.Trace);
 
 	public static void LoggerInstanceInitialize(IMonitor m)
 		=> inst = new(m);
